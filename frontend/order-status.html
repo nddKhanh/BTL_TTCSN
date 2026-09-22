@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trạng Thái Đơn Hàng - Highlands Coffee</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <a href="index.html" class="logo-section">
+        <div class="logo-icon">H</div>
+        <span class="brand-name">Highlands Coffee</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Quay lại Trang Chủ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="max-width:700px; text-align:center;">
+    <div style="background:#fff; padding:40px; border-radius:12px; box-shadow:var(--shadow); margin-top:20px;">
+      <div style="font-size:60px; color:#28a745; margin-bottom:10px;">🎉</div>
+      <h2 style="color:var(--primary-red); margin-bottom:10px;">Đặt Hàng Thành Công!</h2>
+      <p style="color:var(--text-muted);">Cảm ơn bạn đã lựa chọn Highlands Coffee. Đơn hàng của bạn đang được xử lý.</p>
+
+      <div style="background:var(--bg-cream); padding:20px; border-radius:8px; margin:24px 0; text-align:left;" id="orderDetailsCard">
+        <p>Đang tải thông tin đơn hàng...</p>
+      </div>
+
+      <a href="index.html">
+        <button class="btn-add" style="padding:12px 24px; font-size:16px;">Tiếp Tục Đặt Món</button>
+      </a>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const orderCode = urlParams.get('code');
+
+      const card = document.getElementById('orderDetailsCard');
+      if (!orderCode) {
+        card.innerHTML = '<p style="color:red">Không tìm thấy mã đơn hàng!</p>';
+        return;
+      }
+
+      try {
+        const order = await fetchAPI(`/orders/${orderCode}`);
+        let itemsHtml = '';
+        order.items.forEach(i => {
+          itemsHtml += `<li><strong>${i.product.name}</strong> (Size ${i.sizeName}) x ${i.quantity} - ${formatVND(i.subtotal)}</li>`;
+        });
+
+        card.innerHTML = `
+          <h3 style="color:var(--primary-red); margin-bottom:12px;">Mã Đơn: ${order.orderCode}</h3>
+          <p><strong>Người nhận:</strong> ${order.customerName} (${order.customerPhone})</p>
+          <p><strong>Địa chỉ:</strong> ${order.deliveryAddress}</p>
+          <p><strong>Trạng thái:</strong> <span style="font-weight:bold; color:var(--primary-red);">${order.status}</span></p>
+          <p><strong>Tổng tiền:</strong> <span style="font-weight:bold; color:var(--primary-red); font-size:18px;">${formatVND(order.totalAmount)}</span></p>
+          <hr style="margin:12px 0; border:none; border-top:1px dashed var(--border-color)">
+          <p><strong>Danh sách món:</strong></p>
+          <ul style="padding-left:20px; margin-top:6px;">${itemsHtml}</ul>
+        `;
+      } catch (err) {
+        card.innerHTML = `<p style="color:red">Lỗi tải thông tin đơn hàng (${orderCode}). Vui lòng kiểm tra lại Backend!</p>`;
+      }
+    });
+  </script>
+</body>
+</html>

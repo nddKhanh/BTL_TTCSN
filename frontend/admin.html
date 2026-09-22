@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Trị Đơn Hàng - Highlands Coffee Admin</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <a href="index.html" class="logo-section">
+        <div class="logo-icon">H</div>
+        <span class="brand-name">Highlands Coffee Admin</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">← Xem Trang Chủ / Menu</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="max-width:1100px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2>Quản Lý Đơn Hàng (Admin)</h2>
+      <button onclick="loadAdminOrders()" class="btn-add">🔄 Làm mới danh sách</button>
+    </div>
+
+    <div id="adminOrdersList">
+      <p>Đang tải danh sách đơn hàng...</p>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

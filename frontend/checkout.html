@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanh Toán - Highlands Coffee Order</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <a href="index.html" class="logo-section">
+        <div class="logo-icon">H</div>
+        <span class="brand-name">Highlands Coffee</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">← Quay lại Menu</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="max-width:800px;">
+    <h2 style="margin-bottom:24px; color:var(--primary-red); border-bottom:2px solid var(--border-color); padding-bottom:8px;">Thông Tin Đặt Hàng</h2>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:30px;">
+      <!-- Customer Information Form -->
+      <form id="checkoutForm" style="background:#fff; padding:24px; border-radius:12px; box-shadow:var(--shadow);">
+        <h3 style="margin-bottom:16px;">1. Địa chỉ nhận hàng</h3>
+
+        <div class="form-group">
+          <label for="customerName">Họ và Tên (*)</label>
+          <input type="text" id="customerName" placeholder="Nguyễn Văn A" required>
+        </div>
+
+        <div class="form-group">
+          <label for="customerPhone">Số Điện Thoại (*)</label>
+          <input type="tel" id="customerPhone" placeholder="0987654321" required>
+        </div>
+
+        <div class="form-group">
+          <label for="deliveryAddress">Địa Chỉ Giao Hàng (*)</label>
+          <textarea id="deliveryAddress" rows="3" placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="note">Ghi Chú Đơn Hàng</label>
+          <input type="text" id="note" placeholder="Ít đường, nhiều đá, giao giờ hành chính...">
+        </div>
+
+        <button type="submit" class="btn-submit">Xác Nhận Đặt Hàng (COD)</button>
+      </form>
+
+      <!-- Cart Order Summary -->
+      <div style="background:#fff; padding:24px; border-radius:12px; box-shadow:var(--shadow); height:fit-content;">
+        <h3 style="margin-bottom:16px;">2. Tóm tắt đơn hàng</h3>
+        <div id="checkoutItems"></div>
+
+        <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:bold; margin-top:20px; padding-top:12px; border-top:2px solid var(--primary-red)">
+          <span>Tổng thành tiền:</span>
+          <span id="checkoutTotal" style="color:var(--primary-red);">0đ</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Highlands Coffee - Đặt Hàng Trực Tuyến</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/modal.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <a href="index.html" class="logo-section">
+        <div class="logo-icon">H</div>
+        <span class="brand-name">Highlands Coffee</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Menu</a>
+        <a href="admin.html" class="nav-link">Quản trị (Admin)</a>
+        <button class="cart-btn" onclick="toggleCartDrawer(true)">
+          🛒 Giỏ hàng
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Banner -->
+  <section class="hero-banner">
+    <h1>Highlands Coffee Order</h1>
+    <p>Thưởng thức Cà phê Phin đậm đà & Trà Sen Vàng trọn vị ngay tại nhà</p>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container">
+    <!-- Category Navigation -->
+    <div class="category-bar" id="categoryBar">
+      <!-- Categories loaded dynamically via JS -->
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="productGrid">
+      <!-- Products loaded dynamically via JS -->
+    </div>
+  </main>
+
+  <!-- Product Detail Modal -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title" id="modalProductName">Tên Sản Phẩm</span>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p id="modalProductDesc" style="color:var(--text-muted); font-size:14px; margin-bottom:16px;"></p>
+
+        <!-- Sizes Option -->
+        <div class="option-group">
+          <div class="option-title">Chọn Size</div>
+          <div class="option-list" id="modalSizes"></div>
+        </div>
+
+        <!-- Toppings Option -->
+        <div class="option-group">
+          <div class="option-title">Chọn Topping Món Thêm</div>
+          <div class="option-list" id="modalToppings"></div>
+        </div>
+
+        <!-- Quantity Control -->
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(-1)">-</button>
+          <span class="qty-val" id="modalQty">1</span>
+          <button class="qty-btn" onclick="changeQty(1)">+</button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-confirm-add" id="modalBtnAdd" onclick="confirmAddToCart()">
+          <span id="modalBtnAddText">Thêm vào giỏ hàng - 0đ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <span style="font-weight:bold; font-size:18px;">Giỏ Hàng Của Bạn</span>
+      <button class="modal-close" onclick="toggleCartDrawer(false)">&times;</button>
+    </div>
+
+    <div class="cart-body" id="cartItemsList">
+      <!-- Cart items loaded dynamically -->
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-total-row">
+        <span>Tổng tiền:</span>
+        <span id="cartTotalAmount" style="color:var(--primary-red);">0đ</span>
+      </div>
+      <a href="checkout.html" style="text-decoration:none;">
+        <button class="btn-submit">Tiến Hành Đặt Hàng</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2026 Highlands Coffee Clone Project - Bài tập môn TTCSN</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
