@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderCheckoutSummary() {
   const container = document.getElementById('checkoutItems');
   const totalEl = document.getElementById('checkoutTotal');
+  const subtotalEl = document.getElementById('checkoutSubtotal');
+  const shippingEl = document.getElementById('checkoutShipping');
   const cart = CartManager.getCart();
 
   if (!container) return;
@@ -13,6 +15,8 @@ function renderCheckoutSummary() {
   if (cart.length === 0) {
     container.innerHTML = '<p style="color:red">Giỏ hàng trống! Hãy chọn món trước khi đặt hàng.</p>';
     if (totalEl) totalEl.textContent = formatVND(0);
+    if (subtotalEl) subtotalEl.textContent = formatVND(0);
+    if (shippingEl) shippingEl.textContent = formatVND(0);
     return;
   }
 
@@ -31,7 +35,11 @@ function renderCheckoutSummary() {
   });
 
   container.innerHTML = html;
-  if (totalEl) totalEl.textContent = formatVND(CartManager.getTotal());
+  const subtotal = CartManager.getTotal();
+  const shipping = subtotal >= 200000 ? 0 : 15000;
+  if (subtotalEl) subtotalEl.textContent = formatVND(subtotal);
+  if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Miễn phí' : formatVND(shipping);
+  if (totalEl) totalEl.textContent = formatVND(subtotal + shipping);
 }
 
 function setupCheckoutForm() {

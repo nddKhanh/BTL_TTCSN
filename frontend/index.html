@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Highlands Coffee - Đặt Hàng Trực Tuyến</title>
+  <title>Mộc Nhiên Coffee - Đặt Hàng Trực Tuyến</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/modal.css">
 </head>
@@ -14,7 +14,7 @@
     <div class="header-container">
       <a href="index.html" class="logo-section">
         <div class="logo-icon">H</div>
-        <span class="brand-name">Highlands Coffee</span>
+        <span class="brand-name">Mộc Nhiên Coffee</span>
       </a>
 
       <nav class="nav-links">
@@ -30,12 +30,18 @@
 
   <!-- Hero Banner -->
   <section class="hero-banner">
-    <h1>Highlands Coffee Order</h1>
-    <p>Thưởng thức Cà phê Phin đậm đà & Trà Sen Vàng trọn vị ngay tại nhà</p>
+    <h1>Mộc Nhiên Coffee</h1>
+    <p>Thưởng thức cà phê và trà pha chế tươi mỗi ngày, giao tận nơi.</p>
   </section>
 
   <!-- Main Content -->
   <main class="container">
+    <form class="product-search" onsubmit="searchProducts(event)">
+      <label class="sr-only" for="productSearch">Tìm sản phẩm</label>
+      <input id="productSearch" type="search" placeholder="Tìm đồ uống, bánh..." autocomplete="off">
+      <button type="submit">Tìm kiếm</button>
+    </form>
+
     <!-- Category Navigation -->
     <div class="category-bar" id="categoryBar">
       <!-- Categories loaded dynamically via JS -->
@@ -110,7 +116,7 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <p>© 2026 Highlands Coffee Clone Project - Bài tập môn TTCSN</p>
+    <p>© 2026 Mộc Nhiên Coffee Project - Bài tập môn TTCSN</p>
   </footer>
 
   <script src="js/api.js"></script>

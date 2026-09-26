@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thanh Toán - Highlands Coffee Order</title>
+  <title>Thanh Toán - Mộc Nhiên Coffee</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
     <div class="header-container">
       <a href="index.html" class="logo-section">
         <div class="logo-icon">H</div>
-        <span class="brand-name">Highlands Coffee</span>
+        <span class="brand-name">Mộc Nhiên Coffee</span>
       </a>
 
       <nav class="nav-links">
@@ -58,7 +58,9 @@
         <h3 style="margin-bottom:16px;">2. Tóm tắt đơn hàng</h3>
         <div id="checkoutItems"></div>
 
-        <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:bold; margin-top:20px; padding-top:12px; border-top:2px solid var(--primary-red)">
+        <div class="checkout-total-row"><span>Tạm tính:</span><span id="checkoutSubtotal">0đ</span></div>
+        <div class="checkout-total-row"><span>Phí giao hàng:</span><span id="checkoutShipping">0đ</span></div>
+        <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:bold; margin-top:12px; padding-top:12px; border-top:2px solid var(--primary-red)">
           <span>Tổng thành tiền:</span>
           <span id="checkoutTotal" style="color:var(--primary-red);">0đ</span>
         </div>

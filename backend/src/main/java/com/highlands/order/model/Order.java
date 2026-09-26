@@ -36,10 +36,17 @@ public class Order {
     private String note;
 
     @Column(nullable = false)
-    private BigDecimal totalAmount;
+    private BigDecimal subtotal;
 
     @Column(nullable = false)
-    private String status; // PENDING, CONFIRMED, DELIVERING, COMPLETED, CANCELLED
+    private BigDecimal shippingFee;
+
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private OrderStatus status;
 
     private LocalDateTime createdAt;
 
@@ -53,7 +60,7 @@ public class Order {
             createdAt = LocalDateTime.now();
         }
         if (status == null) {
-            status = "PENDING";
+            status = OrderStatus.PENDING;
         }
     }
 }

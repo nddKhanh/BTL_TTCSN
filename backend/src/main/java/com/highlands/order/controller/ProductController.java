@@ -18,8 +18,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<List<Product>> getProducts(@RequestParam(required = false) Long categoryId) {
-        return ApiResponse.success(productService.getProducts(categoryId));
+    public ApiResponse<List<Product>> getProducts(@RequestParam(required = false) Long categoryId,
+                                                  @RequestParam(required = false) String keyword) {
+        return ApiResponse.success(productService.getProducts(categoryId, keyword));
     }
 
     @GetMapping("/{id}")

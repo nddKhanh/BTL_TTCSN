@@ -37,10 +37,10 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         // 1. Tạo Danh mục
-        Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê").imageUrl("https://order.highlandscoffee.com.vn/v2.1/img/category/coffee.png").build());
-        Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà").imageUrl("https://order.highlandscoffee.com.vn/v2.1/img/category/tea.png").build());
-        Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Freeze").imageUrl("https://order.highlandscoffee.com.vn/v2.1/img/category/freeze.png").build());
-        Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh").imageUrl("https://order.highlandscoffee.com.vn/v2.1/img/category/cake.png").build());
+        Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê").imageUrl("https://placehold.co/480x320?text=Ca+Phe").build());
+        Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà").imageUrl("https://placehold.co/480x320?text=Tra").build());
+        Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay").imageUrl("https://placehold.co/480x320?text=Da+Xay").build());
+        Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh").imageUrl("https://placehold.co/480x320?text=Banh").build());
 
         // 2. Tạo Topping
         toppingRepository.saveAll(List.of(
@@ -55,9 +55,9 @@ public class DataSeeder implements CommandLineRunner {
         Product phinSua = Product.builder()
                 .category(coffee)
                 .name("Phin Sữa Đá")
-                .description("Hương vị cà phê đậm đà kết hợp cùng sữa đặc ngọt ngào truyền thống của Highlands Coffee.")
+                .description("Cà phê rang đậm kết hợp sữa đặc, phù hợp cho một buổi sáng nhiều năng lượng.")
                 .basePrice(BigDecimal.valueOf(29000))
-                .imageUrl("https://vtcpay.vn/blog/wp-content/uploads/2023/04/phin-sua-da-highlands.jpg")
+                .imageUrl("https://placehold.co/600x450?text=Phin+Sua+Da")
                 .isActive(true)
                 .build();
         phinSua.getSizes().add(ProductSize.builder().product(phinSua).sizeName("S").extraPrice(BigDecimal.ZERO).build());
@@ -71,7 +71,7 @@ public class DataSeeder implements CommandLineRunner {
                 .name("Phin Đen Đá")
                 .description("Cà phê Phin nguyên chất đậm đà, chuẩn gu người Việt.")
                 .basePrice(BigDecimal.valueOf(29000))
-                .imageUrl("https://highlandscoffee.com.vn/vnt_upload/product/04_2023/thumbs/270_crop_PHIN_DEN_DA.jpg")
+                .imageUrl("https://placehold.co/600x450?text=Phin+Den+Da")
                 .isActive(true)
                 .build();
         phinDen.getSizes().add(ProductSize.builder().product(phinDen).sizeName("S").extraPrice(BigDecimal.ZERO).build());
@@ -85,7 +85,7 @@ public class DataSeeder implements CommandLineRunner {
                 .name("Trà Sen Vàng")
                 .description("Sự kết hợp hoàn hảo giữa hương trà thanh mát, hạt sen bùi ngậy và lớp củ năng giòn ngọt.")
                 .basePrice(BigDecimal.valueOf(45000))
-                .imageUrl("https://highlandscoffee.com.vn/vnt_upload/product/04_2023/thumbs/270_crop_TRA_SEN_VANG_OT.jpg")
+                .imageUrl("https://placehold.co/600x450?text=Tra+Sen+Vang")
                 .isActive(true)
                 .build();
         traSen.getSizes().add(ProductSize.builder().product(traSen).sizeName("S").extraPrice(BigDecimal.ZERO).build());
@@ -99,7 +99,7 @@ public class DataSeeder implements CommandLineRunner {
                 .name("Freeze Trà Xanh")
                 .description("Thức uống đá xay thơm lừng vị matcha Nhật Bản kết hợp cùng thạch trà xanh giòn dai.")
                 .basePrice(BigDecimal.valueOf(55000))
-                .imageUrl("https://highlandscoffee.com.vn/vnt_upload/product/04_2023/thumbs/270_crop_FREEZE_TRA_XANH.jpg")
+                .imageUrl("https://placehold.co/600x450?text=Da+Xay+Tra+Xanh")
                 .isActive(true)
                 .build();
         freezeMatcha.getSizes().add(ProductSize.builder().product(freezeMatcha).sizeName("S").extraPrice(BigDecimal.ZERO).build());
@@ -113,7 +113,7 @@ public class DataSeeder implements CommandLineRunner {
                 .name("Bánh Mì Que Pate")
                 .description("Bánh mì giòn rụm với nhân pate béo ngậy chuẩn vị.")
                 .basePrice(BigDecimal.valueOf(19000))
-                .imageUrl("https://highlandscoffee.com.vn/vnt_upload/product/04_2023/thumbs/270_crop_BMQ_PATE.jpg")
+                .imageUrl("https://placehold.co/600x450?text=Banh+Mi+Pate")
                 .isActive(true)
                 .build();
         banhMi.getSizes().add(ProductSize.builder().product(banhMi).sizeName("Tiêu chuẩn").extraPrice(BigDecimal.ZERO).build());

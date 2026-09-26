@@ -1,6 +1,7 @@
 let currentProduct = null;
 let modalQuantity = 1;
 let allToppings = [];
+let selectedCategoryId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
@@ -39,18 +40,28 @@ async function loadToppings() {
 async function filterCategory(categoryId, btn) {
   document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  await loadProducts(categoryId);
+  selectedCategoryId = categoryId;
+  await loadProducts();
+}
+
+function searchProducts(event) {
+  event.preventDefault();
+  loadProducts();
 }
 
 // Load Products
-async function loadProducts(categoryId = null) {
+async function loadProducts() {
   const container = document.getElementById('productGrid');
   if (!container) return;
 
   container.innerHTML = '<p>Đang tải sản phẩm...</p>';
 
   try {
-    const endpoint = categoryId ? `/products?categoryId=${categoryId}` : '/products';
+    const keyword = document.getElementById('productSearch')?.value.trim() || '';
+    const query = new URLSearchParams();
+    if (selectedCategoryId) query.set('categoryId', selectedCategoryId);
+    if (keyword) query.set('keyword', keyword);
+    const endpoint = `/products${query.size ? `?${query}` : ''}`;
     const products = await fetchAPI(endpoint);
 
     if (!products || products.length === 0) {
@@ -62,7 +73,7 @@ async function loadProducts(categoryId = null) {
     products.forEach(p => {
       html += `
         <div class="product-card">
-          <img src="${p.imageUrl || 'https://via.placeholder.com/260x200?text=Highlands+Coffee'}" class="product-img" alt="${p.name}">
+          <img src="${p.imageUrl || 'https://placehold.co/260x200?text=Moc+Nhien+Coffee'}" class="product-img" alt="${p.name}">
           <div class="product-info">
             <h3 class="product-name">${p.name}</h3>
             <p class="product-desc">${p.description || ''}</p>

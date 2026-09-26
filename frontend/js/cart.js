@@ -1,4 +1,4 @@
-const CART_KEY = 'highlands_cart';
+const CART_KEY = 'moc_nhien_cart';
 
 const CartManager = {
   getCart() {

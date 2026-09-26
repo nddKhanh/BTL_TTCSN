@@ -16,5 +16,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryIdAndIsActiveTrue(Long categoryId);
 
     @EntityGraph(attributePaths = {"sizes", "category"})
+    List<Product> findByNameContainingIgnoreCaseAndIsActiveTrue(String keyword);
+
+    @EntityGraph(attributePaths = {"sizes", "category"})
+    List<Product> findByCategoryIdAndNameContainingIgnoreCaseAndIsActiveTrue(Long categoryId, String keyword);
+
+    @EntityGraph(attributePaths = {"sizes", "category"})
     Optional<Product> findByIdAndIsActiveTrue(Long id);
+
+    boolean existsByCategoryId(Long categoryId);
 }
