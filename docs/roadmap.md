@@ -9,9 +9,9 @@ Tài liệu mô tả chi tiết các phân hệ chức năng, các bước tri�
 | Phân hệ | Nội dung chính | Trạng thái |
 | :--- | :--- | :--- |
 | **1. Khung cơ bản & Storefront** | Menu, Modal chọn món, Giỏ hàng, Đặt hàng COD | `Hoàn thành` |
-| **2. Xác thực & Phân quyền (Auth)** | Đăng ký, Đăng nhập, Phân quyền Khách / Admin | `Đang thực hiện` |
+| **2. Xác thực & Phân quyền (Auth)** | Đăng ký, Đăng nhập, Phân quyền Khách / Admin | `Hoàn thành` |
 | **3. Quản lý Sản phẩm (Admin)** | CRUD Danh mục, Món ăn, Size, Topping | `Chưa bắt đầu` |
-| **4. Xử lý Đơn hàng & Lịch sử** | Luồng xử lý đơn, Xem lịch sử đơn cá nhân | `Chưa bắt đầu` |
+| **4. Xử lý Đơn hàng & Lịch sử** | Luồng xử lý đơn, Xem lịch sử đơn cá nhân | `Hoàn thành` |
 | **5. Thống kê & Báo cáo Admin** | Doanh thu, Đếm đơn theo trạng thái | `Chưa bắt đầu` |
 | **6. Tinh chỉnh UI/UX & Responsive** | Tìm kiếm, Lọc giá, Toast thông báo, Mobile UI | `Chưa bắt đầu` |
 | **7. Kiểm thử & Tài liệu Báo cáo** | Test API, Viết báo cáo TTCSN | `Chưa bắt đầu` |
@@ -34,22 +34,22 @@ Tài liệu mô tả chi tiết các phân hệ chức năng, các bước tri�
 ### Module 2: Xác thực & Phân quyền (Authentication & Authorization)
 
 #### 1. Backend (Spring Security / JWT)
-- [ ] Thiết kế Entity `User` (`id`, `username`, `password_hash`, `full_name`, `phone`, `role` [ROLE_CUSTOMER, ROLE_ADMIN], `created_at`).
-- [ ] API Đăng ký tài khoản: `POST /api/v1/auth/register` (Validate trùng username/phone, mã hóa password bằng BCrypt).
-- [ ] API Đăng nhập: `POST /api/v1/auth/login` (Xác thực và trả về Token + Thông tin User).
-- [ ] API Lấy thông tin cá nhân: `GET /api/v1/auth/me`.
-- [ ] Phân quyền bảo vệ Endpoint:
+- [x] Thiết kế Entity `AppUser` (`id`, `email`, `password_hash`, `full_name`, `phone`, `role` [ROLE_CUSTOMER, ROLE_ADMIN], `created_at`).
+- [x] API Đăng ký tài khoản: `POST /api/v1/auth/register` (Validate trùng email, mã hóa password bằng BCrypt).
+- [x] API Đăng nhập: `POST /api/v1/auth/login` (Xác thực và trả về Token + Thông tin User).
+- [x] API Lấy thông tin cá nhân: `GET /api/v1/users/me`.
+- [x] Phân quyền bảo vệ Endpoint:
   - **Public**: Xem menu, tìm kiếm sản phẩm, đặt hàng không cần tài khoản, xem trạng thái đơn qua mã.
   - **ROLE_CUSTOMER**: Xem lịch sử các đơn hàng đã đặt của tài khoản, cập nhật thông tin cá nhân.
   - **ROLE_ADMIN**: Toàn quyền thêm/sửa/xóa menu, quản lý đơn hàng, xem thống kê.
 
 #### 2. Frontend
-- [ ] Tạo trang Đăng nhập (`login.html`) và Đăng ký (`register.html`).
-- [ ] Xử lý lưu Token và thông tin User vào `localStorage`.
-- [ ] Cập nhật Header:
+- [x] Tạo trang Đăng nhập (`login.html`) và Đăng ký (`register.html`).
+- [x] Xử lý lưu Token và thông tin User vào `localStorage`.
+- [x] Cập nhật Header:
   - Chưa đăng nhập: Hiện nút **Đăng nhập / Đăng ký**.
-  - Đã đăng nhập: Hiện **Tên người dùng**, menu dropdown **Lịch sử đơn**, **Đăng xuất**.
-- [ ] Guard bảo vệ trang `admin.html`: Kiểm tra quyền `ROLE_ADMIN`, nếu chưa đăng nhập hoặc không phải admin thì chuyển hướng về `login.html`.
+  - Đã đăng nhập: Hiện **Tên người dùng**, nút **Đơn của tôi**, **Đăng xuất**.
+- [x] Guard bảo vệ trang `admin.html`: Kiểm tra quyền `ROLE_ADMIN`, nếu chưa đăng nhập hoặc không phải admin thì chuyển hướng về `login.html`.
 
 ---
 
@@ -74,8 +74,8 @@ Tài liệu mô tả chi tiết các phân hệ chức năng, các bước tri�
 ### Module 4: Xử lý Đơn hàng & Quản lý Lịch sử Đơn
 
 #### 1. Khách hàng
-- [ ] Tích hợp `userId` vào đơn hàng khi người dùng đã đăng nhập đặt món.
-- [ ] Trang **Lịch sử đơn hàng** (`my-orders.html`): Xem danh sách các đơn đã đặt của tài khoản kèm trạng thái chi tiết.
+- [x] Tích hợp `userId` vào đơn hàng khi người dùng đã đăng nhập đặt món.
+- [x] Trang **Lịch sử đơn hàng** (`my-orders.html`): Xem danh sách các đơn đã đặt của tài khoản kèm trạng thái chi tiết.
 - [ ] Cho phép khách hàng Hủy đơn khi đơn vẫn ở trạng thái `PENDING` (Chờ xác nhận).
 
 #### 2. Quản trị viên (Admin)

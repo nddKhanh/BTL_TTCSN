@@ -38,8 +38,41 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));
     }
 
-    @Transactional public Product create(ProductRequest request) { return productRepository.save(Product.builder().category(category(request.categoryId())).name(request.name().trim()).description(request.description()).basePrice(request.basePrice()).imageUrl(request.imageUrl()).isActive(request.isActive()).build()); }
-    @Transactional public Product update(Long id, ProductRequest request) { Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id)); product.setCategory(category(request.categoryId())); product.setName(request.name().trim()); product.setDescription(request.description()); product.setBasePrice(request.basePrice()); product.setImageUrl(request.imageUrl()); product.setIsActive(request.isActive()); return product; }
-    @Transactional public void hide(Long id) { Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id)); product.setIsActive(false); }
-    private Category category(Long id) { return categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục có ID: " + id)); }
+    @Transactional
+    public Product create(ProductRequest request) {
+        Product product = Product.builder()
+                .category(category(request.categoryId()))
+                .name(request.name().trim())
+                .description(request.description())
+                .basePrice(request.basePrice())
+                .imageUrl(request.imageUrl())
+                .isActive(request.isActive())
+                .build();
+        return productRepository.save(product);
+    }
+
+    @Transactional
+    public Product update(Long id, ProductRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));
+        product.setCategory(category(request.categoryId()));
+        product.setName(request.name().trim());
+        product.setDescription(request.description());
+        product.setBasePrice(request.basePrice());
+        product.setImageUrl(request.imageUrl());
+        product.setIsActive(request.isActive());
+        return product;
+    }
+
+    @Transactional
+    public void hide(Long id) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));
+        product.setIsActive(false);
+    }
+
+    private Category category(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục có ID: " + id));
+    }
 }

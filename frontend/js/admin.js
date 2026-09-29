@@ -1,4 +1,10 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  const user = getAuthUser();
+  if (!user || user.role !== 'ADMIN') {
+    alert('Quyền truy cập bị từ chối! Bạn cần đăng nhập tài khoản ADMIN.');
+    window.location.href = 'login.html';
+    return;
+  }
   await loadAdminOrders();
 });
 
@@ -54,7 +60,7 @@ async function loadAdminOrders() {
     html += '</tbody></table>';
     container.innerHTML = html;
   } catch (err) {
-    container.innerHTML = '<p style="color:red">Lỗi nạp danh sách đơn hàng cho Admin!</p>';
+    container.innerHTML = `<p style="color:red">Lỗi nạp danh sách đơn hàng: ${err.message || 'Không thể truy cập!'}</p>`;
   }
 }
 
@@ -71,19 +77,13 @@ function getStatusBadge(status) {
 
 async function updateOrderStatus(orderId, newStatus) {
   try {
-    const res = await fetch(`http://localhost:8080/api/v1/orders/admin/${orderId}/status`, {
+    await fetchAPI(`/orders/admin/${orderId}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus })
     });
-    const result = await res.json();
-    if (result.success) {
-      alert('Cập nhật trạng thái thành công!');
-      await loadAdminOrders();
-    } else {
-      alert('Lỗi: ' + result.message);
-    }
+    alert('Cập nhật trạng thái thành công!');
+    await loadAdminOrders();
   } catch (err) {
-    alert('Không thể cập nhật trạng thái đơn!');
+    alert('Không thể cập nhật trạng thái đơn: ' + (err.message || 'Lỗi hệ thống'));
   }
 }

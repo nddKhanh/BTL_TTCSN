@@ -8,6 +8,9 @@ import com.highlands.order.model.*;
 import com.highlands.order.repository.OrderRepository;
 import com.highlands.order.repository.ProductRepository;
 import com.highlands.order.repository.ToppingRepository;
+import com.highlands.order.repository.UserRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,14 +29,18 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final ToppingRepository toppingRepository;
+    private final UserRepository userRepository;
     private final OrderPricingProperties pricing;
 
     public OrderService(OrderRepository orderRepository,
                         ProductRepository productRepository,
-                        ToppingRepository toppingRepository, OrderPricingProperties pricing) {
+                        ToppingRepository toppingRepository,
+                        UserRepository userRepository,
+                        OrderPricingProperties pricing) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.toppingRepository = toppingRepository;
+        this.userRepository = userRepository;
         this.pricing = pricing;
     }
 
@@ -106,12 +113,23 @@ public class OrderService {
         order.setSubtotal(grandTotal);
         order.setShippingFee(shippingFee);
         order.setTotalAmount(grandTotal.add(shippingFee));
+
+        // Nếu người dùng đã đăng nhập, gắn tài khoản vào đơn hàng
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
+            userRepository.findByEmailIgnoreCase(auth.getName()).ifPresent(order::setUser);
+        }
+
         return orderRepository.save(order);
     }
 
     public Order getOrderByCode(String orderCode) {
         return orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng mã: " + orderCode));
+    }
+
+    public List<Order> getMyOrders(String email) {
+        return orderRepository.findByUserEmailOrderByCreatedAtDesc(email);
     }
 
     public List<Order> getAllOrders() {

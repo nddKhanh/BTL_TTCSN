@@ -3,6 +3,8 @@
 > **Cách dùng:** Khi hoàn tất một việc, đổi `- [ ]` thành `- [x]`, đồng thời ghi ngày/ghi chú ngắn ngay dưới mục đó nếu cần. Phiên làm việc sau phải đọc phần **Tiến độ hiện tại** và chỉ làm các mục chưa đánh dấu.
 >
 > **Phạm vi:** Lấy cảm hứng từ luồng đặt hàng cà phê, nhưng dùng tên, logo, hình ảnh và nội dung riêng; không sao chép nhận diện hay dữ liệu của Highlands Coffee.
+>
+> **Quy tắc code:** Ưu tiên code dễ đọc thay vì rút ngắn số dòng. Mỗi annotation, hàm, nhánh điều kiện, thao tác gán và thuộc tính builder cần trình bày trên dòng riêng khi việc gộp chúng làm khó đọc. Không viết nhiều câu lệnh Java trên cùng một dòng; giữ tên biến/hàm rõ nghĩa và format nhất quán.
 
 ## Tiến độ hiện tại
 

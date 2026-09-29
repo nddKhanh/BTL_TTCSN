@@ -33,6 +33,14 @@ public class OrderController {
         return ApiResponse.success(orderService.getOrderByCode(orderCode));
     }
 
+    @GetMapping("/my-orders")
+    public ApiResponse<List<Order>> getMyOrders(@org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+        if (user == null) {
+            throw new IllegalArgumentException("Vui lòng đăng nhập để xem lịch sử đơn hàng");
+        }
+        return ApiResponse.success(orderService.getMyOrders(user.getUsername()));
+    }
+
     @GetMapping("/admin/all")
     public ApiResponse<List<Order>> getAllOrders() {
         return ApiResponse.success(orderService.getAllOrders());

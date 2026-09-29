@@ -26,8 +26,35 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
-    @Transactional public Category create(CategoryRequest request) { return categoryRepository.save(Category.builder().code(request.code().trim().toUpperCase()).name(request.name().trim()).imageUrl(request.imageUrl()).build()); }
-    @Transactional public Category update(Long id, CategoryRequest request) { Category category = find(id); category.setCode(request.code().trim().toUpperCase()); category.setName(request.name().trim()); category.setImageUrl(request.imageUrl()); return category; }
-    @Transactional public void delete(Long id) { if (productRepository.existsByCategoryId(id)) throw new IllegalArgumentException("Không thể xóa danh mục còn sản phẩm"); categoryRepository.delete(find(id)); }
-    private Category find(Long id) { return categoryRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục có ID: " + id)); }
+    @Transactional
+    public Category create(CategoryRequest request) {
+        Category category = Category.builder()
+                .code(request.code().trim().toUpperCase())
+                .name(request.name().trim())
+                .imageUrl(request.imageUrl())
+                .build();
+        return categoryRepository.save(category);
+    }
+
+    @Transactional
+    public Category update(Long id, CategoryRequest request) {
+        Category category = find(id);
+        category.setCode(request.code().trim().toUpperCase());
+        category.setName(request.name().trim());
+        category.setImageUrl(request.imageUrl());
+        return category;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        if (productRepository.existsByCategoryId(id)) {
+            throw new IllegalArgumentException("Không thể xóa danh mục còn sản phẩm");
+        }
+        categoryRepository.delete(find(id));
+    }
+
+    private Category find(Long id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục có ID: " + id));
+    }
 }

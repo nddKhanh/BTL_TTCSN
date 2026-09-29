@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đăng Ký - Mộc Nhiên Coffee</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .auth-card {
+      max-width: 460px;
+      margin: 40px auto;
+      background: #fff;
+      padding: 36px 30px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+    }
+    .auth-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-red);
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .auth-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+      display: none;
+      font-size: 14px;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .auth-footer a {
+      color: var(--primary-red);
+      font-weight: 600;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-container">
+      <a href="index.html" class="logo-section">
+        <div class="logo-icon">H</div>
+        <span class="brand-name">Mộc Nhiên Coffee</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Menu</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="auth-card">
+      <h2 class="auth-title">Đăng Ký Tài Khoản Mới</h2>
+      
+      <div id="authError" class="auth-error"></div>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="fullName">Họ và tên</label>
+          <input type="text" id="fullName" placeholder="Nguyễn Văn A" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="example@mocnhien.vn" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Số điện thoại</label>
+          <input type="tel" id="phone" placeholder="0901234567" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Mật khẩu (ít nhất 8 ký tự)</label>
+          <input type="password" id="password" minlength="8" placeholder="Tạo mật khẩu" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Đăng Ký</button>
+      </form>
+
+      <div class="auth-footer">
+        Đã có tài khoản? <a href="login.html">Đăng nhập</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2026 Mộc Nhiên Coffee Project - Bài tập môn TTCSN</p>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorDiv = document.getElementById('authError');
+      errorDiv.style.display = 'none';
+
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fullName, email, phone, password })
+        });
+        const result = await response.json();
+
+        if (result.success && result.data) {
+          setAuth(result.data.token, result.data.user);
+          alert(`Đăng ký thành công! Chào mừng ${result.data.user.fullName}`);
+          window.location.href = 'index.html';
+        } else {
+          errorDiv.textContent = result.message || 'Đăng ký thất bại!';
+          errorDiv.style.display = 'block';
+        }
+      } catch (err) {
+        errorDiv.textContent = err.message || 'Không thể kết nối đến máy chủ!';
+        errorDiv.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>
