@@ -20,4 +20,27 @@ public class ToppingService {
     public List<Topping> getAllToppings() {
         return toppingRepository.findAll();
     }
+
+    @Transactional
+    public Topping create(com.highlands.order.dto.ToppingRequest request) {
+        Topping topping = Topping.builder()
+                .name(request.name().trim())
+                .price(request.price())
+                .build();
+        return toppingRepository.save(topping);
+    }
+
+    @Transactional
+    public Topping update(Long id, com.highlands.order.dto.ToppingRequest request) {
+        Topping topping = toppingRepository.findById(id)
+                .orElseThrow(() -> new com.highlands.order.exception.ResourceNotFoundException("Không tìm thấy topping ID: " + id));
+        topping.setName(request.name().trim());
+        topping.setPrice(request.price());
+        return topping;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        toppingRepository.deleteById(id);
+    }
 }

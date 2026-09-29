@@ -10,7 +10,7 @@ Tài liệu mô tả chi tiết các phân hệ chức năng, các bước tri�
 | :--- | :--- | :--- |
 | **1. Khung cơ bản & Storefront** | Menu, Modal chọn món, Giỏ hàng, Đặt hàng COD | `Hoàn thành` |
 | **2. Xác thực & Phân quyền (Auth)** | Đăng ký, Đăng nhập, Phân quyền Khách / Admin | `Hoàn thành` |
-| **3. Quản lý Sản phẩm (Admin)** | CRUD Danh mục, Món ăn, Size, Topping | `Chưa bắt đầu` |
+| **3. Quản lý Sản phẩm (Admin)** | CRUD Danh mục, Món ăn, Size, Topping | `Hoàn thành` |
 | **4. Xử lý Đơn hàng & Lịch sử** | Luồng xử lý đơn, Xem lịch sử đơn cá nhân | `Hoàn thành` |
 | **5. Thống kê & Báo cáo Admin** | Doanh thu, Đếm đơn theo trạng thái | `Chưa bắt đầu` |
 | **6. Tinh chỉnh UI/UX & Responsive** | Tìm kiếm, Lọc giá, Toast thông báo, Mobile UI | `Chưa bắt đầu` |
@@ -56,18 +56,18 @@ Tài liệu mô tả chi tiết các phân hệ chức năng, các bước tri�
 ### Module 3: Quản lý Danh mục & Sản phẩm (Admin CMS)
 
 #### 1. Backend
-- [ ] `POST /api/v1/admin/products`: Thêm món mới kèm ảnh, giá gốc, danh mục và các sizes.
-- [ ] `PUT /api/v1/admin/products/{id}`: Sửa thông tin món, giá và cấu hình size/topping.
-- [ ] `DELETE /api/v1/admin/products/{id}`: Đổi trạng thái `is_active = false` (ẩn món thay vì xóa cứng).
-- [ ] `POST / PUT / DELETE /api/v1/admin/categories`: Thêm / sửa / xóa danh mục món.
-- [ ] `POST / PUT / DELETE /api/v1/admin/toppings`: Thêm / sửa giá topping.
+- [x] `POST /api/v1/admin/products`: Thêm món mới kèm ảnh, giá gốc, danh mục và các sizes.
+- [x] `PUT /api/v1/admin/products/{id}`: Sửa thông tin món, giá và cấu hình size/topping.
+- [x] `DELETE /api/v1/admin/products/{id}`: Đổi trạng thái `is_active = false` (ẩn món thay vì xóa cứng).
+- [x] `POST / PUT / DELETE /api/v1/admin/categories`: Thêm / sửa / xóa danh mục món.
+- [x] `POST / PUT / DELETE /api/v1/admin/toppings`: Thêm / sửa / xóa giá topping.
 
 #### 2. Frontend (`admin.html`)
-- [ ] Thêm Tab **Quản lý Thực đơn (Products)**:
+- [x] Thêm Tab **Quản lý Thực đơn (Products)**:
   - Bảng danh sách món ăn, danh mục, trạng thái (Đang bán / Tạm ẩn).
-  - Modal Form thêm món mới (Nhập tên, chọn danh mục, giá, URL ảnh, chọn sizes hỗ trợ).
+  - Modal Form thêm món mới (Nhập tên, chọn danh mục, giá, URL ảnh, mô tả, hiển thị).
   - Nút sửa món và nút bật/tắt trạng thái hiển thị.
-- [ ] Thêm Tab **Quản lý Topping & Danh mục**: Thêm nhanh topping mới và sửa giá.
+- [x] Thêm Tab **Quản lý Topping & Danh mục**: Thêm nhanh topping mới và sửa giá.
 
 ---
 

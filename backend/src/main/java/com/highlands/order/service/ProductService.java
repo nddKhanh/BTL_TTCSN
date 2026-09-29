@@ -33,6 +33,10 @@ public class ProductService {
         return productRepository.findByIsActiveTrue();
     }
 
+    public List<Product> getAllProductsAdmin() {
+        return productRepository.findAllByOrderByIdDesc();
+    }
+
     public Product getProductById(Long id) {
         return productRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));

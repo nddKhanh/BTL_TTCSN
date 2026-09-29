@@ -14,6 +14,11 @@ public class AdminProductController {
 
     public AdminProductController(ProductService service) {
         this.service = service; }
+    @GetMapping
+    public ApiResponse<java.util.List<Product>> getAll() {
+        return ApiResponse.success(service.getAllProductsAdmin());
+    }
+
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<Product> create(
             @Valid @RequestBody ProductRequest request
