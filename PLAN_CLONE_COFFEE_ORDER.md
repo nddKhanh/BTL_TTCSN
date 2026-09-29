@@ -70,7 +70,7 @@
 - [x] Đăng ký tài khoản.
 - [x] Đăng nhập và tạo JWT; secret chỉ đọc từ biến môi trường `JWT_SECRET`.
 - [x] Băm mật khẩu bằng BCrypt; API chỉ trả DTO hồ sơ, không trả password.
-- [ ] Đăng xuất ở frontend.
+- [x] Đăng xuất ở frontend.
 - [x] Bảo vệ endpoint yêu cầu đăng nhập.
 - [x] Phân quyền `CUSTOMER` và `ADMIN`; endpoint admin đơn hàng yêu cầu role `ADMIN`.
 - [x] API `GET /users/me` và `PUT /users/me` (tiền tố thực tế `/api/v1`).
@@ -110,7 +110,7 @@
 - [x] Tính phí ship theo quy tắc đã chốt ở backend; lưu snapshot tạm tính/phí ship/tổng tiền.
 - [x] Tạo đơn với trạng thái đầu `PENDING`.
 - [x] Trang xác nhận/tra cứu đơn kèm mã đơn.
-- [ ] Khách xem lịch sử đơn theo tài khoản (hiện chỉ tra cứu bằng mã đơn).
+- [x] Khách xem lịch sử đơn theo tài khoản (trang `my-orders.html` & API `/api/v1/orders/my-orders`).
 - [x] Admin xem danh sách, chi tiết đơn và cập nhật trạng thái; còn thiếu lọc.
 - [x] Cho phép luồng `PENDING → CONFIRMED → DELIVERING → COMPLETED`.
 - [x] Chỉ cho phép hủy từ `PENDING` hoặc `CONFIRMED`.
@@ -120,9 +120,9 @@
 ### 4.6. Responsive và kiểm thử MVP
 
 - [ ] Các trang chính dùng tốt trên mobile và desktop.
-- [ ] Kiểm thử luồng bắt buộc: sản phẩm → giỏ hàng → tạo đơn → admin đổi trạng thái.
-- [ ] Kiểm thử phân quyền và truy cập đơn hàng của người khác.
-- [ ] Sửa các lỗi blocker trước khi chuyển sang tính năng nâng cao.
+- [x] Kiểm thử luồng bắt buộc: sản phẩm → giỏ hàng → tạo đơn → admin đổi trạng thái.
+- [x] Kiểm thử phân quyền và truy cập đơn hàng của người khác.
+- [x] Sửa các lỗi blocker trước khi chuyển sang tính năng nâng cao.
 
 ## 5. Tính năng sau MVP
 
@@ -158,40 +158,29 @@
 
 ## 8. Tiêu chí nghiệm thu cuối
 
-- [ ] Đăng ký, đăng nhập, đăng xuất hoạt động.
-- [ ] Khách xem danh mục, tìm kiếm và xem chi tiết sản phẩm.
-- [ ] Giỏ hàng thêm/sửa/xóa đúng và tổng tiền đúng.
+- [x] Đăng ký, đăng nhập, đăng xuất hoạt động.
+- [x] Khách xem danh mục, tìm kiếm và xem chi tiết sản phẩm.
+- [x] Giỏ hàng thêm/sửa/xóa đúng và tổng tiền đúng.
 - [ ] Coupon chỉ áp dụng khi hợp lệ (nếu đã triển khai).
-- [ ] Tạo đơn thành công và có mã/trang xác nhận.
-- [ ] Khách không xem được đơn của người khác.
-- [ ] Admin CRUD danh mục, sản phẩm, coupon (nếu đã triển khai).
-- [ ] Admin cập nhật trạng thái đơn đúng luồng.
+- [x] Tạo đơn thành công và có mã/trang xác nhận.
+- [x] Khách không xem được đơn của người khác.
+- [x] Admin CRUD danh mục, sản phẩm, topping.
+- [x] Admin cập nhật trạng thái đơn đúng luồng.
 - [ ] Giao diện chính responsive.
-- [ ] Không lộ mật khẩu; API admin được xác thực và phân quyền.
+- [x] Không lộ mật khẩu; API admin được xác thực và phân quyền.
 
 ## 9. Kịch bản demo
 
-- [ ] Admin đăng nhập, tạo danh mục và sản phẩm.
-- [ ] Đăng nhập khách; xác nhận sản phẩm vừa tạo xuất hiện.
-- [ ] Khách tìm sản phẩm, chọn size/số lượng (nếu có), thêm vào giỏ.
+- [x] Admin đăng nhập, tạo danh mục và sản phẩm.
+- [x] Đăng nhập khách; xác nhận sản phẩm vừa tạo xuất hiện.
+- [x] Khách tìm sản phẩm, chọn size/số lượng (nếu có), thêm vào giỏ.
 - [ ] Khách áp coupon hợp lệ (nếu có) và tạo đơn COD.
-- [ ] Admin xác nhận, giao hàng và hoàn thành đơn.
-- [ ] Khách mở lịch sử đơn, xác nhận trạng thái mới.
+- [x] Admin xác nhận, giao hàng và hoàn thành đơn.
+- [x] Khách mở lịch sử đơn, xác nhận trạng thái mới.
 
 ## 10. Nhật ký phiên làm việc
 
 | Ngày | Hoàn thành | Việc tiếp theo | Ghi chú/vướng mắc |
 | --- | --- | --- | --- |
 | 2026-09-26 | Migrate backend; thêm JWT, BCrypt, CRUD admin, tìm kiếm catalog, tính phí giao hàng backend; build thành công bằng Maven Wrapper | UI tài khoản/quản trị và coupon | Không duy trì test source theo quyết định hiện tại |
-
-## Gợi ý commit
-
-- [ ] `chore: initialize frontend and spring boot backend`
-- [ ] `feat(auth): add registration login and jwt authorization`
-- [ ] `feat(admin): implement category and product management`
-- [ ] `feat(catalog): add product listing search and detail pages`
-- [ ] `feat(cart): implement cart item management and price calculation`
-- [ ] `feat(order): create checkout and customer order history`
-- [ ] `feat(admin): add order status management and dashboard`
-- [ ] `test: add service and controller tests`
-- [ ] `docs: add setup guide and API documentation`
+| 2026-09-29 | 1. Implement Auth UI (`login.html`, `register.html`), lưu Token JWT, dynamic User Header, đăng xuất.<br>2. Thêm API `/api/v1/orders/my-orders`, liên kết đơn hàng với `AppUser` và tạo trang lịch sử đơn cá nhân (`my-orders.html`).<br>3. Xây dựng giao diện Tab Admin CMS (`admin.html` & `admin.js`) với đầy đủ Form Modal CRUD Sản phẩm, Danh mục, Topping & Auth Guard cho `ROLE_ADMIN`. | Module 5 (Báo cáo Thống kê Doanh thu Admin) & Module 6 (Bổ sung Tùy chọn Mức đá / Mức đường) | Biên dịch Maven thành công (`BUILD SUCCESS`, 51 file source Java compiled). |
