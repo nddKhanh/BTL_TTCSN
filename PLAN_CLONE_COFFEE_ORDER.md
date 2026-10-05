@@ -139,12 +139,12 @@
 
 ## 6. Dữ liệu mẫu
 
-- [ ] Tạo 5–7 danh mục.
-- [ ] Tạo 20–30 sản phẩm có ảnh, giá và mô tả ngắn.
-- [ ] Tạo 2–3 khách hàng và 1 admin.
-- [x] Tạo 2–3 coupon, ví dụ `WELCOME10`.
-- [ ] Tạo 8–10 đơn ở nhiều trạng thái.
-- [ ] Xác nhận seed data phù hợp demo và không dùng tài sản Highlands Coffee.
+- [x] Tạo 5–7 danh mục (6 danh mục: Cà phê, Trà, Đá xay, Sinh tố, Bánh, Combo).
+- [x] Tạo 20–30 sản phẩm có ảnh, giá và mô tả ngắn (22 sản phẩm có cấu hình Size & Topping).
+- [x] Tạo 2–3 khách hàng và 1 admin (`admin@mocnhien.vn` + 3 khách hàng test).
+- [x] Tạo 2–3 coupon (`WELCOME10`, `MOCNHIEN20K`, `FREESHIP15K`).
+- [x] Tạo 8–10 đơn ở nhiều trạng thái (9 đơn hàng ở các trạng thái PENDING, CONFIRMED, DELIVERING, COMPLETED, CANCELLED).
+- [x] Xác nhận seed data phù hợp demo và không dùng tài sản Highlands Coffee.
 
 ## 7. Kiểm thử, triển khai và bàn giao
 
@@ -184,5 +184,5 @@
 | --- | --- | --- | --- |
 | 2026-09-26 | Migrate backend; thêm JWT, BCrypt, CRUD admin, tìm kiếm catalog, tính phí giao hàng backend; build thành công bằng Maven Wrapper | UI tài khoản/quản trị và coupon | Không duy trì test source theo quyết định hiện tại |
 | 2026-09-29 | 1. Implement Auth UI (`login.html`, `register.html`), lưu Token JWT, dynamic User Header, đăng xuất.<br>2. Thêm API `/api/v1/orders/my-orders`, liên kết đơn hàng với `AppUser` và tạo trang lịch sử đơn cá nhân (`my-orders.html`).<br>3. Xây dựng giao diện Tab Admin CMS (`admin.html` & `admin.js`) với đầy đủ Form Modal CRUD Sản phẩm, Danh mục, Topping & Auth Guard cho `ROLE_ADMIN`. | Module 5 (Báo cáo Thống kê Doanh thu Admin) & Module 6 (Bổ sung Tùy chọn Mức đá / Mức đường) | Biên dịch Maven thành công (`BUILD SUCCESS`, 51 file source Java compiled). |
-| 2026-10-05 | 1. Implement Module 5 (Admin Dashboard / Stats): API `GET /api/v1/admin/dashboard` trả về tổng doanh thu đơn COMPLETED, tổng số đơn, sản phẩm, người dùng và danh sách đơn hàng gần đây; bổ sung Tab Thống Kê trên `admin.html`.<br>2. Implement Module 6 (Product Options): Bổ sung Mức đá (100%, 70%, 50%, Không đá), Mức đường (100%, 70%, 50%, Không đường) và Ghi chú món vào entity `OrderItem`, DTO `OrderItemRequest`, Modal Chi tiết sản phẩm (`index.html`), Giỏ hàng (`cart.js`, `main.js`), Checkout (`checkout.js`), Tra cứu đơn (`order-status.html`) và Lịch sử đơn (`my-orders.html`).<br>3. Implement Module Coupon System: Entity `Coupon`, Enum `CouponType` (`PERCENT`, `FIXED`), Repository, Service, Admin CRUD (`/api/v1/admin/coupons`), Customer Validation API (`POST /api/v1/coupons/validate`), áp mã giảm giá tại trang Checkout, trừ tiền tự động backend và seed dữ liệu mẫu (`WELCOME10`, `MOCNHIEN20K`). | Kiểm thử thủ công, bổ sung bộ lọc sắp xếp giá/mới nhất, chuẩn bị tài liệu bàn giao. | Maven Wrapper build thành công 100% (`BUILD SUCCESS`). Áp dụng triệt để nguyên tắc code sạch (Lazy Senior Dev mode) & format nhất quán. |
+| 2026-10-05 | 1. Implement Module 5 (Admin Dashboard / Stats): API `GET /api/v1/admin/dashboard` trả về tổng doanh thu đơn COMPLETED, tổng số đơn, sản phẩm, người dùng và danh sách đơn hàng gần đây; bổ sung Tab Thống Kê trên `admin.html`.<br>2. Implement Module Product Options: Bổ sung Mức đá, Mức đường và Ghi chú món vào entity `OrderItem`, DTO `OrderItemRequest`, Modal Chi tiết sản phẩm (`index.html`), Giỏ hàng, Checkout, Tra cứu đơn & Lịch sử đơn.<br>3. Implement Coupon System: Admin CRUD, Customer Validation API (`POST /api/v1/coupons/validate`), áp mã giảm giá tại Checkout, trừ tiền tự động backend.<br>4. Hoàn thành Mốc 6 (Dữ liệu mẫu): Khởi tạo 6 danh mục, 22 sản phẩm, 4 người dùng (1 admin, 3 khách), 3 mã coupon, 9 đơn hàng mẫu ở đa dạng trạng thái (`PENDING`, `CONFIRMED`, `DELIVERING`, `COMPLETED`, `CANCELLED`). | Kiểm thử thủ công, bổ sung bộ lọc sắp xếp giá/mới nhất, chuẩn bị tài liệu bàn giao. | Maven Wrapper build thành công 100% (`BUILD SUCCESS`). Áp dụng triệt để nguyên tắc code sạch (Lazy Senior Dev mode) & format nhất quán. |
 
