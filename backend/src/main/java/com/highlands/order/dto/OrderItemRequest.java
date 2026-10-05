@@ -12,6 +12,12 @@ public record OrderItemRequest(
 
     List<String> toppings,
 
+    String iceLevel,
+
+    String sugarLevel,
+
+    String note,
+
     @NotNull(message = "Số lượng không được để trống")
     @Min(value = 1, message = "Số lượng tối thiểu là 1")
     Integer quantity

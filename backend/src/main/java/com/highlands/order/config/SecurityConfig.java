@@ -24,7 +24,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable).sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a.requestMatchers("/api/v1/orders/my-orders").authenticated()
-                        .requestMatchers("/api/v1/auth/**", "/api/v1/categories/**", "/api/v1/products/**", "/api/v1/toppings/**", "/api/v1/orders", "/api/v1/orders/*", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/api/v1/categories/**", "/api/v1/products/**", "/api/v1/toppings/**", "/api/v1/coupons/**", "/api/v1/orders", "/api/v1/orders/*", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/api/v1/orders/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").authenticated()
                         .anyRequest().authenticated())

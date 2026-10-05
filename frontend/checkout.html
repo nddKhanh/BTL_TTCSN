@@ -58,7 +58,18 @@
         <h3 style="margin-bottom:16px;">2. Tóm tắt đơn hàng</h3>
         <div id="checkoutItems"></div>
 
+        <!-- Coupon Section -->
+        <div style="margin: 16px 0; padding: 12px; background: #f8f9fa; border-radius: 8px; border: 1px solid var(--border-color);">
+          <label style="font-weight: bold; font-size: 13px; display: block; margin-bottom: 6px;">Mã Giảm Giá / Coupon</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="couponCodeInput" placeholder="Ví dụ: WELCOME10" style="flex:1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; text-transform: uppercase;">
+            <button type="button" onclick="applyCoupon()" style="padding: 8px 14px; background: var(--text-dark); color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Áp dụng</button>
+          </div>
+          <div id="couponMsg" style="font-size: 12px; margin-top: 6px;"></div>
+        </div>
+
         <div class="checkout-total-row"><span>Tạm tính:</span><span id="checkoutSubtotal">0đ</span></div>
+        <div class="checkout-total-row" id="discountRow" style="display:none; color: green; font-weight:bold;"><span>Giảm giá (Coupon):</span><span id="checkoutDiscount">-0đ</span></div>
         <div class="checkout-total-row"><span>Phí giao hàng:</span><span id="checkoutShipping">0đ</span></div>
         <div style="display:flex; justify-content:space-between; font-size:20px; font-weight:bold; margin-top:12px; padding-top:12px; border-top:2px solid var(--primary-red)">
           <span>Tổng thành tiền:</span>

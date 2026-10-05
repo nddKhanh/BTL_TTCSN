@@ -54,15 +54,33 @@
         const order = await fetchAPI(`/orders/${orderCode}`);
         let itemsHtml = '';
         order.items.forEach(i => {
-          itemsHtml += `<li><strong>${i.product.name}</strong> (Size ${i.sizeName}) x ${i.quantity} - ${formatVND(i.subtotal)}</li>`;
+          const opts = [
+            `Size ${i.sizeName}`,
+            i.iceLevel,
+            i.sugarLevel,
+            i.toppings ? `Topping: ${i.toppings}` : null,
+            i.note ? `Ghi chú: ${i.note}` : null
+          ].filter(Boolean).join(' | ');
+
+          itemsHtml += `
+            <li style="margin-bottom:8px;">
+              <strong>${i.productName || (i.product ? i.product.name : 'Sản phẩm')}</strong> x ${i.quantity} - <span style="color:var(--primary-red); font-weight:bold;">${formatVND(i.subtotal)}</span>
+              <div style="font-size:12px; color:var(--text-muted);">${opts}</div>
+            </li>
+          `;
         });
+
+        const couponText = order.couponCode ? `<p><strong>Mã giảm giá:</strong> ${order.couponCode} (-${formatVND(order.discountAmount || 0)})</p>` : '';
 
         card.innerHTML = `
           <h3 style="color:var(--primary-red); margin-bottom:12px;">Mã Đơn: ${order.orderCode}</h3>
           <p><strong>Người nhận:</strong> ${order.customerName} (${order.customerPhone})</p>
           <p><strong>Địa chỉ:</strong> ${order.deliveryAddress}</p>
           <p><strong>Trạng thái:</strong> <span style="font-weight:bold; color:var(--primary-red);">${order.status}</span></p>
-          <p><strong>Tổng tiền:</strong> <span style="font-weight:bold; color:var(--primary-red); font-size:18px;">${formatVND(order.totalAmount)}</span></p>
+          <p><strong>Tạm tính:</strong> ${formatVND(order.subtotal)}</p>
+          ${couponText}
+          <p><strong>Phí giao hàng:</strong> ${order.shippingFee === 0 ? 'Miễn phí' : formatVND(order.shippingFee)}</p>
+          <p><strong>Tổng thanh toán:</strong> <span style="font-weight:bold; color:var(--primary-red); font-size:18px;">${formatVND(order.totalAmount)}</span></p>
           <hr style="margin:12px 0; border:none; border-top:1px dashed var(--border-color)">
           <p><strong>Danh sách món:</strong></p>
           <ul style="padding-left:20px; margin-top:6px;">${itemsHtml}</ul>

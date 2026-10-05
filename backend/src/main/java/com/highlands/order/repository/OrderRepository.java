@@ -17,4 +17,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @EntityGraph(attributePaths = {"items", "items.product"})
     List<Order> findByUserEmailOrderByCreatedAtDesc(String email);
+
+    long countByStatus(com.highlands.order.model.OrderStatus status);
+
+    List<Order> findTop5ByOrderByCreatedAtDesc();
+
+    List<Order> findByStatus(com.highlands.order.model.OrderStatus status);
 }

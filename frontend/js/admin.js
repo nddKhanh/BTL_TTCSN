@@ -1,4 +1,5 @@
 let categoriesCache = [];
+let couponsCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   const user = getAuthUser();
@@ -8,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  await loadAdminOrders();
+  await loadAdminDashboard();
   await loadCategoriesCache();
   setupFormListeners();
 });
@@ -20,7 +21,9 @@ function switchTab(tabId, btn) {
   btn.classList.add('active');
   document.getElementById(tabId).classList.add('active');
 
+  if (tabId === 'dashboardTab') loadAdminDashboard();
   if (tabId === 'ordersTab') loadAdminOrders();
+  if (tabId === 'couponsTab') loadAdminCoupons();
   if (tabId === 'productsTab') loadAdminProducts();
   if (tabId === 'categoriesTab') loadAdminCategories();
   if (tabId === 'toppingsTab') loadAdminToppings();
@@ -31,6 +34,63 @@ async function loadCategoriesCache() {
     categoriesCache = await fetchAPI('/categories');
   } catch (err) {
     categoriesCache = [];
+  }
+}
+
+// ---------------- 0. DASHBOARD STATS ----------------
+async function loadAdminDashboard() {
+  const recentOrdersContainer = document.getElementById('adminRecentOrdersList');
+  try {
+    const stats = await fetchAPI('/admin/dashboard');
+
+    document.getElementById('statRevenue').textContent = formatVND(stats.totalRevenue || 0);
+    document.getElementById('statOrdersCount').textContent = stats.totalOrders || 0;
+    document.getElementById('statOrdersBreakdown').textContent = 
+      `Chờ: ${stats.pendingOrders || 0} | Xử lý: ${stats.completedOrders || 0} | Hủy: ${stats.cancelledOrders || 0}`;
+    document.getElementById('statProductsCount').textContent = stats.totalProducts || 0;
+    document.getElementById('statUsersCount').textContent = stats.totalUsers || 0;
+
+    if (!recentOrdersContainer) return;
+
+    if (!stats.recentOrders || stats.recentOrders.length === 0) {
+      recentOrdersContainer.innerHTML = '<p style="padding:20px;">Chưa có đơn hàng nào.</p>';
+      return;
+    }
+
+    let html = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Mã Đơn</th>
+            <th>Khách Hàng</th>
+            <th>SĐT</th>
+            <th>Tổng Tiền</th>
+            <th>Trạng Thái</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    stats.recentOrders.forEach(o => {
+      const dateStr = new Date(o.createdAt).toLocaleString('vi-VN');
+      html += `
+        <tr>
+          <td><strong>${o.orderCode}</strong><br><small style="color:gray">${dateStr}</small></td>
+          <td>${o.customerName}</td>
+          <td>${o.customerPhone}</td>
+          <td style="color:var(--primary-red); font-weight:bold;">${formatVND(o.totalAmount)}</td>
+          <td>${getStatusBadge(o.status)}</td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    recentOrdersContainer.innerHTML = html;
+  } catch (err) {
+    console.error('Lỗi nạp thống kê:', err);
+    if (recentOrdersContainer) {
+      recentOrdersContainer.innerHTML = `<p style="color:red; padding:20px;">Không thể tải dữ liệu báo cáo: ${err.message}</p>`;
+    }
   }
 }
 
@@ -54,6 +114,8 @@ async function loadAdminOrders() {
             <th>Mã Đơn</th>
             <th>Khách Hàng</th>
             <th>SĐT / Địa Chỉ</th>
+            <th>Chi Tiết Món</th>
+            <th>Giảm Giá</th>
             <th>Tổng Tiền</th>
             <th>Trạng Thái</th>
             <th>Thao Tác</th>
@@ -64,11 +126,20 @@ async function loadAdminOrders() {
 
     orders.forEach(o => {
       const dateStr = new Date(o.createdAt).toLocaleString('vi-VN');
+      const itemsText = o.items ? o.items.map(i => {
+        const opts = [i.sizeName, i.iceLevel, i.sugarLevel, i.toppings, i.note].filter(Boolean).join('/');
+        return `• ${i.productName || 'Món'} x${i.quantity} (${opts})`;
+      }).join('<br>') : '';
+
+      const discountText = o.couponCode ? `${o.couponCode} (-${formatVND(o.discountAmount || 0)})` : 'Không';
+
       html += `
         <tr>
           <td><strong>${o.orderCode}</strong><br><small style="color:gray">${dateStr}</small></td>
           <td>${o.customerName}</td>
           <td>${o.customerPhone}<br><small>${o.deliveryAddress}</small></td>
+          <td style="font-size:12px;">${itemsText}</td>
+          <td style="font-size:12px; color:green;">${discountText}</td>
           <td style="color:var(--primary-red); font-weight:bold;">${formatVND(o.totalAmount)}</td>
           <td>${getStatusBadge(o.status)}</td>
           <td>
@@ -110,12 +181,115 @@ async function updateOrderStatus(orderId, newStatus) {
     });
     alert('Cập nhật trạng thái thành công!');
     await loadAdminOrders();
+    await loadAdminDashboard();
   } catch (err) {
     alert('Không thể cập nhật trạng thái đơn: ' + err.message);
   }
 }
 
-// ---------------- 2. PRODUCTS MANAGEMENT ----------------
+// ---------------- 2. COUPONS MANAGEMENT ----------------
+async function loadAdminCoupons() {
+  const container = document.getElementById('adminCouponsList');
+  if (!container) return;
+
+  try {
+    couponsCache = await fetchAPI('/admin/coupons');
+
+    if (!couponsCache || couponsCache.length === 0) {
+      container.innerHTML = '<p style="padding:20px;">Chưa có mã giảm giá nào.</p>';
+      return;
+    }
+
+    let html = `
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Mã (Code)</th>
+            <th>Loại Giảm</th>
+            <th>Giá Trị</th>
+            <th>Đơn Tối Thiểu</th>
+            <th>Giảm Tối Đa</th>
+            <th>Trạng Thái</th>
+            <th>Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    couponsCache.forEach(c => {
+      const typeText = c.discountType === 'PERCENT' ? 'Phần trăm (%)' : 'Số tiền cố định';
+      const valText = c.discountType === 'PERCENT' ? `${c.discountValue}%` : formatVND(c.discountValue);
+      const minOrderText = c.minOrderAmount ? formatVND(c.minOrderAmount) : '0đ';
+      const maxDiscountText = c.maxDiscountAmount ? formatVND(c.maxDiscountAmount) : 'Không giới hạn';
+      const statusBadge = c.active ? '<span class="badge-active">Kích hoạt</span>' : '<span class="badge-hidden">Tạm ngưng</span>';
+
+      html += `
+        <tr>
+          <td><strong>${c.code}</strong></td>
+          <td>${typeText}</td>
+          <td style="color:var(--primary-red); font-weight:bold;">${valText}</td>
+          <td>${minOrderText}</td>
+          <td>${maxDiscountText}</td>
+          <td>${statusBadge}</td>
+          <td>
+            <button class="action-btn btn-edit" onclick="editCoupon(${c.id})">✏️ Sửa</button>
+            <button class="action-btn btn-danger" onclick="deleteCoupon(${c.id})">🗑️ Xóa</button>
+          </td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = `<p style="color:red; padding:20px;">Lỗi nạp danh sách mã giảm giá: ${err.message}</p>`;
+  }
+}
+
+function openCouponModal(c = null) {
+  if (c) {
+    document.getElementById('couponModalTitle').textContent = 'Chỉnh Sửa Mã Giảm Giá';
+    document.getElementById('couponId').value = c.id;
+    document.getElementById('couponCode').value = c.code;
+    document.getElementById('couponType').value = c.discountType;
+    document.getElementById('couponValue').value = c.discountValue;
+    document.getElementById('couponMinOrder').value = c.minOrderAmount || '';
+    document.getElementById('couponMaxDiscount').value = c.maxDiscountAmount || '';
+    document.getElementById('couponActive').checked = c.active;
+  } else {
+    document.getElementById('couponModalTitle').textContent = 'Thêm Mã Giảm Giá Mới';
+    document.getElementById('couponId').value = '';
+    document.getElementById('couponForm').reset();
+    document.getElementById('couponActive').checked = true;
+  }
+  document.getElementById('couponFormModal').classList.add('active');
+}
+
+function editCoupon(id) {
+  const coupon = couponsCache.find(c => c.id === id);
+  if (coupon) openCouponModal(coupon);
+}
+
+async function deleteCoupon(id) {
+  if (!confirm('Bạn có chắc chắn muốn xóa mã giảm giá này?')) return;
+  try {
+    const token = getAuthToken();
+    const res = await fetch(`${API_BASE_URL}/admin/coupons/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok || res.status === 204) {
+      alert('Xóa mã giảm giá thành công!');
+      await loadAdminCoupons();
+    } else {
+      alert('Không thể xóa mã giảm giá!');
+    }
+  } catch (err) {
+    alert('Lỗi: ' + err.message);
+  }
+}
+
+// ---------------- 3. PRODUCTS MANAGEMENT ----------------
 async function loadAdminProducts() {
   const container = document.getElementById('adminProductsList');
   if (!container) return;
@@ -214,7 +388,7 @@ async function toggleHideProduct(id) {
   }
 }
 
-// ---------------- 3. CATEGORIES MANAGEMENT ----------------
+// ---------------- 4. CATEGORIES MANAGEMENT ----------------
 async function loadAdminCategories() {
   const container = document.getElementById('adminCategoriesList');
   if (!container) return;
@@ -300,7 +474,7 @@ async function deleteCategory(id) {
   }
 }
 
-// ---------------- 4. TOPPINGS MANAGEMENT ----------------
+// ---------------- 5. TOPPINGS MANAGEMENT ----------------
 async function loadAdminToppings() {
   const container = document.getElementById('adminToppingsList');
   if (!container) return;
@@ -390,6 +564,40 @@ function closeAdminModal(modalId) {
 
 // ---------------- SETUP FORMS ----------------
 function setupFormListeners() {
+  // Coupon Submit
+  const couponForm = document.getElementById('couponForm');
+  if (couponForm) {
+    couponForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('couponId').value;
+      const minOrderVal = document.getElementById('couponMinOrder').value;
+      const maxDiscountVal = document.getElementById('couponMaxDiscount').value;
+
+      const payload = {
+        code: document.getElementById('couponCode').value.trim().toUpperCase(),
+        discountType: document.getElementById('couponType').value,
+        discountValue: parseFloat(document.getElementById('couponValue').value),
+        minOrderAmount: minOrderVal ? parseFloat(minOrderVal) : 0,
+        maxDiscountAmount: maxDiscountVal ? parseFloat(maxDiscountVal) : null,
+        active: document.getElementById('couponActive').checked
+      };
+
+      try {
+        if (id) {
+          await fetchAPI(`/admin/coupons/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+          alert('Cập nhật mã giảm giá thành công!');
+        } else {
+          await fetchAPI('/admin/coupons', { method: 'POST', body: JSON.stringify(payload) });
+          alert('Thêm mã giảm giá thành công!');
+        }
+        closeAdminModal('couponFormModal');
+        await loadAdminCoupons();
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    });
+  }
+
   // Product Submit
   document.getElementById('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();

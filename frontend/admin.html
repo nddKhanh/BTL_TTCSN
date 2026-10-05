@@ -13,6 +13,7 @@
       margin-bottom: 24px;
       border-bottom: 2px solid var(--border-color);
       padding-bottom: 8px;
+      overflow-x: auto;
     }
     .tab-btn {
       background: #fff;
@@ -23,6 +24,7 @@
       cursor: pointer;
       color: var(--text-dark);
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .tab-btn.active {
       background: var(--primary-red);
@@ -83,6 +85,39 @@
     }
     .btn-edit { background: #ffc107; color: #212529; }
     .btn-danger { background: #dc3545; color: #fff; }
+
+    /* Dashboard Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-card .stat-title {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .stat-card .stat-value {
+      font-size: 26px;
+      font-weight: bold;
+      color: var(--primary-red);
+    }
+    .stat-card .stat-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
   </style>
 </head>
 <body>
@@ -105,14 +140,52 @@
 
     <!-- Navigation Tabs -->
     <div class="admin-nav-tabs">
-      <button class="tab-btn active" onclick="switchTab('ordersTab', this)">📦 Quản Lý Đơn Hàng</button>
-      <button class="tab-btn" onclick="switchTab('productsTab', this)">☕ Quản Lý Sản Phẩm</button>
-      <button class="tab-btn" onclick="switchTab('categoriesTab', this)">📁 Quản Lý Danh Mục</button>
-      <button class="tab-btn" onclick="switchTab('toppingsTab', this)">🧋 Quản Lý Topping</button>
+      <button class="tab-btn active" onclick="switchTab('dashboardTab', this)">📊 Thống Kê Doanh Thu</button>
+      <button class="tab-btn" onclick="switchTab('ordersTab', this)">📦 Quản Lý Đơn Hàng</button>
+      <button class="tab-btn" onclick="switchTab('couponsTab', this)">🎟️ Mã Giảm Giá</button>
+      <button class="tab-btn" onclick="switchTab('productsTab', this)">☕ Sản Phẩm</button>
+      <button class="tab-btn" onclick="switchTab('categoriesTab', this)">📁 Danh Mục</button>
+      <button class="tab-btn" onclick="switchTab('toppingsTab', this)">🧋 Topping</button>
+    </div>
+
+    <!-- Section 0: Dashboard Stats -->
+    <div id="dashboardTab" class="admin-section active">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3>Tổng Quan Báo Cáo Thống Kê</h3>
+        <button onclick="loadAdminDashboard()" class="btn-add">🔄 Làm mới</button>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <span class="stat-title">💰 Tổng Doanh Thu (Hoàn thành)</span>
+          <span class="stat-value" id="statRevenue">0đ</span>
+          <span class="stat-sub">Tính theo các đơn hàng COMPLETED</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title">📦 Tổng Đơn Hàng</span>
+          <span class="stat-value" id="statOrdersCount">0</span>
+          <span class="stat-sub" id="statOrdersBreakdown">Chờ: 0 | Xử lý: 0 | Hủy: 0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title">☕ Tổng Sản Phẩm Ban</span>
+          <span class="stat-value" id="statProductsCount">0</span>
+          <span class="stat-sub">Sản phẩm đang hiển thị trên Menu</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-title">👤 Tổng Khách Hàng</span>
+          <span class="stat-value" id="statUsersCount">0</span>
+          <span class="stat-sub">Tài khoản khách hàng đã đăng ký</span>
+        </div>
+      </div>
+
+      <h4 style="margin-bottom:12px;">Đơn Hàng Gần Đây</h4>
+      <div id="adminRecentOrdersList" class="admin-table-card">
+        <p style="padding:20px;">Đang tải dữ liệu thống kê...</p>
+      </div>
     </div>
 
     <!-- Section 1: Orders -->
-    <div id="ordersTab" class="admin-section active">
+    <div id="ordersTab" class="admin-section">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <h3>Danh Sách Đơn Hàng</h3>
         <button onclick="loadAdminOrders()" class="btn-add">🔄 Làm mới</button>
@@ -122,7 +195,18 @@
       </div>
     </div>
 
-    <!-- Section 2: Products -->
+    <!-- Section 2: Coupons -->
+    <div id="couponsTab" class="admin-section">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3>Danh Sách Mã Giảm Giá (Coupon)</h3>
+        <button onclick="openCouponModal()" class="btn-add">+ Thêm Mã Mới</button>
+      </div>
+      <div id="adminCouponsList" class="admin-table-card">
+        <p style="padding:20px;">Đang tải danh sách coupon...</p>
+      </div>
+    </div>
+
+    <!-- Section 3: Products -->
     <div id="productsTab" class="admin-section">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <h3>Danh Sách Sản Phẩm</h3>
@@ -133,7 +217,7 @@
       </div>
     </div>
 
-    <!-- Section 3: Categories -->
+    <!-- Section 4: Categories -->
     <div id="categoriesTab" class="admin-section">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <h3>Danh Sách Danh Mục</h3>
@@ -144,7 +228,7 @@
       </div>
     </div>
 
-    <!-- Section 4: Toppings -->
+    <!-- Section 5: Toppings -->
     <div id="toppingsTab" class="admin-section">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
         <h3>Danh Sách Topping</h3>
@@ -156,6 +240,47 @@
     </div>
 
   </main>
+
+  <!-- Modal Coupon Form -->
+  <div class="modal-overlay" id="couponFormModal">
+    <div class="modal-card" style="max-width:500px;">
+      <div class="modal-header">
+        <span class="modal-title" id="couponModalTitle">Thêm Mã Giảm Giá</span>
+        <button class="modal-close" onclick="closeAdminModal('couponFormModal')">&times;</button>
+      </div>
+      <form id="couponForm" style="padding:20px;">
+        <input type="hidden" id="couponId">
+        <div class="form-group">
+          <label>Mã Giảm Giá (Code) *</label>
+          <input type="text" id="couponCode" required placeholder="WELCOME10, MOCNHIEN20K..." style="text-transform:uppercase;">
+        </div>
+        <div class="form-group">
+          <label>Loại Giảm Giá *</label>
+          <select id="couponType" required>
+            <option value="PERCENT">Theo Phần Trăm (%)</option>
+            <option value="FIXED">Số Tiền Cố Định (VNĐ)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Giá Trị Giảm *</label>
+          <input type="number" id="couponValue" required min="0" step="any" placeholder="Nhập 10 (cho 10%) hoặc 20000 (cho 20k)">
+        </div>
+        <div class="form-group">
+          <label>Đơn Hàng Tối Thiểu (VNĐ)</label>
+          <input type="number" id="couponMinOrder" min="0" step="1000" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Giảm Tối Đa (VNĐ - dành cho phần trăm)</label>
+          <input type="number" id="couponMaxDiscount" min="0" step="1000" placeholder="Để trống nếu không giới hạn">
+        </div>
+        <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+          <input type="checkbox" id="couponActive" checked style="width:auto;">
+          <label for="couponActive" style="margin:0; cursor:pointer;">Kích hoạt sử dụng</label>
+        </div>
+        <button type="submit" class="btn-submit">Lưu Mã Giảm Giá</button>
+      </form>
+    </div>
+  </div>
 
   <!-- Modal Product Form -->
   <div class="modal-overlay" id="productFormModal">

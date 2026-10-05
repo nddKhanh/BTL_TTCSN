@@ -13,11 +13,14 @@ const CartManager = {
 
   addItem(item) {
     const cart = this.getCart();
-    // Check if identical item exists (same productId, size, and toppings)
+    // Check if identical item exists (same productId, size, ice, sugar, toppings, note)
     const existingIndex = cart.findIndex(c => 
       c.productId === item.productId &&
       c.sizeName === item.sizeName &&
-      JSON.stringify(c.toppings.sort()) === JSON.stringify(item.toppings.sort())
+      (c.iceLevel || '') === (item.iceLevel || '') &&
+      (c.sugarLevel || '') === (item.sugarLevel || '') &&
+      (c.note || '') === (item.note || '') &&
+      JSON.stringify((c.toppings || []).slice().sort()) === JSON.stringify((item.toppings || []).slice().sort())
     );
 
     if (existingIndex > -1) {

@@ -33,10 +33,20 @@ async function loadMyOrders() {
       const dateStr = new Date(o.createdAt).toLocaleString('vi-VN');
       let itemsSummary = '';
       o.items.forEach(i => {
-        const toppingText = i.toppings ? ` (+ ${i.toppings})` : '';
+        const opts = [
+          `Size ${i.sizeName}`,
+          i.iceLevel,
+          i.sugarLevel,
+          i.toppings ? `Topping: ${i.toppings}` : null,
+          i.note ? `Ghi chú: ${i.note}` : null
+        ].filter(Boolean).join(' | ');
+
         itemsSummary += `
           <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px;">
-            <span>• <strong>${i.productName}</strong> (Size ${i.sizeName}${toppingText}) x ${i.quantity}</span>
+            <div>
+              • <strong>${i.productName}</strong> x ${i.quantity}
+              <div style="font-size:12px; color:var(--text-muted); margin-left:10px;">${opts}</div>
+            </div>
             <span style="font-weight:600;">${formatVND(i.subtotal)}</span>
           </div>
         `;

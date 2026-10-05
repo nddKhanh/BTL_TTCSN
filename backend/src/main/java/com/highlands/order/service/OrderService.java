@@ -1,7 +1,9 @@
 package com.highlands.order.service;
 
 import com.highlands.order.dto.CreateOrderRequest;
+import com.highlands.order.dto.DashboardStatsResponse;
 import com.highlands.order.dto.OrderItemRequest;
+import com.highlands.order.dto.ValidateCouponResponse;
 import com.highlands.order.config.OrderPricingProperties;
 import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.*;
@@ -30,17 +32,20 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final ToppingRepository toppingRepository;
     private final UserRepository userRepository;
+    private final CouponService couponService;
     private final OrderPricingProperties pricing;
 
     public OrderService(OrderRepository orderRepository,
                         ProductRepository productRepository,
                         ToppingRepository toppingRepository,
                         UserRepository userRepository,
+                        CouponService couponService,
                         OrderPricingProperties pricing) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.toppingRepository = toppingRepository;
         this.userRepository = userRepository;
+        this.couponService = couponService;
         this.pricing = pricing;
     }
 
@@ -101,6 +106,9 @@ public class OrderService {
                     .productName(product.getName())
                     .sizeName(selectedSize.getSizeName())
                     .toppings(toppingsStr)
+                    .iceLevel(itemReq.iceLevel())
+                    .sugarLevel(itemReq.sugarLevel())
+                    .note(itemReq.note())
                     .quantity(itemReq.quantity())
                     .unitPrice(unitPrice)
                     .subtotal(subtotal)
@@ -109,10 +117,23 @@ public class OrderService {
             order.getItems().add(orderItem);
         }
 
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (request.couponCode() != null && !request.couponCode().isBlank()) {
+            ValidateCouponResponse couponRes = couponService.validateAndCalculateDiscount(request.couponCode(), grandTotal);
+            discountAmount = couponRes.discountAmount();
+            order.setCouponCode(couponRes.code());
+            order.setDiscountAmount(discountAmount);
+        }
+
+        BigDecimal netSubtotal = grandTotal.subtract(discountAmount);
+        if (netSubtotal.compareTo(BigDecimal.ZERO) < 0) {
+            netSubtotal = BigDecimal.ZERO;
+        }
+
         BigDecimal shippingFee = grandTotal.compareTo(pricing.freeShippingThreshold()) >= 0 ? BigDecimal.ZERO : pricing.shippingFee();
         order.setSubtotal(grandTotal);
         order.setShippingFee(shippingFee);
-        order.setTotalAmount(grandTotal.add(shippingFee));
+        order.setTotalAmount(netSubtotal.add(shippingFee));
 
         // Nếu người dùng đã đăng nhập, gắn tài khoản vào đơn hàng
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -134,6 +155,31 @@ public class OrderService {
 
     public List<Order> getAllOrders() {
         return orderRepository.findAllByOrderByCreatedAtDesc();
+    }
+
+    public DashboardStatsResponse getDashboardStats() {
+        List<Order> completedOrders = orderRepository.findByStatus(OrderStatus.COMPLETED);
+        BigDecimal totalRevenue = completedOrders.stream()
+                .map(Order::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        long totalOrders = orderRepository.count();
+        long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
+        long completedCount = completedOrders.size();
+        long cancelledOrders = orderRepository.countByStatus(OrderStatus.CANCELLED);
+        long totalProducts = productRepository.countByIsActiveTrue();
+        long totalUsers = userRepository.count();
+        List<Order> recentOrders = orderRepository.findTop5ByOrderByCreatedAtDesc();
+
+        return new DashboardStatsResponse(
+                totalRevenue,
+                totalOrders,
+                pendingOrders,
+                completedCount,
+                cancelledOrders,
+                totalProducts,
+                totalUsers,
+                recentOrders
+        );
     }
 
     @Transactional

@@ -35,6 +35,10 @@ public class Order {
 
     private String note;
 
+    private String couponCode;
+
+    private BigDecimal discountAmount;
+
     @Column(nullable = false)
     private BigDecimal subtotal;
 

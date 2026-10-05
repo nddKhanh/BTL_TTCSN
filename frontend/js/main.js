@@ -132,6 +132,14 @@ async function openProductModal(productId) {
     });
     toppingsContainer.innerHTML = toppingsHtml;
 
+    // Reset options
+    const defaultIce = document.querySelector('input[name="productIce"][value="100% Đá"]');
+    if (defaultIce) defaultIce.checked = true;
+    const defaultSugar = document.querySelector('input[name="productSugar"][value="100% Đường"]');
+    if (defaultSugar) defaultSugar.checked = true;
+    const noteInput = document.getElementById('modalItemNote');
+    if (noteInput) noteInput.value = '';
+
     updateModalPrice();
     document.getElementById('productModal').classList.add('active');
   } catch (err) {
@@ -177,6 +185,10 @@ function confirmAddToCart() {
   const sizeName = selectedSizeRadio ? selectedSizeRadio.value : 'S';
   const sizeExtra = selectedSizeRadio ? parseFloat(selectedSizeRadio.dataset.price || 0) : 0;
 
+  const iceLevel = document.querySelector('input[name="productIce"]:checked')?.value || '100% Đá';
+  const sugarLevel = document.querySelector('input[name="productSugar"]:checked')?.value || '100% Đường';
+  const note = document.getElementById('modalItemNote')?.value.trim() || '';
+
   let unitPrice = currentProduct.basePrice + sizeExtra;
   const selectedToppings = [];
 
@@ -189,7 +201,10 @@ function confirmAddToCart() {
     productId: currentProduct.id,
     productName: currentProduct.name,
     sizeName: sizeName,
+    iceLevel: iceLevel,
+    sugarLevel: sugarLevel,
     toppings: selectedToppings,
+    note: note,
     unitPrice: unitPrice,
     quantity: modalQuantity,
     subtotal: unitPrice * modalQuantity
@@ -231,12 +246,19 @@ function renderCartDrawer() {
 
   let html = '';
   cart.forEach((item, index) => {
-    const toppingsText = item.toppings && item.toppings.length > 0 ? `+ Topping: ${item.toppings.join(', ')}` : '';
+    const opts = [
+      `Size ${item.sizeName}`,
+      item.iceLevel,
+      item.sugarLevel,
+      item.toppings && item.toppings.length > 0 ? `Topping: ${item.toppings.join(', ')}` : null,
+      item.note ? `Ghi chú: ${item.note}` : null
+    ].filter(Boolean).join(' | ');
+
     html += `
       <div class="cart-item">
         <div>
-          <div class="cart-item-name">${item.productName} (Size ${item.sizeName})</div>
-          <div class="cart-item-sub">SL: ${item.quantity} | ${toppingsText}</div>
+          <div class="cart-item-name">${item.productName}</div>
+          <div class="cart-item-sub">SL: ${item.quantity} | ${opts}</div>
           <div class="cart-item-price">${formatVND(item.subtotal)}</div>
         </div>
         <button style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;" onclick="CartManager.removeItem(${index}); renderCartDrawer();">Xóa</button>

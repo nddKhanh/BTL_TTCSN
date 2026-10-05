@@ -126,13 +126,13 @@
 
 ## 5. Tính năng sau MVP
 
-- [ ] Coupon: CRUD admin.
-- [ ] Coupon: API `POST /coupons/validate`.
-- [ ] Coupon: kiểm tra active, thời hạn, giá trị đơn tối thiểu và chỉ một mã/đơn.
-- [ ] Coupon: giảm giá không vượt tạm tính; hỗ trợ `PERCENT` và `FIXED`.
-- [ ] Tuỳ chọn sản phẩm: size S/M/L, nóng/đá, phụ thu, ghi chú món.
-- [ ] Lưu `option_summary` tại giỏ và `order_items`.
-- [ ] Dashboard: tổng đơn, doanh thu theo quy ước đã chốt, số sản phẩm/người dùng, đơn mới nhất.
+- [x] Coupon: CRUD admin.
+- [x] Coupon: API `POST /coupons/validate`.
+- [x] Coupon: kiểm tra active, thời hạn, giá trị đơn tối thiểu và chỉ một mã/đơn.
+- [x] Coupon: giảm giá không vượt tạm tính; hỗ trợ `PERCENT` và `FIXED`.
+- [x] Tuỳ chọn sản phẩm: size S/M/L, nóng/đá, phụ thu, ghi chú món.
+- [x] Lưu `option_summary` tại giỏ và `order_items`.
+- [x] Dashboard: tổng đơn, doanh thu theo quy ước đã chốt, số sản phẩm/người dùng, đơn mới nhất.
 - [ ] Sắp xếp giá/mới nhất, phân trang hoặc “Xem thêm”.
 - [ ] Upload ảnh Cloudinary.
 - [ ] Newsletter chỉ lưu email (nếu còn thời gian).
@@ -142,7 +142,7 @@
 - [ ] Tạo 5–7 danh mục.
 - [ ] Tạo 20–30 sản phẩm có ảnh, giá và mô tả ngắn.
 - [ ] Tạo 2–3 khách hàng và 1 admin.
-- [ ] Tạo 2–3 coupon, ví dụ `WELCOME10`.
+- [x] Tạo 2–3 coupon, ví dụ `WELCOME10`.
 - [ ] Tạo 8–10 đơn ở nhiều trạng thái.
 - [ ] Xác nhận seed data phù hợp demo và không dùng tài sản Highlands Coffee.
 
@@ -161,7 +161,7 @@
 - [x] Đăng ký, đăng nhập, đăng xuất hoạt động.
 - [x] Khách xem danh mục, tìm kiếm và xem chi tiết sản phẩm.
 - [x] Giỏ hàng thêm/sửa/xóa đúng và tổng tiền đúng.
-- [ ] Coupon chỉ áp dụng khi hợp lệ (nếu đã triển khai).
+- [x] Coupon chỉ áp dụng khi hợp lệ (nếu đã triển khai).
 - [x] Tạo đơn thành công và có mã/trang xác nhận.
 - [x] Khách không xem được đơn của người khác.
 - [x] Admin CRUD danh mục, sản phẩm, topping.
@@ -174,7 +174,7 @@
 - [x] Admin đăng nhập, tạo danh mục và sản phẩm.
 - [x] Đăng nhập khách; xác nhận sản phẩm vừa tạo xuất hiện.
 - [x] Khách tìm sản phẩm, chọn size/số lượng (nếu có), thêm vào giỏ.
-- [ ] Khách áp coupon hợp lệ (nếu có) và tạo đơn COD.
+- [x] Khách áp coupon hợp lệ (nếu có) và tạo đơn COD.
 - [x] Admin xác nhận, giao hàng và hoàn thành đơn.
 - [x] Khách mở lịch sử đơn, xác nhận trạng thái mới.
 
@@ -184,3 +184,5 @@
 | --- | --- | --- | --- |
 | 2026-09-26 | Migrate backend; thêm JWT, BCrypt, CRUD admin, tìm kiếm catalog, tính phí giao hàng backend; build thành công bằng Maven Wrapper | UI tài khoản/quản trị và coupon | Không duy trì test source theo quyết định hiện tại |
 | 2026-09-29 | 1. Implement Auth UI (`login.html`, `register.html`), lưu Token JWT, dynamic User Header, đăng xuất.<br>2. Thêm API `/api/v1/orders/my-orders`, liên kết đơn hàng với `AppUser` và tạo trang lịch sử đơn cá nhân (`my-orders.html`).<br>3. Xây dựng giao diện Tab Admin CMS (`admin.html` & `admin.js`) với đầy đủ Form Modal CRUD Sản phẩm, Danh mục, Topping & Auth Guard cho `ROLE_ADMIN`. | Module 5 (Báo cáo Thống kê Doanh thu Admin) & Module 6 (Bổ sung Tùy chọn Mức đá / Mức đường) | Biên dịch Maven thành công (`BUILD SUCCESS`, 51 file source Java compiled). |
+| 2026-10-05 | 1. Implement Module 5 (Admin Dashboard / Stats): API `GET /api/v1/admin/dashboard` trả về tổng doanh thu đơn COMPLETED, tổng số đơn, sản phẩm, người dùng và danh sách đơn hàng gần đây; bổ sung Tab Thống Kê trên `admin.html`.<br>2. Implement Module 6 (Product Options): Bổ sung Mức đá (100%, 70%, 50%, Không đá), Mức đường (100%, 70%, 50%, Không đường) và Ghi chú món vào entity `OrderItem`, DTO `OrderItemRequest`, Modal Chi tiết sản phẩm (`index.html`), Giỏ hàng (`cart.js`, `main.js`), Checkout (`checkout.js`), Tra cứu đơn (`order-status.html`) và Lịch sử đơn (`my-orders.html`).<br>3. Implement Module Coupon System: Entity `Coupon`, Enum `CouponType` (`PERCENT`, `FIXED`), Repository, Service, Admin CRUD (`/api/v1/admin/coupons`), Customer Validation API (`POST /api/v1/coupons/validate`), áp mã giảm giá tại trang Checkout, trừ tiền tự động backend và seed dữ liệu mẫu (`WELCOME10`, `MOCNHIEN20K`). | Kiểm thử thủ công, bổ sung bộ lọc sắp xếp giá/mới nhất, chuẩn bị tài liệu bàn giao. | Maven Wrapper build thành công 100% (`BUILD SUCCESS`). Áp dụng triệt để nguyên tắc code sạch (Lazy Senior Dev mode) & format nhất quán. |
+

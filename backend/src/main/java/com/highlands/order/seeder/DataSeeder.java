@@ -20,13 +20,16 @@ public class DataSeeder implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final ToppingRepository toppingRepository;
+    private final com.highlands.order.repository.CouponRepository couponRepository;
 
     public DataSeeder(CategoryRepository categoryRepository,
                       ProductRepository productRepository,
-                      ToppingRepository toppingRepository) {
+                      ToppingRepository toppingRepository,
+                      com.highlands.order.repository.CouponRepository couponRepository) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.toppingRepository = toppingRepository;
+        this.couponRepository = couponRepository;
     }
 
     @Override
@@ -118,5 +121,24 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
         banhMi.getSizes().add(ProductSize.builder().product(banhMi).sizeName("Tiêu chuẩn").extraPrice(BigDecimal.ZERO).build());
         productRepository.save(banhMi);
+
+        // 4. Tạo Coupon mẫu
+        couponRepository.saveAll(List.of(
+                com.highlands.order.model.Coupon.builder()
+                        .code("WELCOME10")
+                        .discountType(com.highlands.order.model.CouponType.PERCENT)
+                        .discountValue(BigDecimal.valueOf(10))
+                        .maxDiscountAmount(BigDecimal.valueOf(50000))
+                        .minOrderAmount(BigDecimal.ZERO)
+                        .active(true)
+                        .build(),
+                com.highlands.order.model.Coupon.builder()
+                        .code("MOCNHIEN20K")
+                        .discountType(com.highlands.order.model.CouponType.FIXED)
+                        .discountValue(BigDecimal.valueOf(20000))
+                        .minOrderAmount(BigDecimal.valueOf(50000))
+                        .active(true)
+                        .build()
+        ));
     }
 }

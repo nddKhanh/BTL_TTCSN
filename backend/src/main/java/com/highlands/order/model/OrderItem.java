@@ -35,6 +35,12 @@ public class OrderItem {
 
     private String toppings;
 
+    private String iceLevel;
+
+    private String sugarLevel;
+
+    private String note;
+
     @Column(nullable = false)
     private Integer quantity;
 
