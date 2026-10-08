@@ -190,6 +190,21 @@
         <h3>Danh Sách Đơn Hàng</h3>
         <button onclick="loadAdminOrders()" class="btn-add">🔄 Làm mới</button>
       </div>
+      <form class="order-filters" onsubmit="applyOrderFilters(event)">
+        <input id="orderKeyword" type="search" placeholder="Mã đơn, tên hoặc SĐT">
+        <select id="orderStatusFilter" aria-label="Lọc trạng thái">
+          <option value="">Tất cả trạng thái</option>
+          <option value="PENDING">Chờ xác nhận</option>
+          <option value="CONFIRMED">Đã xác nhận</option>
+          <option value="DELIVERING">Đang giao</option>
+          <option value="COMPLETED">Hoàn thành</option>
+          <option value="CANCELLED">Đã hủy</option>
+        </select>
+        <label>Từ ngày <input id="orderFromDate" type="date"></label>
+        <label>Đến ngày <input id="orderToDate" type="date"></label>
+        <button type="submit" class="btn-add">Lọc</button>
+        <button type="button" class="action-btn" onclick="resetOrderFilters()">Xóa lọc</button>
+      </form>
       <div id="adminOrdersList" class="admin-table-card">
         <p style="padding:20px;">Đang tải danh sách đơn hàng...</p>
       </div>
@@ -240,6 +255,16 @@
     </div>
 
   </main>
+
+  <div class="modal-overlay" id="orderDetailModal">
+    <div class="modal-card" style="max-width:680px;">
+      <div class="modal-header">
+        <span class="modal-title" id="orderDetailTitle">Chi Tiết Đơn Hàng</span>
+        <button class="modal-close" onclick="closeAdminModal('orderDetailModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="orderDetailBody"></div>
+    </div>
+  </div>
 
   <!-- Modal Coupon Form -->
   <div class="modal-overlay" id="couponFormModal">

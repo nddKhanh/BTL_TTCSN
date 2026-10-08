@@ -7,8 +7,12 @@ import com.highlands.order.model.Order;
 import com.highlands.order.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -34,16 +38,33 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders")
-    public ApiResponse<List<Order>> getMyOrders(@org.springframework.security.core.annotation.AuthenticationPrincipal org.springframework.security.core.userdetails.UserDetails user) {
+    public ApiResponse<List<Order>> getMyOrders(@AuthenticationPrincipal UserDetails user) {
         if (user == null) {
             throw new IllegalArgumentException("Vui lòng đăng nhập để xem lịch sử đơn hàng");
         }
         return ApiResponse.success(orderService.getMyOrders(user.getUsername()));
     }
 
+    @PatchMapping("/{orderId}/cancel")
+    public ApiResponse<Order> cancelMyOrder(
+            @PathVariable Long orderId,
+            @AuthenticationPrincipal UserDetails user
+    ) {
+        if (user == null) {
+            throw new IllegalArgumentException("Vui lòng đăng nhập để hủy đơn hàng");
+        }
+        Order cancelledOrder = orderService.cancelMyOrder(orderId, user.getUsername());
+        return ApiResponse.success("Hủy đơn hàng thành công!", cancelledOrder);
+    }
+
     @GetMapping("/admin/all")
-    public ApiResponse<List<Order>> getAllOrders() {
-        return ApiResponse.success(orderService.getAllOrders());
+    public ApiResponse<List<Order>> getAllOrders(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdTo
+    ) {
+        return ApiResponse.success(orderService.getAllOrders(status, keyword, createdFrom, createdTo));
     }
 
     @PatchMapping("/admin/{orderId}/status")

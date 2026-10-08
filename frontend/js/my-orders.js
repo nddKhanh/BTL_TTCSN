@@ -79,6 +79,7 @@ async function loadMyOrders() {
           </div>
           
           <div style="text-align:right; margin-top:12px;">
+            ${o.status === 'PENDING' ? `<button class="btn-cancel-order" onclick="cancelOrder(${o.id}, '${escapeHtml(o.orderCode)}')">Hủy đơn</button>` : ''}
             <a href="order-status.html?code=${o.orderCode}" style="font-size:13px; color:var(--primary-red); font-weight:600; text-decoration:none;">Xem chi tiết & tra cứu &rarr;</a>
           </div>
         </div>
@@ -89,6 +90,18 @@ async function loadMyOrders() {
   } catch (err) {
     console.error(err);
     container.innerHTML = '<p style="color:red; text-align:center;">Lỗi tải lịch sử đơn hàng. Vui lòng kiểm tra lại đăng nhập!</p>';
+  }
+}
+
+async function cancelOrder(orderId, orderCode) {
+  if (!window.confirm(`Bạn có chắc muốn hủy đơn ${orderCode}?`)) return;
+
+  try {
+    await fetchAPI(`/orders/${orderId}/cancel`, { method: 'PATCH' });
+    showToast(`Đã hủy đơn ${orderCode}`);
+    await loadMyOrders();
+  } catch (error) {
+    showToast(error.message, 'error');
   }
 }
 

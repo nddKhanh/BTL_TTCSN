@@ -1,5 +1,6 @@
 let categoriesCache = [];
 let couponsCache = [];
+let adminOrdersCache = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   const user = getAuthUser();
@@ -100,7 +101,19 @@ async function loadAdminOrders() {
   if (!container) return;
 
   try {
-    const orders = await fetchAPI('/orders/admin/all');
+    const query = new URLSearchParams();
+    const status = document.getElementById('orderStatusFilter')?.value;
+    const keyword = document.getElementById('orderKeyword')?.value.trim();
+    const createdFrom = document.getElementById('orderFromDate')?.value;
+    const createdTo = document.getElementById('orderToDate')?.value;
+    if (status) query.set('status', status);
+    if (keyword) query.set('keyword', keyword);
+    if (createdFrom) query.set('createdFrom', createdFrom);
+    if (createdTo) query.set('createdTo', createdTo);
+
+    const endpoint = `/orders/admin/all${query.size ? `?${query}` : ''}`;
+    const orders = await fetchAPI(endpoint);
+    adminOrdersCache = orders || [];
 
     if (!orders || orders.length === 0) {
       container.innerHTML = '<p style="padding:20px;">Chưa có đơn hàng nào.</p>';
@@ -114,7 +127,7 @@ async function loadAdminOrders() {
             <th>Mã Đơn</th>
             <th>Khách Hàng</th>
             <th>SĐT / Địa Chỉ</th>
-            <th>Chi Tiết Món</th>
+            <th>Chi Tiết</th>
             <th>Giảm Giá</th>
             <th>Tổng Tiền</th>
             <th>Trạng Thái</th>
@@ -126,11 +139,6 @@ async function loadAdminOrders() {
 
     orders.forEach(o => {
       const dateStr = new Date(o.createdAt).toLocaleString('vi-VN');
-      const itemsText = o.items ? o.items.map(i => {
-        const opts = [i.sizeName, i.iceLevel, i.sugarLevel, i.toppings, i.note].filter(Boolean).join('/');
-        return `• ${i.productName || 'Món'} x${i.quantity} (${opts})`;
-      }).join('<br>') : '';
-
       const discountText = o.couponCode ? `${o.couponCode} (-${formatVND(o.discountAmount || 0)})` : 'Không';
 
       html += `
@@ -138,7 +146,7 @@ async function loadAdminOrders() {
           <td><strong>${o.orderCode}</strong><br><small style="color:gray">${dateStr}</small></td>
           <td>${o.customerName}</td>
           <td>${o.customerPhone}<br><small>${o.deliveryAddress}</small></td>
-          <td style="font-size:12px;">${itemsText}</td>
+          <td><button class="action-btn btn-edit" onclick="openOrderDetail(${o.id})">Xem món</button></td>
           <td style="font-size:12px; color:green;">${discountText}</td>
           <td style="color:var(--primary-red); font-weight:bold;">${formatVND(o.totalAmount)}</td>
           <td>${getStatusBadge(o.status)}</td>
@@ -160,6 +168,61 @@ async function loadAdminOrders() {
   } catch (err) {
     container.innerHTML = `<p style="color:red; padding:20px;">Lỗi nạp đơn hàng: ${err.message}</p>`;
   }
+}
+
+function applyOrderFilters(event) {
+  event.preventDefault();
+  loadAdminOrders();
+}
+
+function resetOrderFilters() {
+  document.getElementById('orderKeyword').value = '';
+  document.getElementById('orderStatusFilter').value = '';
+  document.getElementById('orderFromDate').value = '';
+  document.getElementById('orderToDate').value = '';
+  loadAdminOrders();
+}
+
+function openOrderDetail(orderId) {
+  const order = adminOrdersCache.find(item => item.id === orderId);
+  if (!order) {
+    showToast('Không tìm thấy thông tin đơn hàng', 'error');
+    return;
+  }
+
+  const itemsHtml = (order.items || []).map(item => {
+    const options = [
+      item.sizeName ? `Size ${item.sizeName}` : null,
+      item.iceLevel,
+      item.sugarLevel,
+      item.toppings ? `Topping: ${item.toppings}` : null,
+      item.note ? `Ghi chú: ${item.note}` : null
+    ].filter(Boolean).map(escapeHtml).join(' · ');
+
+    return `
+      <div class="order-detail-item">
+        <div><strong>${escapeHtml(item.productName || 'Món')}</strong> × ${item.quantity}<small>${options}</small></div>
+        <strong>${formatVND(item.subtotal)}</strong>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('orderDetailTitle').textContent = `Đơn ${order.orderCode}`;
+  document.getElementById('orderDetailBody').innerHTML = `
+    <div class="order-detail-customer">
+      <p><strong>Khách hàng:</strong> ${escapeHtml(order.customerName)} · ${escapeHtml(order.customerPhone)}</p>
+      <p><strong>Giao đến:</strong> ${escapeHtml(order.deliveryAddress)}</p>
+      ${order.note ? `<p><strong>Ghi chú:</strong> ${escapeHtml(order.note)}</p>` : ''}
+    </div>
+    <div class="order-detail-items">${itemsHtml}</div>
+    <div class="order-detail-total">
+      <span>Tạm tính: ${formatVND(order.subtotal)}</span>
+      <span>Giảm: -${formatVND(order.discountAmount || 0)}</span>
+      <span>Phí giao: ${formatVND(order.shippingFee)}</span>
+      <strong>Tổng cộng: ${formatVND(order.totalAmount)}</strong>
+    </div>
+  `;
+  document.getElementById('orderDetailModal').classList.add('active');
 }
 
 function getStatusBadge(status) {

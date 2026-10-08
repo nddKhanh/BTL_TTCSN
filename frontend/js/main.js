@@ -2,13 +2,25 @@ let currentProduct = null;
 let modalQuantity = 1;
 let allToppings = [];
 let selectedCategoryId = null;
+let searchTimer = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   await loadToppings();
   await loadProducts();
   setupCartDrawer();
+  setupLiveSearch();
 });
+
+function setupLiveSearch() {
+  const searchInput = document.getElementById('productSearch');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('input', () => {
+    window.clearTimeout(searchTimer);
+    searchTimer = window.setTimeout(loadProducts, 300);
+  });
+}
 
 // Load Categories
 async function loadCategories() {
@@ -214,6 +226,7 @@ function confirmAddToCart() {
   closeModal();
   renderCartDrawer();
   toggleCartDrawer(true);
+  showToast(`Đã thêm ${currentProduct.name} vào giỏ hàng`);
 }
 
 // Cart Drawer Setup

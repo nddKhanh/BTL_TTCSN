@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -153,8 +155,22 @@ public class OrderService {
         return orderRepository.findByUserEmailOrderByCreatedAtDesc(email);
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAllByOrderByCreatedAtDesc();
+    public List<Order> getAllOrders(
+            String requestedStatus,
+            String keyword,
+            LocalDate createdFrom,
+            LocalDate createdTo
+    ) {
+        OrderStatus status = parseOptionalStatus(requestedStatus);
+        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+        LocalDateTime fromDateTime = createdFrom == null ? null : createdFrom.atStartOfDay();
+        LocalDateTime untilDateTime = createdTo == null ? null : createdTo.plusDays(1).atStartOfDay();
+
+        if (createdFrom != null && createdTo != null && createdFrom.isAfter(createdTo)) {
+            throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc");
+        }
+
+        return orderRepository.searchForAdmin(status, normalizedKeyword, fromDateTime, untilDateTime);
     }
 
     public DashboardStatsResponse getDashboardStats() {
@@ -197,6 +213,30 @@ public class OrderService {
         }
         order.setStatus(newStatus);
         return orderRepository.save(order);
+    }
+
+    @Transactional
+    public Order cancelMyOrder(Long orderId, String email) {
+        Order order = orderRepository.findByIdAndUserEmailIgnoreCase(orderId, email)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng của bạn"));
+
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new IllegalArgumentException("Chỉ có thể hủy đơn đang chờ xác nhận");
+        }
+
+        order.setStatus(OrderStatus.CANCELLED);
+        return orderRepository.save(order);
+    }
+
+    private OrderStatus parseOptionalStatus(String requestedStatus) {
+        if (requestedStatus == null || requestedStatus.isBlank()) {
+            return null;
+        }
+        try {
+            return OrderStatus.valueOf(requestedStatus.trim().toUpperCase());
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("Trạng thái đơn không hợp lệ: " + requestedStatus);
+        }
     }
 
     private ProductSize selectSize(Product product, String requestedSize) {

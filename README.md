@@ -42,12 +42,15 @@ Dự án thực tập cơ sở ngành: website đặt hàng cà phê với thư�
 - [x] Phí giao hàng 15.000 VNĐ, miễn phí khi tạm tính từ 200.000 VNĐ; tổng tiền do backend xác nhận.
 - [x] Tra cứu & theo dõi trạng thái đơn hàng theo mã đơn.
 - [x] Đăng ký, đăng nhập JWT và cập nhật hồ sơ khách hàng qua API.
+- [x] Khách đăng nhập có thể tự hủy đơn khi đơn còn chờ xác nhận.
+- [x] Tìm kiếm sản phẩm theo thời gian thực, toast thao tác và giao diện responsive cho điện thoại.
 
 ### Quản trị (Admin)
 - [x] Xem danh sách toàn bộ đơn hàng mới đặt.
 - [x] Cập nhật trạng thái đơn (Chờ xác nhận, Đã xác nhận, Đang giao, Hoàn thành, Hủy).
 - [x] Endpoint quản trị đơn hàng được bảo vệ bởi quyền `ADMIN`.
 - [x] CRUD danh mục và sản phẩm qua REST API; sản phẩm được ẩn thay vì xóa khỏi dữ liệu đơn hàng.
+- [x] Lọc đơn theo trạng thái/ngày, tìm theo mã đơn/tên/SĐT và xem chi tiết trong modal.
 
 ---
 

@@ -76,12 +76,12 @@ Tài liệu mô tả chi tiết các phân hệ chức năng, các bước tri�
 #### 1. Khách hàng
 - [x] Tích hợp `userId` vào đơn hàng khi người dùng đã đăng nhập đặt món.
 - [x] Trang **Lịch sử đơn hàng** (`my-orders.html`): Xem danh sách các đơn đã đặt của tài khoản kèm trạng thái chi tiết.
-- [ ] Cho phép khách hàng Hủy đơn khi đơn vẫn ở trạng thái `PENDING` (Chờ xác nhận).
+- [x] Cho phép khách hàng Hủy đơn khi đơn vẫn ở trạng thái `PENDING` (Chờ xác nhận), có kiểm tra quyền sở hữu đơn.
 
 #### 2. Quản trị viên (Admin)
-- [ ] Bộ lọc đơn hàng trên `admin.html`: Lọc theo trạng thái (Chờ duyệt, Đang giao, Hoàn tất, Đã hủy), lọc theo ngày đặt.
-- [ ] Tìm kiếm đơn theo Tên khách hàng hoặc Số điện thoại.
-- [ ] Modal xem chi tiết món ăn trong đơn hàng của Admin.
+- [x] Bộ lọc đơn hàng trên `admin.html`: Lọc theo trạng thái (Chờ duyệt, Đang giao, Hoàn tất, Đã hủy), lọc theo ngày đặt.
+- [x] Tìm kiếm đơn theo mã đơn, tên khách hàng hoặc số điện thoại.
+- [x] Modal xem chi tiết món ăn, tùy chọn và tổng tiền trong đơn hàng của Admin.
 
 ---
 
@@ -96,15 +96,15 @@ Tài liệu mô tả chi tiết các phân hệ chức năng, các bước tri�
 ---
 
 ### Module 6: Tối ưu UI/UX & Responsive
-- [ ] Thanh tìm kiếm sản phẩm: Lọc món theo từ khóa gõ vào (Live search).
-- [ ] Tùy chọn độ ngọt / đá (% đá, % đường) trên Modal chọn món.
-- [ ] Hệ thống Toast thông báo (Thêm vào giỏ thành công, Đặt hàng thành công, Thông báo lỗi).
-- [ ] Tối ưu CSS Responsive cho màn hình điện thoại (Mobile menu, Giỏ hàng full-width).
+- [x] Thanh tìm kiếm sản phẩm: Lọc món theo từ khóa gõ vào (Live search có debounce).
+- [x] Tùy chọn độ ngọt / đá (% đá, % đường) trên Modal chọn món.
+- [x] Hệ thống Toast thông báo cho thao tác giỏ hàng và hủy đơn.
+- [x] Tối ưu CSS Responsive cho màn hình điện thoại (menu, lưới sản phẩm, bộ lọc admin, giỏ hàng full-width).
 
 ---
 
 ### Module 7: Kiểm thử & Hoàn thiện Báo cáo
-- [ ] Viết kịch bản kiểm thử (Test cases) luồng đặt hàng và quản trị.
+- [x] Bổ sung 5 unit test cho hủy đơn theo quyền/trạng thái và bộ lọc đơn theo ngày/trạng thái.
 - [ ] Xuất tài liệu đặc tả API hoàn chỉnh qua Swagger UI.
 - [ ] Soạn thảo báo cáo môn học TTCSN (Sơ đồ Use Case, ERD, Kiến trúc hệ thống, Giao diện thực tế).
 - [ ] Chuẩn bị kịch bản demo sản phẩm.
