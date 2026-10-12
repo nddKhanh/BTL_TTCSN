@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trang Test Tạm Thời</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .card {
+      background: #ffffff;
+      max-width: 600px;
+      width: 100%;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+    h1 {
+      color: #2c3e50;
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+    p {
+      color: #666;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+    .btn-primary {
+      background: #007bff;
+      color: #ffffff;
+    }
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+    .btn-outline {
+      background: #e9ecef;
+      color: #495057;
+    }
+    .btn-outline:hover {
+      background: #dee2e6;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      font-size: 12px;
+      background: #e8f4fd;
+      color: #0d6efd;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">Trang thử nghiệm</span>
+    <h1>Giao Diện Test Tạm Thời</h1>
+    <p>Trang này được tạo để kiểm tra hiển thị frontend và test commit git. Bạn có thể chỉnh sửa nội dung hoặc xóa đi sau khi hoàn thành công việc.</p>
+    <div class="btn-group">
+      <a href="index.html" class="btn btn-primary">Về Trang Chủ</a>
+      <button class="btn btn-outline" onclick="alert('Trang test hoạt động tốt!')">Thử Click</button>
+    </div>
+  </div>
+</body>
+</html>
