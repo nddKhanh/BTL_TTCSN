@@ -2,7 +2,7 @@ package com.highlands.order.controller;
 
 import com.highlands.order.dto.ApiResponse;
 import com.highlands.order.dto.ToppingRequest;
-import com.highlands.order.model.Topping;
+import com.highlands.order.dto.ToppingResponse;
 import com.highlands.order.service.ToppingService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,12 +20,12 @@ public class AdminToppingController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Topping> create(@Valid @RequestBody ToppingRequest request) {
+    public ApiResponse<ToppingResponse> create(@Valid @RequestBody ToppingRequest request) {
         return ApiResponse.success("Tạo topping thành công", service.create(request));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Topping> update(@PathVariable Long id, @Valid @RequestBody ToppingRequest request) {
+    public ApiResponse<ToppingResponse> update(@PathVariable Long id, @Valid @RequestBody ToppingRequest request) {
         return ApiResponse.success("Cập nhật topping thành công", service.update(id, request));
     }
 

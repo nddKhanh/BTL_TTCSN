@@ -2,8 +2,8 @@ package com.highlands.order.controller;
 
 import com.highlands.order.dto.ApiResponse;
 import com.highlands.order.dto.CreateOrderRequest;
+import com.highlands.order.dto.OrderResponse;
 import com.highlands.order.dto.UpdateOrderStatusRequest;
-import com.highlands.order.model.Order;
 import com.highlands.order.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -27,18 +27,18 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Order> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        Order newOrder = orderService.createOrder(request);
+    public ApiResponse<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
+        OrderResponse newOrder = orderService.createOrder(request);
         return ApiResponse.success("Đặt hàng thành công!", newOrder);
     }
 
     @GetMapping("/{orderCode}")
-    public ApiResponse<Order> getOrderByCode(@PathVariable String orderCode) {
+    public ApiResponse<OrderResponse> getOrderByCode(@PathVariable String orderCode) {
         return ApiResponse.success(orderService.getOrderByCode(orderCode));
     }
 
     @GetMapping("/my-orders")
-    public ApiResponse<List<Order>> getMyOrders(@AuthenticationPrincipal UserDetails user) {
+    public ApiResponse<List<OrderResponse>> getMyOrders(@AuthenticationPrincipal UserDetails user) {
         if (user == null) {
             throw new IllegalArgumentException("Vui lòng đăng nhập để xem lịch sử đơn hàng");
         }
@@ -46,19 +46,19 @@ public class OrderController {
     }
 
     @PatchMapping("/{orderId}/cancel")
-    public ApiResponse<Order> cancelMyOrder(
+    public ApiResponse<OrderResponse> cancelMyOrder(
             @PathVariable Long orderId,
             @AuthenticationPrincipal UserDetails user
     ) {
         if (user == null) {
             throw new IllegalArgumentException("Vui lòng đăng nhập để hủy đơn hàng");
         }
-        Order cancelledOrder = orderService.cancelMyOrder(orderId, user.getUsername());
+        OrderResponse cancelledOrder = orderService.cancelMyOrder(orderId, user.getUsername());
         return ApiResponse.success("Hủy đơn hàng thành công!", cancelledOrder);
     }
 
     @GetMapping("/admin/all")
-    public ApiResponse<List<Order>> getAllOrders(
+    public ApiResponse<List<OrderResponse>> getAllOrders(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdFrom,
@@ -68,10 +68,10 @@ public class OrderController {
     }
 
     @PatchMapping("/admin/{orderId}/status")
-    public ApiResponse<Order> updateOrderStatus(
+    public ApiResponse<OrderResponse> updateOrderStatus(
             @PathVariable Long orderId,
             @Valid @RequestBody UpdateOrderStatusRequest request) {
-        Order updated = orderService.updateOrderStatus(orderId, request.status());
+        OrderResponse updated = orderService.updateOrderStatus(orderId, request.status());
         return ApiResponse.success("Cập nhật trạng thái đơn thành công!", updated);
     }
 }

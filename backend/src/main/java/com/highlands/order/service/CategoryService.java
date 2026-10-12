@@ -1,8 +1,9 @@
 package com.highlands.order.service;
 
-import com.highlands.order.model.Category;
 import com.highlands.order.dto.CategoryRequest;
+import com.highlands.order.dto.CategoryResponse;
 import com.highlands.order.exception.ResourceNotFoundException;
+import com.highlands.order.model.Category;
 import com.highlands.order.repository.CategoryRepository;
 import com.highlands.order.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -22,27 +23,29 @@ public class CategoryService {
         this.productRepository = productRepository;
     }
 
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAllCategories() {
+        return categoryRepository.findAll().stream()
+                .map(CategoryResponse::from)
+                .toList();
     }
 
     @Transactional
-    public Category create(CategoryRequest request) {
+    public CategoryResponse create(CategoryRequest request) {
         Category category = Category.builder()
                 .code(request.code().trim().toUpperCase())
                 .name(request.name().trim())
                 .imageUrl(request.imageUrl())
                 .build();
-        return categoryRepository.save(category);
+        return CategoryResponse.from(categoryRepository.save(category));
     }
 
     @Transactional
-    public Category update(Long id, CategoryRequest request) {
+    public CategoryResponse update(Long id, CategoryRequest request) {
         Category category = find(id);
         category.setCode(request.code().trim().toUpperCase());
         category.setName(request.name().trim());
         category.setImageUrl(request.imageUrl());
-        return category;
+        return CategoryResponse.from(category);
     }
 
     @Transactional

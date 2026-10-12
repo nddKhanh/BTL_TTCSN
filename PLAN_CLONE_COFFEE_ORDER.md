@@ -188,6 +188,8 @@
 | 2026-09-29 | 1. Implement Auth UI (`login.html`, `register.html`), lưu Token JWT, dynamic User Header, đăng xuất.<br>2. Thêm API `/api/v1/orders/my-orders`, liên kết đơn hàng với `AppUser` và tạo trang lịch sử đơn cá nhân (`my-orders.html`).<br>3. Xây dựng giao diện Tab Admin CMS (`admin.html` & `admin.js`) với đầy đủ Form Modal CRUD Sản phẩm, Danh mục, Topping & Auth Guard cho `ROLE_ADMIN`. | Module 5 (Báo cáo Thống kê Doanh thu Admin) & Module 6 (Bổ sung Tùy chọn Mức đá / Mức đường) | Biên dịch Maven thành công (`BUILD SUCCESS`, 51 file source Java compiled). |
 | 2026-10-05 | 1. Implement Module 5 (Admin Dashboard / Stats): API `GET /api/v1/admin/dashboard` trả về tổng doanh thu đơn COMPLETED, tổng số đơn, sản phẩm, người dùng và danh sách đơn hàng gần đây; bổ sung Tab Thống Kê trên `admin.html`.<br>2. Implement Module Product Options: Bổ sung Mức đá, Mức đường và Ghi chú món vào entity `OrderItem`, DTO `OrderItemRequest`, Modal Chi tiết sản phẩm (`index.html`), Giỏ hàng, Checkout, Tra cứu đơn & Lịch sử đơn.<br>3. Implement Coupon System: Admin CRUD, Customer Validation API (`POST /api/v1/coupons/validate`), áp mã giảm giá tại Checkout, trừ tiền tự động backend.<br>4. Hoàn thành Mốc 6 (Dữ liệu mẫu): Khởi tạo 6 danh mục, 22 sản phẩm, 4 người dùng (1 admin, 3 khách), 3 mã coupon, 9 đơn hàng mẫu ở đa dạng trạng thái (`PENDING`, `CONFIRMED`, `DELIVERING`, `COMPLETED`, `CANCELLED`). | Kiểm thử thủ công, bổ sung bộ lọc sắp xếp giá/mới nhất, chuẩn bị tài liệu bàn giao. | Maven Wrapper build thành công 100% (`BUILD SUCCESS`). Áp dụng triệt để nguyên tắc code sạch (Lazy Senior Dev mode) & format nhất quán. |
 | 2026-10-08 | Khách tự hủy đơn `PENDING` có kiểm tra chủ sở hữu; admin tìm/lọc đơn theo mã, tên, SĐT, trạng thái và khoảng ngày; modal chi tiết đơn; live search; toast; responsive mobile; thêm 5 unit test `OrderService`. | Thực hiện mốc P0 trong roadmap mở rộng: migration database, DTO response, chuẩn hóa lỗi API và integration test. | `mvnw clean test` thành công, 5/5 test đạt; các trang frontend trả HTTP 200. |
+| 2026-10-12 | Hoàn thành nhóm P0 database: Flyway V1/V2, index truy vấn, profile `dev`/`demo`/`test`/`prod`, cô lập seed demo và hướng dẫn backup/restore. | Thực hiện nhóm P0 hợp đồng API và response DTO. | `mvnw clean test` thành công, 5/5 test đạt; chưa chạy migration thật vì máy hiện không có MySQL client/Docker daemon. |
+| 2026-10-12 | Thay toàn bộ JPA Entity ở response controller bằng DTO cho category, product/size, topping, coupon, order/item và dashboard; thêm test chống lộ dữ liệu tài khoản qua `OrderResponse`. | Chuẩn hóa `ApiResponse` và hợp đồng lỗi API. | `mvnw clean test` thành công, 6/6 test đạt; giữ nguyên tên field frontend đang sử dụng. |
 
 ---
 
@@ -205,15 +207,15 @@
 
 #### Database và migration
 
-- [ ] Tích hợp Flyway; tạo migration khởi tạo schema thay cho phụ thuộc hoàn toàn vào Hibernate auto-DDL.
-- [ ] Tạo migration bổ sung index cho `orders.order_code`, `orders.created_at`, `orders.status`, `users.email`, `products.name` và `coupons.code`.
-- [ ] Chuyển seed data demo thành profile riêng (`dev` hoặc `demo`), không tự động nạp trong production.
-- [ ] Quy định rõ `spring.jpa.hibernate.ddl-auto` cho từng profile: `update/create-drop` ở local test, `validate` ở production.
-- [ ] Sao lưu/khôi phục database bằng script hoặc hướng dẫn trong `docs/`.
+- [x] Tích hợp Flyway; tạo migration khởi tạo schema thay cho phụ thuộc hoàn toàn vào Hibernate auto-DDL.
+- [x] Tạo migration bổ sung index cho `orders.order_code`, `orders.created_at`, `orders.status`, `users.email`, `products.name` và `coupons.code`.
+- [x] Chuyển seed data demo thành profile riêng (`dev` hoặc `demo`), không tự động nạp trong production.
+- [x] Quy định rõ `spring.jpa.hibernate.ddl-auto` cho từng profile: `update/create-drop` ở local test, `validate` ở production.
+- [x] Sao lưu/khôi phục database bằng script hoặc hướng dẫn trong `docs/`.
 
 #### Hợp đồng API và DTO
 
-- [ ] Không trả trực tiếp JPA Entity từ controller; tạo response DTO cho Product, Order, OrderItem, Category, Coupon và Dashboard.
+- [x] Không trả trực tiếp JPA Entity từ controller; tạo response DTO cho Product, Order, OrderItem, Category, Coupon và Dashboard.
 - [ ] Chuẩn hóa `ApiResponse`: `success`, `message`, `data`, `errorCode`, `timestamp`, `path`.
 - [ ] Tách lỗi nghiệp vụ thành mã ổn định như `ORDER_NOT_FOUND`, `INVALID_ORDER_STATUS`, `COUPON_EXPIRED`, `ACCESS_DENIED`.
 - [ ] Bổ sung handler cho lỗi JSON sai định dạng, query parameter sai kiểu, access denied và JWT hết hạn.

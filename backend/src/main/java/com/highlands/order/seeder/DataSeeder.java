@@ -3,6 +3,7 @@ package com.highlands.order.seeder;
 import com.highlands.order.model.*;
 import com.highlands.order.repository.*;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
+@Profile({"dev", "demo"})
 public class DataSeeder implements CommandLineRunner {
 
     private final CategoryRepository categoryRepository;

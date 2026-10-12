@@ -3,6 +3,7 @@ package com.highlands.order.service;
 import com.highlands.order.dto.CreateOrderRequest;
 import com.highlands.order.dto.DashboardStatsResponse;
 import com.highlands.order.dto.OrderItemRequest;
+import com.highlands.order.dto.OrderResponse;
 import com.highlands.order.dto.ValidateCouponResponse;
 import com.highlands.order.config.OrderPricingProperties;
 import com.highlands.order.exception.ResourceNotFoundException;
@@ -52,7 +53,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order createOrder(CreateOrderRequest request) {
+    public OrderResponse createOrder(CreateOrderRequest request) {
         String orderCode = "COF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         
         Order order = Order.builder()
@@ -143,19 +144,22 @@ public class OrderService {
             userRepository.findByEmailIgnoreCase(auth.getName()).ifPresent(order::setUser);
         }
 
-        return orderRepository.save(order);
+        return OrderResponse.from(orderRepository.save(order));
     }
 
-    public Order getOrderByCode(String orderCode) {
-        return orderRepository.findByOrderCode(orderCode)
+    public OrderResponse getOrderByCode(String orderCode) {
+        Order order = orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng mã: " + orderCode));
+        return OrderResponse.from(order);
     }
 
-    public List<Order> getMyOrders(String email) {
-        return orderRepository.findByUserEmailOrderByCreatedAtDesc(email);
+    public List<OrderResponse> getMyOrders(String email) {
+        return orderRepository.findByUserEmailOrderByCreatedAtDesc(email).stream()
+                .map(OrderResponse::from)
+                .toList();
     }
 
-    public List<Order> getAllOrders(
+    public List<OrderResponse> getAllOrders(
             String requestedStatus,
             String keyword,
             LocalDate createdFrom,
@@ -170,7 +174,9 @@ public class OrderService {
             throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc");
         }
 
-        return orderRepository.searchForAdmin(status, normalizedKeyword, fromDateTime, untilDateTime);
+        return orderRepository.searchForAdmin(status, normalizedKeyword, fromDateTime, untilDateTime).stream()
+                .map(OrderResponse::from)
+                .toList();
     }
 
     public DashboardStatsResponse getDashboardStats() {
@@ -184,7 +190,9 @@ public class OrderService {
         long cancelledOrders = orderRepository.countByStatus(OrderStatus.CANCELLED);
         long totalProducts = productRepository.countByIsActiveTrue();
         long totalUsers = userRepository.count();
-        List<Order> recentOrders = orderRepository.findTop5ByOrderByCreatedAtDesc();
+        List<OrderResponse> recentOrders = orderRepository.findTop5ByOrderByCreatedAtDesc().stream()
+                .map(OrderResponse::from)
+                .toList();
 
         return new DashboardStatsResponse(
                 totalRevenue,
@@ -199,7 +207,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order updateOrderStatus(Long orderId, String requestedStatus) {
+    public OrderResponse updateOrderStatus(Long orderId, String requestedStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng ID: " + orderId));
         OrderStatus newStatus;
@@ -212,11 +220,11 @@ public class OrderService {
             throw new IllegalArgumentException("Không thể chuyển đơn từ " + order.getStatus() + " sang " + newStatus);
         }
         order.setStatus(newStatus);
-        return orderRepository.save(order);
+        return OrderResponse.from(orderRepository.save(order));
     }
 
     @Transactional
-    public Order cancelMyOrder(Long orderId, String email) {
+    public OrderResponse cancelMyOrder(Long orderId, String email) {
         Order order = orderRepository.findByIdAndUserEmailIgnoreCase(orderId, email)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng của bạn"));
 
@@ -225,7 +233,7 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.CANCELLED);
-        return orderRepository.save(order);
+        return OrderResponse.from(orderRepository.save(order));
     }
 
     private OrderStatus parseOptionalStatus(String requestedStatus) {

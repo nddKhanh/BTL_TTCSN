@@ -1,5 +1,8 @@
 package com.highlands.order.service;
 
+import com.highlands.order.dto.ToppingRequest;
+import com.highlands.order.dto.ToppingResponse;
+import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.Topping;
 import com.highlands.order.repository.ToppingRepository;
 import org.springframework.stereotype.Service;
@@ -17,26 +20,28 @@ public class ToppingService {
         this.toppingRepository = toppingRepository;
     }
 
-    public List<Topping> getAllToppings() {
-        return toppingRepository.findAll();
+    public List<ToppingResponse> getAllToppings() {
+        return toppingRepository.findAll().stream()
+                .map(ToppingResponse::from)
+                .toList();
     }
 
     @Transactional
-    public Topping create(com.highlands.order.dto.ToppingRequest request) {
+    public ToppingResponse create(ToppingRequest request) {
         Topping topping = Topping.builder()
                 .name(request.name().trim())
                 .price(request.price())
                 .build();
-        return toppingRepository.save(topping);
+        return ToppingResponse.from(toppingRepository.save(topping));
     }
 
     @Transactional
-    public Topping update(Long id, com.highlands.order.dto.ToppingRequest request) {
+    public ToppingResponse update(Long id, ToppingRequest request) {
         Topping topping = toppingRepository.findById(id)
-                .orElseThrow(() -> new com.highlands.order.exception.ResourceNotFoundException("Không tìm thấy topping ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy topping ID: " + id));
         topping.setName(request.name().trim());
         topping.setPrice(request.price());
-        return topping;
+        return ToppingResponse.from(topping);
     }
 
     @Transactional

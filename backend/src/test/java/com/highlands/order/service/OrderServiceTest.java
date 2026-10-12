@@ -1,6 +1,7 @@
 package com.highlands.order.service;
 
 import com.highlands.order.config.OrderPricingProperties;
+import com.highlands.order.dto.OrderResponse;
 import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.Order;
 import com.highlands.order.model.OrderStatus;
@@ -65,9 +66,9 @@ class OrderServiceTest {
                 .thenReturn(Optional.of(order));
         when(orderRepository.save(order)).thenReturn(order);
 
-        Order result = orderService.cancelMyOrder(10L, "customer@example.com");
+        OrderResponse result = orderService.cancelMyOrder(10L, "customer@example.com");
 
-        assertEquals(OrderStatus.CANCELLED, result.getStatus());
+        assertEquals(OrderStatus.CANCELLED, result.status());
         verify(orderRepository).save(order);
     }
 

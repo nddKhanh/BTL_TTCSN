@@ -2,7 +2,7 @@ package com.highlands.order.controller;
 
 import com.highlands.order.dto.ApiResponse;
 import com.highlands.order.dto.CouponRequest;
-import com.highlands.order.model.Coupon;
+import com.highlands.order.dto.CouponResponse;
 import com.highlands.order.service.CouponService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,20 +21,20 @@ public class AdminCouponController {
     }
 
     @GetMapping
-    public ApiResponse<List<Coupon>> getAllCoupons() {
+    public ApiResponse<List<CouponResponse>> getAllCoupons() {
         return ApiResponse.success(couponService.getAllCoupons());
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Coupon> createCoupon(@Valid @RequestBody CouponRequest request) {
-        Coupon created = couponService.createCoupon(request);
+    public ApiResponse<CouponResponse> createCoupon(@Valid @RequestBody CouponRequest request) {
+        CouponResponse created = couponService.createCoupon(request);
         return ApiResponse.success("Tạo mã giảm giá thành công", created);
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Coupon> updateCoupon(@PathVariable Long id, @Valid @RequestBody CouponRequest request) {
-        Coupon updated = couponService.updateCoupon(id, request);
+    public ApiResponse<CouponResponse> updateCoupon(@PathVariable Long id, @Valid @RequestBody CouponRequest request) {
+        CouponResponse updated = couponService.updateCoupon(id, request);
         return ApiResponse.success("Cập nhật mã giảm giá thành công", updated);
     }
 

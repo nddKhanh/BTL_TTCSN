@@ -1,7 +1,5 @@
 package com.highlands.order.dto;
 
-import com.highlands.order.model.Order;
-
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -13,5 +11,5 @@ public record DashboardStatsResponse(
     long cancelledOrders,
     long totalProducts,
     long totalUsers,
-    List<Order> recentOrders
+    List<OrderResponse> recentOrders
 ) {}

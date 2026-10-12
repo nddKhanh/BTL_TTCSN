@@ -1,7 +1,7 @@
 package com.highlands.order.controller;
 
 import com.highlands.order.dto.ApiResponse;
-import com.highlands.order.model.Product;
+import com.highlands.order.dto.ProductResponse;
 import com.highlands.order.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,13 +18,13 @@ public class ProductController {
     }
 
     @GetMapping
-    public ApiResponse<List<Product>> getProducts(@RequestParam(required = false) Long categoryId,
+    public ApiResponse<List<ProductResponse>> getProducts(@RequestParam(required = false) Long categoryId,
                                                   @RequestParam(required = false) String keyword) {
         return ApiResponse.success(productService.getProducts(categoryId, keyword));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<Product> getProductById(@PathVariable Long id) {
+    public ApiResponse<ProductResponse> getProductById(@PathVariable Long id) {
         return ApiResponse.success(productService.getProductById(id));
     }
 }

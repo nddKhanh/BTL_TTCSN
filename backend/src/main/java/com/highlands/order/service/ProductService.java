@@ -4,6 +4,7 @@ import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.Product;
 import com.highlands.order.model.Category;
 import com.highlands.order.dto.ProductRequest;
+import com.highlands.order.dto.ProductResponse;
 import com.highlands.order.repository.CategoryRepository;
 import com.highlands.order.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -23,27 +24,37 @@ public class ProductService {
         this.categoryRepository = categoryRepository;
     }
 
-    public List<Product> getProducts(Long categoryId, String keyword) {
+    public List<ProductResponse> getProducts(Long categoryId, String keyword) {
         String query = keyword == null ? "" : keyword.trim();
+        List<Product> products;
         if (categoryId != null) {
-            if (!query.isEmpty()) return productRepository.findByCategoryIdAndNameContainingIgnoreCaseAndIsActiveTrue(categoryId, query);
-            return productRepository.findByCategoryIdAndIsActiveTrue(categoryId);
+            products = query.isEmpty()
+                    ? productRepository.findByCategoryIdAndIsActiveTrue(categoryId)
+                    : productRepository.findByCategoryIdAndNameContainingIgnoreCaseAndIsActiveTrue(categoryId, query);
+        } else {
+            products = query.isEmpty()
+                    ? productRepository.findByIsActiveTrue()
+                    : productRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(query);
         }
-        if (!query.isEmpty()) return productRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(query);
-        return productRepository.findByIsActiveTrue();
+        return products.stream()
+                .map(ProductResponse::from)
+                .toList();
     }
 
-    public List<Product> getAllProductsAdmin() {
-        return productRepository.findAllByOrderByIdDesc();
+    public List<ProductResponse> getAllProductsAdmin() {
+        return productRepository.findAllByOrderByIdDesc().stream()
+                .map(ProductResponse::from)
+                .toList();
     }
 
-    public Product getProductById(Long id) {
-        return productRepository.findByIdAndIsActiveTrue(id)
+    public ProductResponse getProductById(Long id) {
+        Product product = productRepository.findByIdAndIsActiveTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));
+        return ProductResponse.from(product);
     }
 
     @Transactional
-    public Product create(ProductRequest request) {
+    public ProductResponse create(ProductRequest request) {
         Product product = Product.builder()
                 .category(category(request.categoryId()))
                 .name(request.name().trim())
@@ -52,11 +63,11 @@ public class ProductService {
                 .imageUrl(request.imageUrl())
                 .isActive(request.isActive())
                 .build();
-        return productRepository.save(product);
+        return ProductResponse.from(productRepository.save(product));
     }
 
     @Transactional
-    public Product update(Long id, ProductRequest request) {
+    public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));
         product.setCategory(category(request.categoryId()));
@@ -65,7 +76,7 @@ public class ProductService {
         product.setBasePrice(request.basePrice());
         product.setImageUrl(request.imageUrl());
         product.setIsActive(request.isActive());
-        return product;
+        return ProductResponse.from(product);
     }
 
     @Transactional

@@ -1,7 +1,7 @@
 package com.highlands.order.controller;
 
 import com.highlands.order.dto.ApiResponse;
-import com.highlands.order.model.Category;
+import com.highlands.order.dto.CategoryResponse;
 import com.highlands.order.service.CategoryService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +20,7 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ApiResponse<List<Category>> getAllCategories() {
+    public ApiResponse<List<CategoryResponse>> getAllCategories() {
         return ApiResponse.success(categoryService.getAllCategories());
     }
 }

@@ -1,7 +1,7 @@
 package com.highlands.order.controller;
 
 import com.highlands.order.dto.ApiResponse;
-import com.highlands.order.model.Topping;
+import com.highlands.order.dto.ToppingResponse;
 import com.highlands.order.service.ToppingService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,7 +20,7 @@ public class ToppingController {
     }
 
     @GetMapping
-    public ApiResponse<List<Topping>> getAllToppings() {
+    public ApiResponse<List<ToppingResponse>> getAllToppings() {
         return ApiResponse.success(toppingService.getAllToppings());
     }
 }

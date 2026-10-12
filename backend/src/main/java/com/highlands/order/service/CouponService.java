@@ -1,6 +1,7 @@
 package com.highlands.order.service;
 
 import com.highlands.order.dto.CouponRequest;
+import com.highlands.order.dto.CouponResponse;
 import com.highlands.order.dto.ValidateCouponResponse;
 import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.Coupon;
@@ -24,17 +25,19 @@ public class CouponService {
         this.couponRepository = couponRepository;
     }
 
-    public List<Coupon> getAllCoupons() {
-        return couponRepository.findAllByOrderByCreatedAtDesc();
+    public List<CouponResponse> getAllCoupons() {
+        return couponRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(CouponResponse::from)
+                .toList();
     }
 
-    public Coupon getCouponById(Long id) {
+    private Coupon findCoupon(Long id) {
         return couponRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mã giảm giá ID: " + id));
     }
 
     @Transactional
-    public Coupon createCoupon(CouponRequest request) {
+    public CouponResponse createCoupon(CouponRequest request) {
         String code = request.code().trim().toUpperCase();
         if (couponRepository.existsByCodeIgnoreCase(code)) {
             throw new IllegalArgumentException("Mã giảm giá '" + code + "' đã tồn tại");
@@ -50,12 +53,12 @@ public class CouponService {
                 .expiryDate(request.expiryDate())
                 .build();
 
-        return couponRepository.save(coupon);
+        return CouponResponse.from(couponRepository.save(coupon));
     }
 
     @Transactional
-    public Coupon updateCoupon(Long id, CouponRequest request) {
-        Coupon coupon = getCouponById(id);
+    public CouponResponse updateCoupon(Long id, CouponRequest request) {
+        Coupon coupon = findCoupon(id);
         String code = request.code().trim().toUpperCase();
 
         if (!coupon.getCode().equalsIgnoreCase(code) && couponRepository.existsByCodeIgnoreCase(code)) {
@@ -72,12 +75,12 @@ public class CouponService {
         }
         coupon.setExpiryDate(request.expiryDate());
 
-        return couponRepository.save(coupon);
+        return CouponResponse.from(couponRepository.save(coupon));
     }
 
     @Transactional
     public void deleteCoupon(Long id) {
-        Coupon coupon = getCouponById(id);
+        Coupon coupon = findCoupon(id);
         couponRepository.delete(coupon);
     }
 

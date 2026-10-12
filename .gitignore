@@ -17,6 +17,7 @@ target/
 *.jar
 *.war
 node_modules/
+backups/
 
 # OS generated files
 .DS_Store

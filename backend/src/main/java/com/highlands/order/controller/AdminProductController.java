@@ -1,7 +1,6 @@
 package com.highlands.order.controller;
 
 import com.highlands.order.dto.*;
-import com.highlands.order.model.Product;
 import com.highlands.order.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,16 +14,16 @@ public class AdminProductController {
     public AdminProductController(ProductService service) {
         this.service = service; }
     @GetMapping
-    public ApiResponse<java.util.List<Product>> getAll() {
+    public ApiResponse<java.util.List<ProductResponse>> getAll() {
         return ApiResponse.success(service.getAllProductsAdmin());
     }
 
     @PostMapping @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<Product> create(
+    public ApiResponse<ProductResponse> create(
             @Valid @RequestBody ProductRequest request
     ) {
         return ApiResponse.success("Tạo sản phẩm thành công", service.create(request));
     }
-    @PutMapping("/{id}") public ApiResponse<Product> update(@PathVariable Long id, @Valid @RequestBody ProductRequest request) { return ApiResponse.success("Cập nhật sản phẩm thành công", service.update(id, request)); }
+    @PutMapping("/{id}") public ApiResponse<ProductResponse> update(@PathVariable Long id, @Valid @RequestBody ProductRequest request) { return ApiResponse.success("Cập nhật sản phẩm thành công", service.update(id, request)); }
     @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) public void hide(@PathVariable Long id) { service.hide(id); }
 }
