@@ -44,44 +44,21 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        // Tài khoản và coupon được seed độc lập để database demo thiếu một phần
+        // vẫn được bổ sung mà không tạo trùng dữ liệu đã có.
+        seedDemoUser("Quản Trị Viên Mộc Nhiên", "admin@mocnhien.vn", "0901234567", "admin123", Role.ADMIN);
+
+        AppUser userA = seedDemoUser("Nguyễn Văn A", "nguyen.van.a@gmail.com", "0912345678", "123456", Role.CUSTOMER);
+        AppUser userB = seedDemoUser("Trần Thị B", "tran.thi.b@gmail.com", "0987654321", "123456", Role.CUSTOMER);
+        AppUser userC = seedDemoUser("Lê Văn C", "le.van.c@gmail.com", "0933445566", "123456", Role.CUSTOMER);
+
+        seedDemoCoupons();
+
         if (categoryRepository.count() > 0) {
-            return; // Dữ liệu đã được khởi tạo trước đó
+            return; // Không tạo lại catalog và đơn hàng mẫu đã có
         }
 
-        // 1. Tạo Người Dùng (1 Admin, 3 Khách Hàng)
-        AppUser admin = userRepository.save(AppUser.builder()
-                .fullName("Quản Trị Viên Mộc Nhiên")
-                .email("admin@mocnhien.vn")
-                .phone("0901234567")
-                .passwordHash(passwordEncoder.encode("admin123"))
-                .role(Role.ADMIN)
-                .build());
-
-        AppUser userA = userRepository.save(AppUser.builder()
-                .fullName("Nguyễn Văn A")
-                .email("nguyen.van.a@gmail.com")
-                .phone("0912345678")
-                .passwordHash(passwordEncoder.encode("123456"))
-                .role(Role.CUSTOMER)
-                .build());
-
-        AppUser userB = userRepository.save(AppUser.builder()
-                .fullName("Trần Thị B")
-                .email("tran.thi.b@gmail.com")
-                .phone("0987654321")
-                .passwordHash(passwordEncoder.encode("123456"))
-                .role(Role.CUSTOMER)
-                .build());
-
-        AppUser userC = userRepository.save(AppUser.builder()
-                .fullName("Lê Văn C")
-                .email("le.van.c@gmail.com")
-                .phone("0933445566")
-                .passwordHash(passwordEncoder.encode("123456"))
-                .role(Role.CUSTOMER)
-                .build());
-
-        // 2. Tạo 6 Danh Mục Sản Phẩm
+        // 1. Tạo 6 Danh Mục Sản Phẩm
         Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê Mộc Nhiên").imageUrl("https://placehold.co/480x320?text=Ca+Phe").build());
         Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà Trái Cây & Trà Sữa").imageUrl("https://placehold.co/480x320?text=Tra").build());
         Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay Special").imageUrl("https://placehold.co/480x320?text=Da+Xay").build());
@@ -89,7 +66,7 @@ public class DataSeeder implements CommandLineRunner {
         Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh & Snack").imageUrl("https://placehold.co/480x320?text=Banh").build());
         Category combo = categoryRepository.save(Category.builder().code("COMBO").name("Combo Tiết Kiệm").imageUrl("https://placehold.co/480x320?text=Combo").build());
 
-        // 3. Tạo 5 Topping
+        // 2. Tạo 5 Topping
         Topping thachDao = toppingRepository.save(Topping.builder().name("Thạch Đào").price(BigDecimal.valueOf(10000)).build());
         Topping thachCaPhe = toppingRepository.save(Topping.builder().name("Thạch Cà Phê").price(BigDecimal.valueOf(10000)).build());
         Topping kemCheese = toppingRepository.save(Topping.builder().name("Kem Cheese").price(BigDecimal.valueOf(10000)).build());
@@ -133,33 +110,7 @@ public class DataSeeder implements CommandLineRunner {
         seededProducts.add(createSingleSizeProduct(combo, "Combo Bữa Sáng Năng Lượng", "1 Phin Sữa Đá + 1 Bánh Mì Que Pate tiết kiệm 10.000đ.", 45000, "https://placehold.co/600x450?text=Combo+Sang"));
         seededProducts.add(createSingleSizeProduct(combo, "Combo Xế Chiều Thư Giãn", "1 Trà Sen Vàng + 1 Bánh Croissant bơ tỏi.", 69000, "https://placehold.co/600x450?text=Combo+Xe+Chieu"));
 
-        // 4. Tạo 3 Coupon Mẫu
-        couponRepository.saveAll(List.of(
-                Coupon.builder()
-                        .code("WELCOME10")
-                        .discountType(CouponType.PERCENT)
-                        .discountValue(BigDecimal.valueOf(10))
-                        .maxDiscountAmount(BigDecimal.valueOf(50000))
-                        .minOrderAmount(BigDecimal.ZERO)
-                        .active(true)
-                        .build(),
-                Coupon.builder()
-                        .code("MOCNHIEN20K")
-                        .discountType(CouponType.FIXED)
-                        .discountValue(BigDecimal.valueOf(20000))
-                        .minOrderAmount(BigDecimal.valueOf(50000))
-                        .active(true)
-                        .build(),
-                Coupon.builder()
-                        .code("FREESHIP15K")
-                        .discountType(CouponType.FIXED)
-                        .discountValue(BigDecimal.valueOf(15000))
-                        .minOrderAmount(BigDecimal.valueOf(100000))
-                        .active(true)
-                        .build()
-        ));
-
-        // 5. Tạo 9 Đơn Hàng Mẫu Đa Dạng Trạng Thái
+        // 3. Tạo 9 Đơn Hàng Mẫu Đa Dạng Trạng Thái
         createSampleOrder(userA, seededProducts.get(0), "M", "100% Đá", "100% Đường", "Thạch Cà Phê", 2, OrderStatus.COMPLETED, "WELCOME10", BigDecimal.valueOf(6800));
         createSampleOrder(userB, seededProducts.get(5), "L", "70% Đá", "50% Đường", "Hạt Sen Extra", 1, OrderStatus.COMPLETED, "MOCNHIEN20K", BigDecimal.valueOf(20000));
         createSampleOrder(userC, seededProducts.get(10), "M", "100% Đá", "100% Đường", "Kem Cheese", 2, OrderStatus.DELIVERING, null, BigDecimal.ZERO);
@@ -169,6 +120,42 @@ public class DataSeeder implements CommandLineRunner {
         createSampleOrder(userA, seededProducts.get(18), "Tiêu chuẩn", null, null, null, 1, OrderStatus.PENDING, null, BigDecimal.ZERO);
         createSampleOrder(userB, seededProducts.get(3), "M", "100% Đá", "100% Đường", "Kem Cheese", 2, OrderStatus.PENDING, null, BigDecimal.ZERO);
         createSampleOrder(userC, seededProducts.get(1), "S", "Không Đá", "Không Đường", null, 1, OrderStatus.CANCELLED, null, BigDecimal.ZERO);
+    }
+
+    private AppUser seedDemoUser(String fullName, String email, String phone, String password, Role role) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseGet(() -> userRepository.save(AppUser.builder()
+                        .fullName(fullName)
+                        .email(email)
+                        .phone(phone)
+                        .passwordHash(passwordEncoder.encode(password))
+                        .role(role)
+                        .build()));
+    }
+
+    private void seedDemoCoupons() {
+        seedDemoCoupon("WELCOME10", CouponType.PERCENT, BigDecimal.valueOf(10),
+                BigDecimal.ZERO, BigDecimal.valueOf(50000));
+        seedDemoCoupon("MOCNHIEN20K", CouponType.FIXED, BigDecimal.valueOf(20000),
+                BigDecimal.valueOf(50000), null);
+        seedDemoCoupon("FREESHIP15K", CouponType.FIXED, BigDecimal.valueOf(15000),
+                BigDecimal.valueOf(100000), null);
+    }
+
+    private void seedDemoCoupon(String code, CouponType discountType, BigDecimal discountValue,
+                                BigDecimal minOrderAmount, BigDecimal maxDiscountAmount) {
+        if (couponRepository.existsByCodeIgnoreCase(code)) {
+            return;
+        }
+
+        couponRepository.save(Coupon.builder()
+                .code(code)
+                .discountType(discountType)
+                .discountValue(discountValue)
+                .minOrderAmount(minOrderAmount)
+                .maxDiscountAmount(maxDiscountAmount)
+                .active(true)
+                .build());
     }
 
     private Product createProduct(Category cat, String name, String desc, double basePrice, String imgUrl) {
