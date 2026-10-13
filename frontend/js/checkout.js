@@ -151,28 +151,17 @@ function setupCheckoutForm() {
     };
 
     try {
-      const token = getAuthToken();
-      const headers = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const response = await fetch(`${API_BASE_URL}/orders`, {
+      const order = await fetchAPI('/orders', {
         method: 'POST',
-        headers,
         body: JSON.stringify(payload)
       });
 
-      const resData = await response.json();
-
-      if (resData.success) {
-        CartManager.clearCart();
-        alert('Đặt hàng thành công!');
-        window.location.href = `order-status.html?code=${resData.data.orderCode}`;
-      } else {
-        alert('Đặt hàng thất bại: ' + resData.message);
-      }
+      CartManager.clearCart();
+      alert('Đặt hàng thành công!');
+      window.location.href = `order-status.html?code=${order.orderCode}`;
     } catch (err) {
       console.error(err);
-      alert('Không thể kết nối đến Backend Server! Vui lòng kiểm tra lại Spring Boot.');
+      alert(`Đặt hàng thất bại: ${err.message}`);
     }
   });
 }

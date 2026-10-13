@@ -21,7 +21,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final DatabaseUserDetailsService userDetailsService;
-    public JwtAuthenticationFilter(JwtService jwtService, DatabaseUserDetailsService userDetailsService) { this.jwtService = jwtService; this.userDetailsService = userDetailsService; }
+    private final ApiErrorResponseWriter errorWriter;
+
+    public JwtAuthenticationFilter(
+            JwtService jwtService,
+            DatabaseUserDetailsService userDetailsService,
+            ApiErrorResponseWriter errorWriter
+    ) {
+        this.jwtService = jwtService;
+        this.userDetailsService = userDetailsService;
+        this.errorWriter = errorWriter;
+    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -33,10 +43,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (ExpiredJwtException ex) {
-            request.setAttribute(JWT_ERROR_CODE, ApiErrorCode.TOKEN_EXPIRED);
+            writeAuthenticationError(request, response, ApiErrorCode.TOKEN_EXPIRED, "Phiên đăng nhập đã hết hạn");
+            return;
         } catch (JwtException | UsernameNotFoundException ex) {
-            request.setAttribute(JWT_ERROR_CODE, ApiErrorCode.AUTHENTICATION_FAILED);
+            writeAuthenticationError(request, response, ApiErrorCode.AUTHENTICATION_FAILED, "Phiên đăng nhập không hợp lệ");
+            return;
         }
         filterChain.doFilter(request, response);
+    }
+
+    private void writeAuthenticationError(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            ApiErrorCode errorCode,
+            String message
+    ) throws IOException {
+        request.setAttribute(JWT_ERROR_CODE, errorCode);
+        errorWriter.write(request, response, HttpServletResponse.SC_UNAUTHORIZED, errorCode, message);
     }
 }

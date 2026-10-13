@@ -12,8 +12,6 @@ import com.highlands.order.repository.OrderRepository;
 import com.highlands.order.repository.ProductRepository;
 import com.highlands.order.repository.ToppingRepository;
 import com.highlands.order.repository.UserRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,7 +51,7 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse createOrder(CreateOrderRequest request) {
+    public OrderResponse createOrder(CreateOrderRequest request, String authenticatedEmail) {
         String orderCode = "COF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         
         Order order = Order.builder()
@@ -138,10 +136,10 @@ public class OrderService {
         order.setShippingFee(shippingFee);
         order.setTotalAmount(netSubtotal.add(shippingFee));
 
-        // Nếu người dùng đã đăng nhập, gắn tài khoản vào đơn hàng
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            userRepository.findByEmailIgnoreCase(auth.getName()).ifPresent(order::setUser);
+        if (authenticatedEmail != null && !authenticatedEmail.isBlank()) {
+            AppUser authenticatedUser = userRepository.findByEmailIgnoreCase(authenticatedEmail)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản đặt hàng"));
+            order.setUser(authenticatedUser);
         }
 
         return OrderResponse.from(orderRepository.save(order));
@@ -154,7 +152,7 @@ public class OrderService {
     }
 
     public List<OrderResponse> getMyOrders(String email) {
-        return orderRepository.findByUserEmailOrderByCreatedAtDesc(email).stream()
+        return orderRepository.findByUserEmailIgnoreCaseOrderByCreatedAtDesc(email).stream()
                 .map(OrderResponse::from)
                 .toList();
     }

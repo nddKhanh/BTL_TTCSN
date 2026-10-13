@@ -27,8 +27,12 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<OrderResponse> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        OrderResponse newOrder = orderService.createOrder(request);
+    public ApiResponse<OrderResponse> createOrder(
+            @Valid @RequestBody CreateOrderRequest request,
+            @AuthenticationPrincipal UserDetails user
+    ) {
+        String authenticatedEmail = user == null ? null : user.getUsername();
+        OrderResponse newOrder = orderService.createOrder(request, authenticatedEmail);
         return ApiResponse.success("Đặt hàng thành công!", newOrder);
     }
 

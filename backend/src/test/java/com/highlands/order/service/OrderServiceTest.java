@@ -1,10 +1,15 @@
 package com.highlands.order.service;
 
 import com.highlands.order.config.OrderPricingProperties;
+import com.highlands.order.dto.CreateOrderRequest;
+import com.highlands.order.dto.OrderItemRequest;
 import com.highlands.order.dto.OrderResponse;
 import com.highlands.order.exception.ResourceNotFoundException;
+import com.highlands.order.model.AppUser;
 import com.highlands.order.model.Order;
 import com.highlands.order.model.OrderStatus;
+import com.highlands.order.model.Product;
+import com.highlands.order.model.ProductSize;
 import com.highlands.order.repository.OrderRepository;
 import com.highlands.order.repository.ProductRepository;
 import com.highlands.order.repository.ToppingRepository;
@@ -15,13 +20,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -134,5 +143,52 @@ class OrderServiceTest {
         );
 
         verifyNoInteractions(orderRepository);
+    }
+
+    @Test
+    void createOrder_authenticatedCustomer_attachesOrderToAccount() {
+        AppUser customer = AppUser.builder().email("customer@example.com").build();
+        Product product = Product.builder()
+                .id(1L)
+                .name("Phin Sữa Đá")
+                .basePrice(BigDecimal.valueOf(29000))
+                .sizes(new ArrayList<>())
+                .build();
+        product.getSizes().add(ProductSize.builder()
+                .product(product)
+                .sizeName("S")
+                .extraPrice(BigDecimal.ZERO)
+                .build());
+        CreateOrderRequest request = new CreateOrderRequest(
+                "Khách hàng",
+                "0900000000",
+                "123 Đường A",
+                null,
+                null,
+                List.of(new OrderItemRequest(1L, "S", List.of(), null, null, null, 1))
+        );
+
+        when(toppingRepository.findAll()).thenReturn(List.of());
+        when(productRepository.findByIdAndIsActiveTrue(1L)).thenReturn(Optional.of(product));
+        when(pricing.freeShippingThreshold()).thenReturn(BigDecimal.valueOf(200000));
+        when(pricing.shippingFee()).thenReturn(BigDecimal.valueOf(15000));
+        when(userRepository.findByEmailIgnoreCase("customer@example.com")).thenReturn(Optional.of(customer));
+        when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        orderService.createOrder(request, "customer@example.com");
+
+        var orderCaptor = org.mockito.ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(orderCaptor.capture());
+        assertSame(customer, orderCaptor.getValue().getUser());
+    }
+
+    @Test
+    void getMyOrders_matchesEmailIgnoringCase() {
+        when(orderRepository.findByUserEmailIgnoreCaseOrderByCreatedAtDesc("Customer@Example.com"))
+                .thenReturn(List.of());
+
+        orderService.getMyOrders("Customer@Example.com");
+
+        verify(orderRepository).findByUserEmailIgnoreCaseOrderByCreatedAtDesc("Customer@Example.com");
     }
 }

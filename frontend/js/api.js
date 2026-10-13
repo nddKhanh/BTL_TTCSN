@@ -39,6 +39,10 @@ async function fetchAPI(endpoint, options = {}) {
     });
 
     const result = await response.json();
+    if (response.status === 401) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
+    }
     if (!response.ok || !result.success) {
       throw new Error(result.message || 'Có lỗi xảy ra!');
     }
