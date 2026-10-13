@@ -20,6 +20,5 @@ public record CreateOrderRequest(
     String couponCode,
 
     @NotEmpty(message = "Giỏ hàng không được để trống")
-    @Valid
-    List<OrderItemRequest> items
+    List<@Valid OrderItemRequest> items
 ) {}
