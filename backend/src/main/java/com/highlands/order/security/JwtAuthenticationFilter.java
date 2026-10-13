@@ -1,5 +1,7 @@
 package com.highlands.order.security;
 
+import com.highlands.order.exception.ApiErrorCode;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
@@ -15,6 +17,8 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    public static final String JWT_ERROR_CODE = JwtAuthenticationFilter.class.getName() + ".errorCode";
+
     private final JwtService jwtService;
     private final DatabaseUserDetailsService userDetailsService;
     public JwtAuthenticationFilter(JwtService jwtService, DatabaseUserDetailsService userDetailsService) { this.jwtService = jwtService; this.userDetailsService = userDetailsService; }
@@ -28,7 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
-        } catch (JwtException | UsernameNotFoundException ignored) { }
+        } catch (ExpiredJwtException ex) {
+            request.setAttribute(JWT_ERROR_CODE, ApiErrorCode.TOKEN_EXPIRED);
+        } catch (JwtException | UsernameNotFoundException ex) {
+            request.setAttribute(JWT_ERROR_CODE, ApiErrorCode.AUTHENTICATION_FAILED);
+        }
         filterChain.doFilter(request, response);
     }
 }

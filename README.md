@@ -252,12 +252,17 @@ Response thành công hiện có dạng:
 {
   "success": true,
   "message": "Success",
-  "data": {}
+  "data": {},
+  "errorCode": null,
+  "timestamp": "2026-10-13T10:46:27Z",
+  "path": null
 }
 ```
 
 Trường `data` sử dụng response DTO theo từng tài nguyên. Response đơn hàng chỉ chứa snapshot
 cần cho giao diện và không serialize tài khoản, email hay `passwordHash` từ JPA Entity.
+Response lỗi dùng cùng envelope, kèm mã lỗi ổn định và URI request; xem
+[hợp đồng API và lỗi](docs/api-contract.md).
 
 | Nhóm | Method và endpoint | Quyền | Chức năng |
 | --- | --- | --- | --- |
@@ -296,10 +301,9 @@ Set-Location backend
 .\mvnw.cmd clean test
 ```
 
-Bộ test hiện có 6 unit test: 5 test cho `OrderService` bao phủ quyền sở hữu/hủy đơn và truy vấn
-lọc đơn theo khoảng ngày, cùng 1 test bảo đảm `OrderResponse` không làm lộ tài khoản hoặc
-`passwordHash`. Test tính giá đầy đủ, controller test và integration test với MySQL vẫn nằm
-trong roadmap P0.
+Bộ test hiện có 11 unit test: 5 test cho `OrderService`, 5 test cho hợp đồng xử lý lỗi và 1 test
+bảo đảm `OrderResponse` không làm lộ tài khoản hoặc `passwordHash`. Test tính giá đầy đủ,
+controller test và integration test với MySQL vẫn nằm trong roadmap P0.
 
 ## Cấu hình môi trường
 

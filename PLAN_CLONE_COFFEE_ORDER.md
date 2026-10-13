@@ -40,7 +40,7 @@
 - [x] Định nghĩa enum quyền `CUSTOMER`, `ADMIN`.
 - [x] Định nghĩa enum trạng thái đơn: `PENDING`, `CONFIRMED`, `DELIVERING`, `COMPLETED`, `CANCELLED`.
 - [ ] Viết/quy ước hợp đồng API REST và DTO request/response.
-- [ ] Chốt định dạng lỗi API và các quy tắc validation.
+- [x] Chốt định dạng lỗi API và các quy tắc validation.
 
 ### Checklist mô hình dữ liệu
 
@@ -190,6 +190,7 @@
 | 2026-10-08 | Khách tự hủy đơn `PENDING` có kiểm tra chủ sở hữu; admin tìm/lọc đơn theo mã, tên, SĐT, trạng thái và khoảng ngày; modal chi tiết đơn; live search; toast; responsive mobile; thêm 5 unit test `OrderService`. | Thực hiện mốc P0 trong roadmap mở rộng: migration database, DTO response, chuẩn hóa lỗi API và integration test. | `mvnw clean test` thành công, 5/5 test đạt; các trang frontend trả HTTP 200. |
 | 2026-10-12 | Hoàn thành nhóm P0 database: Flyway V1/V2, index truy vấn, profile `dev`/`demo`/`test`/`prod`, cô lập seed demo và hướng dẫn backup/restore. | Thực hiện nhóm P0 hợp đồng API và response DTO. | `mvnw clean test` thành công, 5/5 test đạt; chưa chạy migration thật vì máy hiện không có MySQL client/Docker daemon. |
 | 2026-10-12 | Thay toàn bộ JPA Entity ở response controller bằng DTO cho category, product/size, topping, coupon, order/item và dashboard; thêm test chống lộ dữ liệu tài khoản qua `OrderResponse`. | Chuẩn hóa `ApiResponse` và hợp đồng lỗi API. | `mvnw clean test` thành công, 6/6 test đạt; giữ nguyên tên field frontend đang sử dụng. |
+| 2026-10-13 | Chuẩn hóa `ApiResponse` với `errorCode`, `timestamp`, `path`; xử lý JSON sai, tham số sai kiểu, 401/403, JWT hết hạn, 404/409/500; không trả chi tiết exception nội bộ; bổ sung tài liệu contract và test. | Tách mã lỗi nghiệp vụ theo domain và thêm controller/security test MockMvc. | Smoke-test MySQL/default profile đạt; các lỗi mẫu trả đúng contract. |
 
 ---
 
@@ -216,10 +217,10 @@
 #### Hợp đồng API và DTO
 
 - [x] Không trả trực tiếp JPA Entity từ controller; tạo response DTO cho Product, Order, OrderItem, Category, Coupon và Dashboard.
-- [ ] Chuẩn hóa `ApiResponse`: `success`, `message`, `data`, `errorCode`, `timestamp`, `path`.
+- [x] Chuẩn hóa `ApiResponse`: `success`, `message`, `data`, `errorCode`, `timestamp`, `path`.
 - [ ] Tách lỗi nghiệp vụ thành mã ổn định như `ORDER_NOT_FOUND`, `INVALID_ORDER_STATUS`, `COUPON_EXPIRED`, `ACCESS_DENIED`.
-- [ ] Bổ sung handler cho lỗi JSON sai định dạng, query parameter sai kiểu, access denied và JWT hết hạn.
-- [ ] Chuẩn hóa HTTP status: `201` khi tạo, `204` khi xóa, `400` validation, `401` chưa đăng nhập, `403` thiếu quyền, `404` không tìm thấy, `409` xung đột.
+- [x] Bổ sung handler cho lỗi JSON sai định dạng, query parameter sai kiểu, access denied và JWT hết hạn.
+- [x] Chuẩn hóa HTTP status: `201` khi tạo, `204` khi xóa, `400` validation, `401` chưa đăng nhập, `403` thiếu quyền, `404` không tìm thấy, `409` xung đột.
 - [ ] Hoàn thiện OpenAPI/Swagger: mô tả endpoint, ví dụ request/response và yêu cầu Bearer JWT.
 
 #### Bảo mật nền tảng

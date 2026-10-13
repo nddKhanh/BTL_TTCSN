@@ -1,0 +1,15 @@
+package com.highlands.order.exception;
+
+public enum ApiErrorCode {
+    ACCESS_DENIED,
+    AUTHENTICATION_FAILED,
+    CONFLICT,
+    INTERNAL_ERROR,
+    INVALID_PARAMETER,
+    INVALID_REQUEST,
+    MALFORMED_JSON,
+    RESOURCE_NOT_FOUND,
+    ROUTE_NOT_FOUND,
+    TOKEN_EXPIRED,
+    VALIDATION_ERROR
+}
