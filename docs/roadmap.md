@@ -1,110 +1,110 @@
-# Lộ trình & Kế hoạch Chi tiết Dự án (Roadmap)
+# Lộ trình phát triển Mộc Nhiên Coffee Order
 
-Tài liệu mô tả chi tiết các phân hệ chức năng, các bước triển khai, phân quyền người dùng và tiến độ thực hiện của dự án **Highlands Coffee Order Clone**.
+> Tài liệu này là nguồn kế hoạch duy nhất của dự án từ ngày 2026-10-20.
+> Kế hoạch cũ ở thư mục gốc đã được thay bằng bộ tài liệu trong `docs/` để tránh hai checklist mâu thuẫn.
 
----
+## 1. Hiện trạng đã xác minh
 
-## 📊 Tổng quan Tiến độ Các Phân Hệ
+- Backend Spring Boot 4.1.1, Java 17, Maven Wrapper, JPA, MySQL, Flyway, Spring Security và JWT đã hoạt động.
+- Frontend HTML/CSS/Vanilla JS đã có catalog, giỏ hàng, checkout, tra cứu đơn, lịch sử đơn và trang quản trị.
+- Luồng chính đã có đăng ký/đăng nhập, coupon, tùy chọn món, tạo/hủy/cập nhật đơn và dashboard cơ bản.
+- API đã dùng response DTO và envelope lỗi; Swagger dependency đã được khai báo.
+- Repository hiện có 16 test method, nhưng còn thiếu controller/integration/E2E test và kiểm tra migration trên MySQL thật.
+- Rủi ro lớn nhất hiện tại là bảo mật tra cứu đơn public, độ phủ test, phân trang/truy vấn báo cáo, cấu hình production và QA trước bảo vệ.
 
-| Phân hệ | Nội dung chính | Trạng thái |
-| :--- | :--- | :--- |
-| **1. Khung cơ bản & Storefront** | Menu, Modal chọn món, Giỏ hàng, Đặt hàng COD | `Hoàn thành` |
-| **2. Xác thực & Phân quyền (Auth)** | Đăng ký, Đăng nhập, Phân quyền Khách / Admin | `Hoàn thành` |
-| **3. Quản lý Sản phẩm (Admin)** | CRUD Danh mục, Món ăn, Size, Topping | `Hoàn thành` |
-| **4. Xử lý Đơn hàng & Lịch sử** | Luồng xử lý đơn, Xem lịch sử đơn cá nhân | `Hoàn thành` |
-| **5. Thống kê & Báo cáo Admin** | Doanh thu, Đếm đơn theo trạng thái | `Chưa bắt đầu` |
-| **6. Tinh chỉnh UI/UX & Responsive** | Tìm kiếm, Lọc giá, Toast thông báo, Mobile UI | `Chưa bắt đầu` |
-| **7. Kiểm thử & Tài liệu Báo cáo** | Test API, Viết báo cáo TTCSN | `Chưa bắt đầu` |
+## 2. Mục tiêu phát hành
 
----
+| Mốc | Mục tiêu | Điều kiện hoàn thành |
+| --- | --- | --- |
+| `v0.2 Stabilize` | Mã lỗi nghiệp vụ, security route, tra cứu đơn an toàn, test giá/coupon, OpenAPI | Test xanh; customer không truy cập admin; không tra cứu đơn chỉ bằng mã ngắn |
+| `v0.3 Storefront` | Sort/pagination, URL filter, cart UX, checkout validation, accessibility | Luồng mobile/desktop ổn định; giá luôn được backend xác nhận |
+| `v0.4 Operations` | Phân trang admin, dashboard aggregate và CSV sau khi có nhu cầu | Số liệu khớp DB; không tải toàn bộ order để tính báo cáo |
+| `v0.5 Delivery` | Docker, CI, secret scan, healthcheck, tài liệu vận hành | Có thể dựng môi trường sạch và chạy smoke test lặp lại |
+| `v1.0 Defense` | ERD, kiến trúc, API docs, checklist QA và kịch bản demo | Không còn lỗi blocker/high; thành viên giải thích được phần mình đóng góp |
 
-## 📝 Kế hoạch Triển khai Chi tiết Từng Chức Năng
+## 3. Thứ tự triển khai đã cam kết
 
-### Module 1: Khung Dự án & Storefront Cơ bản (Đã xong)
-- [x] **Backend**: Cấu hình Spring Boot 3.3.0, Spring Data JPA, kết nối MySQL (`highlands_db`).
-- [x] **Data Seeder**: Nạp sẵn danh mục mẫu, sản phẩm (Phin sữa, Trà sen vàng...), size (S/M/L) và topping.
-- [x] **Storefront UI**: Trang chủ hiển thị danh mục, danh sách món kèm ảnh và giá cơ bản.
-- [x] **Modal Chọn món**: Tùy chọn Size, Topping, tăng giảm số lượng, tự động tính tổng tiền.
-- [x] **Giỏ hàng Drawer**: Lưu trữ qua `localStorage`, tăng/giảm số lượng, xóa món.
-- [x] **Checkout đơn giản**: Form điền tên, SĐT, địa chỉ nhận hàng và gửi đơn về backend.
-- [x] **Trang trạng thái đơn**: Tra cứu đơn hàng vừa đặt qua mã đơn (`order-status.html`).
+### P0 — Ổn định và bảo mật
 
----
+- [ ] Chuẩn hóa mã lỗi nghiệp vụ cho auth, order, coupon và catalog.
+- [ ] Rà soát route public/customer/admin và bổ sung security test.
+- [ ] Bảo vệ tra cứu đơn guest bằng mã đơn kết hợp số điện thoại hoặc lookup token.
+- [ ] Hoàn thiện test tính giá, phí giao hàng, coupon và chuyển trạng thái.
+- [ ] Hoàn thiện mô tả OpenAPI cho auth, catalog, order và admin.
+- [ ] Thêm security headers; rà soát `innerHTML`, secret, dữ liệu demo và log nhạy cảm.
 
-### Module 2: Xác thực & Phân quyền (Authentication & Authorization)
+### P1 — Trải nghiệm khách hàng
 
-#### 1. Backend (Spring Security / JWT)
-- [x] Thiết kế Entity `AppUser` (`id`, `email`, `password_hash`, `full_name`, `phone`, `role` [ROLE_CUSTOMER, ROLE_ADMIN], `created_at`).
-- [x] API Đăng ký tài khoản: `POST /api/v1/auth/register` (Validate trùng email, mã hóa password bằng BCrypt).
-- [x] API Đăng nhập: `POST /api/v1/auth/login` (Xác thực và trả về Token + Thông tin User).
-- [x] API Lấy thông tin cá nhân: `GET /api/v1/users/me`.
-- [x] Phân quyền bảo vệ Endpoint:
-  - **Public**: Xem menu, tìm kiếm sản phẩm, đặt hàng không cần tài khoản, xem trạng thái đơn qua mã.
-  - **ROLE_CUSTOMER**: Xem lịch sử các đơn hàng đã đặt của tài khoản, cập nhật thông tin cá nhân.
-  - **ROLE_ADMIN**: Toàn quyền thêm/sửa/xóa menu, quản lý đơn hàng, xem thống kê.
+- [ ] Sort và pagination catalog ở backend; đồng bộ bộ lọc lên URL.
+- [ ] Thêm loading, empty, retry state và thông báo lỗi nhất quán.
+- [ ] Cho sửa tùy chọn dòng hàng, gộp dòng giống nhau và hiển thị tiến độ miễn phí giao hàng.
+- [ ] Validate số điện thoại/địa chỉ/ghi chú ở cả frontend và backend.
+- [ ] Cải thiện keyboard navigation, focus, ARIA và độ tương phản.
+- [ ] Sau gói 30 commit: hồ sơ khách hàng, nhiều địa chỉ, timeline đơn và đặt lại đơn.
 
-#### 2. Frontend
-- [x] Tạo trang Đăng nhập (`login.html`) và Đăng ký (`register.html`).
-- [x] Xử lý lưu Token và thông tin User vào `localStorage`.
-- [x] Cập nhật Header:
-  - Chưa đăng nhập: Hiện nút **Đăng nhập / Đăng ký**.
-  - Đã đăng nhập: Hiện **Tên người dùng**, nút **Đơn của tôi**, **Đăng xuất**.
-- [x] Guard bảo vệ trang `admin.html`: Kiểm tra quyền `ROLE_ADMIN`, nếu chưa đăng nhập hoặc không phải admin thì chuyển hướng về `login.html`.
+### P1 — Quản trị và báo cáo
 
----
+- [ ] Phân trang server-side cho bảng đơn và sản phẩm.
+- [ ] Chuyển dashboard sang aggregate query theo khoảng ngày.
+- [ ] Bổ sung top sản phẩm, tỷ lệ hủy và giá trị đơn trung bình sau khi số liệu nền ổn định.
+- [ ] Thêm audit người cập nhật trạng thái và optimistic locking cho Order ở vòng sau.
+- [ ] Chỉ thêm export CSV khi bộ lọc/phân trang đã có contract ổn định.
 
-### Module 3: Quản lý Danh mục & Sản phẩm (Admin CMS)
+### P1 — Chất lượng và bàn giao
 
-#### 1. Backend
-- [x] `POST /api/v1/admin/products`: Thêm món mới kèm ảnh, giá gốc, danh mục và các sizes.
-- [x] `PUT /api/v1/admin/products/{id}`: Sửa thông tin món, giá và cấu hình size/topping.
-- [x] `DELETE /api/v1/admin/products/{id}`: Đổi trạng thái `is_active = false` (ẩn món thay vì xóa cứng).
-- [x] `POST / PUT / DELETE /api/v1/admin/categories`: Thêm / sửa / xóa danh mục món.
-- [x] `POST / PUT / DELETE /api/v1/admin/toppings`: Thêm / sửa / xóa giá topping.
+- [ ] Dockerfile multi-stage, Compose local và healthcheck tối thiểu.
+- [ ] GitHub Actions chạy test, `git diff --check` và secret scan trên PR.
+- [ ] Kiểm tra migration trên database mới và database có dữ liệu sao lưu.
+- [ ] Hoàn thiện ERD, sơ đồ kiến trúc, kịch bản demo và checklist QA.
+- [ ] Chạy Chrome/Edge ở 360, 768, 1024 và 1440 px.
 
-#### 2. Frontend (`admin.html`)
-- [x] Thêm Tab **Quản lý Thực đơn (Products)**:
-  - Bảng danh sách món ăn, danh mục, trạng thái (Đang bán / Tạm ẩn).
-  - Modal Form thêm món mới (Nhập tên, chọn danh mục, giá, URL ảnh, mô tả, hiển thị).
-  - Nút sửa món và nút bật/tắt trạng thái hiển thị.
-- [x] Thêm Tab **Quản lý Topping & Danh mục**: Thêm nhanh topping mới và sửa giá.
+### P2 — Chưa cam kết
 
----
+- Recommendation baseline, sau đó mới đánh giá semantic retrieval/RAG.
+- Upload ảnh, email, thanh toán sandbox, tích điểm, PWA và đa cửa hàng.
+- Không chuyển microservices hoặc rewrite frontend trước khi P0/P1 hoàn tất.
 
-### Module 4: Xử lý Đơn hàng & Quản lý Lịch sử Đơn
+## 4. Gói thực thi hiện tại
 
-#### 1. Khách hàng
-- [x] Tích hợp `userId` vào đơn hàng khi người dùng đã đăng nhập đặt món.
-- [x] Trang **Lịch sử đơn hàng** (`my-orders.html`): Xem danh sách các đơn đã đặt của tài khoản kèm trạng thái chi tiết.
-- [x] Cho phép khách hàng Hủy đơn khi đơn vẫn ở trạng thái `PENDING` (Chờ xác nhận), có kiểm tra quyền sở hữu đơn.
+Gói tiếp theo gồm 15 PR và 30 commit nguyên tử trong [danh mục work package](work-packages.md).
 
-#### 2. Quản trị viên (Admin)
-- [x] Bộ lọc đơn hàng trên `admin.html`: Lọc theo trạng thái (Chờ duyệt, Đang giao, Hoàn tất, Đã hủy), lọc theo ngày đặt.
-- [x] Tìm kiếm đơn theo mã đơn, tên khách hàng hoặc số điện thoại.
-- [x] Modal xem chi tiết món ăn, tùy chọn và tổng tiền trong đơn hàng của Admin.
+- Phương án 3 thành viên: [team-plan-3-members.md](team-plan-3-members.md).
+- Phương án 5 thành viên: [team-plan-5-members.md](team-plan-5-members.md).
+- Quy trình nhánh/commit/PR: [git-workflow.md](git-workflow.md).
+- Mẫu nhận việc và báo cáo: [templates/git-task-template.md](templates/git-task-template.md).
 
----
+Không chạy đồng thời cả hai phương án phân công.
+Chọn đúng một phương án trước khi tạo issue đầu tiên.
 
-### Module 5: Thống kê & Báo cáo Cơ bản (Admin Analytics)
-- [ ] Backend API: `GET /api/v1/admin/stats` (Tính tổng doanh thu, tổng số đơn theo ngày/tháng, số đơn đang chờ xử lý).
-- [ ] Frontend: Thêm các thẻ tóm tắt (Cards) trên Dashboard Admin:
-  - 💰 Tổng doanh thu
-  - 📦 Số đơn hoàn thành
-  - ⏳ Số đơn đang chờ duyệt
-  - ☕ Món bán chạy nhất
+## 5. Definition of Ready
 
----
+Một việc chỉ được nhận khi có:
 
-### Module 6: Tối ưu UI/UX & Responsive
-- [x] Thanh tìm kiếm sản phẩm: Lọc món theo từ khóa gõ vào (Live search có debounce).
-- [x] Tùy chọn độ ngọt / đá (% đá, % đường) trên Modal chọn món.
-- [x] Hệ thống Toast thông báo cho thao tác giỏ hàng và hủy đơn.
-- [x] Tối ưu CSS Responsive cho màn hình điện thoại (menu, lưới sản phẩm, bộ lọc admin, giỏ hàng full-width).
+- mục tiêu và tiêu chí nghiệm thu rõ;
+- người thực hiện thật và người review;
+- danh sách file dự kiến;
+- tối đa 3 file cho mỗi commit;
+- tối đa 19 file thay đổi cho toàn PR;
+- dependency đã merge hoặc được ghi rõ;
+- lệnh test/kiểm tra có thể chạy lại.
 
----
+## 6. Definition of Done
 
-### Module 7: Kiểm thử & Hoàn thiện Báo cáo
-- [x] Bổ sung 5 unit test cho hủy đơn theo quyền/trạng thái và bộ lọc đơn theo ngày/trạng thái.
-- [ ] Xuất tài liệu đặc tả API hoàn chỉnh qua Swagger UI.
-- [ ] Soạn thảo báo cáo môn học TTCSN (Sơ đồ Use Case, ERD, Kiến trúc hệ thống, Giao diện thực tế).
-- [ ] Chuẩn bị kịch bản demo sản phẩm.
+- Nhánh được tạo từ `main` mới nhất.
+- Mỗi commit có một mục đích, không quá 3 file và dùng Conventional Commits.
+- Không dùng commit rỗng, đổi ngày, sửa `--author` hoặc chia thay đổi giả tạo chỉ để tăng số commit.
+- Đã fetch và merge `origin/main` vào nhánh để phát hiện conflict trước PR.
+- Test liên quan, test toàn backend khi phù hợp và `git diff --check` đều đạt.
+- PR có dưới 20 file thay đổi, mô tả cách test và rủi ro.
+- Người review khác người tạo PR; tác giả tự giải thích được thay đổi.
+- Sau merge, issue/checklist và tài liệu liên quan được cập nhật.
+
+## 7. Sau gói 30 commit
+
+Ưu tiên kế tiếp được chọn từ dữ liệu QA, không chỉ từ số lượng tính năng:
+
+1. Integration test MySQL/Testcontainers và kiểm tra Flyway.
+2. Audit trạng thái đơn, optimistic locking và lịch sử thay đổi.
+3. Hồ sơ, địa chỉ, quên mật khẩu và thông báo trạng thái.
+4. Dashboard nâng cao và CSV.
+5. Recommendation baseline không AI; chỉ làm RAG khi baseline có metric và privacy review.
