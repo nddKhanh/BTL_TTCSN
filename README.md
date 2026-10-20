@@ -163,10 +163,15 @@ Index được tạo cho mã đơn, thời gian/trạng thái đơn, email ngư�
 │   ├── login.html / register.html
 │   └── admin.html
 ├── docs/
-│   ├── database-operations.md
-│   └── roadmap.md
+│   ├── README.md             # Mục lục tài liệu
+│   ├── roadmap.md            # Lộ trình sản phẩm
+│   ├── work-packages.md      # 15 PR / 30 commit
+│   ├── team-plan-*.md        # Phương án 3 hoặc 5 thành viên
+│   ├── git-workflow.md       # Quy trình branch/commit/PR
+│   ├── templates/            # Mẫu issue, PR và handoff
+│   └── skills/               # Skill tái sử dụng cho Codex
 ├── .env.example
-├── PLAN_CLONE_COFFEE_ORDER.md
+├── AGENTS.md                 # Chỉ dẫn tải Git-flow skill
 └── README.md
 ```
 
@@ -301,9 +306,9 @@ Set-Location backend
 .\mvnw.cmd clean test
 ```
 
-Bộ test hiện có 11 unit test: 5 test cho `OrderService`, 5 test cho hợp đồng xử lý lỗi và 1 test
-bảo đảm `OrderResponse` không làm lộ tài khoản hoặc `passwordHash`. Test tính giá đầy đủ,
-controller test và integration test với MySQL vẫn nằm trong roadmap P0.
+Bộ test hiện có 16 test method cho service đơn hàng, seeder, JWT filter, hợp đồng xử lý lỗi và
+response DTO. Test tính giá đầy đủ, controller test và integration test với MySQL vẫn nằm trong
+roadmap P0.
 
 ## Cấu hình môi trường
 
@@ -343,5 +348,5 @@ ngoài phạm vi hiện tại:
 - CORS hiện phục vụ phát triển local và cần giới hạn origin trước khi deploy production.
 - Chưa có môi trường deploy production và integration/E2E test hoàn chỉnh.
 
-Theo dõi kế hoạch chi tiết tại [PLAN_CLONE_COFFEE_ORDER.md](PLAN_CLONE_COFFEE_ORDER.md) và
-[docs/roadmap.md](docs/roadmap.md).
+Toàn bộ kế hoạch, phương án chia việc và Git workflow được tập trung tại
+[trung tâm tài liệu](docs/README.md).
