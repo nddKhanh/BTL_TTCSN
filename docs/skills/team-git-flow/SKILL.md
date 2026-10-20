@@ -10,7 +10,7 @@ Use this skill for any request in this repository that involves assigning work, 
 ## Load the active plan
 
 1. Read `../../git-workflow.md`.
-2. Read `../../work-packages.md`.
+2. Read `../../work-packages.md` for `PR01`–`PR15`, or read both `../../security-auth-roadmap.md` and `../../security-auth-work-packages.md` for `SA01`–`SA15`.
 3. Read exactly one active allocation plan: `../../team-plan-3-members.md` or `../../team-plan-5-members.md`.
 4. Use `../../templates/git-task-template.md` for issue, PR, and handoff output.
 
