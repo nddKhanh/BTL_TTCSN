@@ -11,12 +11,14 @@
 | `M2` | `@pending` | Security, order lookup, checkout, Docker, QA | `M3` |
 | `M3` | `@pending` | Catalog, storefront, cart, admin UI, accessibility | `M1` |
 
-Mỗi người nhận đúng:
+Trong mỗi phase, mỗi người nhận đúng:
 
 - 5 PR;
 - 10 commit công việc;
 - 15 điểm kế hoạch;
 - ít nhất 2 PR review cho người khác.
+
+Sau cả hai phase, mỗi người có 10 PR, 20 commit và 30 điểm kế hoạch.
 
 Số commit bằng nhau không thay thế cho đóng góp thật.
 Người đứng tên phải trực tiếp làm hoặc pair-program phần việc, chạy kiểm tra, đọc diff và giải thích được PR.
@@ -31,13 +33,34 @@ Người đứng tên phải trực tiếp làm hoặc pair-program phần việ
 
 Chi tiết mục tiêu, dependency và commit message nằm trong [work-packages.md](work-packages.md).
 
+### Phase 2 — Identity, security và email
+
+| Thành viên | PR được giao | Commit | Điểm | Thứ tự đề xuất |
+| --- | --- | ---: | ---: | --- |
+| `M1` | `SA01`, `SA03`, `SA07`, `SA10`, `SA13` | 10 | 15 | SA01 → SA07 → SA03 → SA10 → SA13 |
+| `M2` | `SA02`, `SA05`, `SA08`, `SA11`, `SA14` | 10 | 15 | SA02 → SA08 → SA05 → SA11 → SA14 |
+| `M3` | `SA04`, `SA06`, `SA09`, `SA12`, `SA15` | 10 | 15 | SA12 → SA09 → SA06 → SA04 → SA15 |
+
+Chi tiết phase 2 nằm trong [security-auth-work-packages.md](security-auth-work-packages.md).
+
 ## 3. Lịch wave
+
+### Phase 1
 
 | Wave | M1 | M2 | M3 | Điều kiện đóng wave |
 | --- | --- | --- | --- | --- |
 | 1 | PR01, PR04 | PR02, PR12 | PR06, PR08 | Tất cả test liên quan xanh; dependency wave 2 đã sẵn sàng |
 | 2 | PR11, PR05 | PR03 | PR07, PR10 | Main không có conflict; smoke test catalog/order/admin đạt |
 | 3 | PR13 | PR09, PR15 | PR14 | CI xanh; QA và tài liệu bảo vệ có bằng chứng |
+
+### Phase 2
+
+| Wave | M1 | M2 | M3 | Điều kiện đóng wave |
+| --- | --- | --- | --- | --- |
+| A | SA01, SA07 | SA02 | Chuẩn bị SA12 | Mail/JWT config và migration nền đã review |
+| B | SA03, SA10 | SA08 | SA12 | Verify, refresh session, RBAC và lockout có test |
+| C | Chuẩn bị SA13 | SA05, SA11 | SA09, SA06, SA04 | Login/reset/logout/permission matrix chạy end-to-end |
+| D | SA13 | SA14 | SA15 | Rate limit, MFA và audit đạt security checklist |
 
 Không mở hai PR có cùng dependency chưa merge.
 Nếu một PR phát sinh thêm commit, điều phối viên phải chuyển một commit tương đương ở wave chưa bắt đầu sang thành viên khác để giữ tổng số cân bằng.
@@ -57,7 +80,7 @@ Nếu một PR phát sinh thêm commit, điều phối viên phải chuyển m�
 
 Lệnh chi tiết và cách xử lý conflict xem [git-workflow.md](git-workflow.md).
 
-## 5. Bảng theo dõi
+## 5. Bảng theo dõi phase 1
 
 | PR | Assignee | Issue | Branch | 2 commit đủ nghĩa | File/commit ≤ 3 | File/PR ≤ 19 | Dry-merge main | Test/CI | Review | Merged |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -76,3 +99,5 @@ Lệnh chi tiết và cách xử lý conflict xem [git-workflow.md](git-workflow
 | PR13 | M1 |  |  | ☐ | ☐ | ☐ | ☐ | ☐ | M2 | ☐ |
 | PR14 | M3 |  |  | ☐ | ☐ | ☐ | ☐ | ☐ | M1 | ☐ |
 | PR15 | M2 |  |  | ☐ | ☐ | ☐ | ☐ | ☐ | M3 | ☐ |
+
+Phase 2 dùng cùng cột theo dõi; tạo các dòng `SA01`–`SA15` từ bảng phân công trước khi bắt đầu wave A.

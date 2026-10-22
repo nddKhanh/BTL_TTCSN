@@ -10,13 +10,15 @@
 - Luồng chính đã có đăng ký/đăng nhập, coupon, tùy chọn món, tạo/hủy/cập nhật đơn và dashboard cơ bản.
 - API đã dùng response DTO và envelope lỗi; Swagger dependency đã được khai báo.
 - Repository hiện có 16 test method, nhưng còn thiếu controller/integration/E2E test và kiểm tra migration trên MySQL thật.
-- Rủi ro lớn nhất hiện tại là bảo mật tra cứu đơn public, độ phủ test, phân trang/truy vấn báo cáo, cấu hình production và QA trước bảo vệ.
+- Xác thực hiện mới có access JWT 120 phút và hai role; chưa có email verification, refresh/revocation, session, MFA hoặc audit bảo mật.
+- Rủi ro lớn nhất hiện tại là vòng đời tài khoản/JWT, bảo mật tra cứu đơn public, độ phủ test, cấu hình production và QA trước bảo vệ.
 
 ## 2. Mục tiêu phát hành
 
 | Mốc | Mục tiêu | Điều kiện hoàn thành |
 | --- | --- | --- |
 | `v0.2 Stabilize` | Mã lỗi nghiệp vụ, security route, tra cứu đơn an toàn, test giá/coupon, OpenAPI | Test xanh; customer không truy cập admin; không tra cứu đơn chỉ bằng mã ngắn |
+| `v0.25 Identity` | Email lifecycle, JWT session, refresh rotation, RBAC, login alert, rate limit và MFA | Token có thể thu hồi; permission matrix xanh; mail lỗi không chặn login |
 | `v0.3 Storefront` | Sort/pagination, URL filter, cart UX, checkout validation, accessibility | Luồng mobile/desktop ổn định; giá luôn được backend xác nhận |
 | `v0.4 Operations` | Phân trang admin, dashboard aggregate và CSV sau khi có nhu cầu | Số liệu khớp DB; không tải toàn bộ order để tính báo cáo |
 | `v0.5 Delivery` | Docker, CI, secret scan, healthcheck, tài liệu vận hành | Có thể dựng môi trường sạch và chạy smoke test lặp lại |
@@ -32,6 +34,7 @@
 - [ ] Hoàn thiện test tính giá, phí giao hàng, coupon và chuyển trạng thái.
 - [ ] Hoàn thiện mô tả OpenAPI cho auth, catalog, order và admin.
 - [ ] Thêm security headers; rà soát `innerHTML`, secret, dữ liệu demo và log nhạy cảm.
+- [ ] Thực hiện [lộ trình xác thực và bảo mật](security-auth-roadmap.md): email verification/reset/login alert, JWT ngắn hạn, refresh rotation, session revocation, RBAC, lockout, rate limit, audit và MFA.
 
 ### P1 — Trải nghiệm khách hàng
 
@@ -40,7 +43,7 @@
 - [ ] Cho sửa tùy chọn dòng hàng, gộp dòng giống nhau và hiển thị tiến độ miễn phí giao hàng.
 - [ ] Validate số điện thoại/địa chỉ/ghi chú ở cả frontend và backend.
 - [ ] Cải thiện keyboard navigation, focus, ARIA và độ tương phản.
-- [ ] Sau gói 30 commit: hồ sơ khách hàng, nhiều địa chỉ, timeline đơn và đặt lại đơn.
+- [ ] Sau hai phase 60 commit: hồ sơ khách hàng, nhiều địa chỉ, timeline đơn và đặt lại đơn.
 
 ### P1 — Quản trị và báo cáo
 
@@ -61,12 +64,15 @@
 ### P2 — Chưa cam kết
 
 - Recommendation baseline, sau đó mới đánh giá semantic retrieval/RAG.
-- Upload ảnh, email, thanh toán sandbox, tích điểm, PWA và đa cửa hàng.
+- Upload ảnh, thanh toán sandbox, tích điểm, PWA và đa cửa hàng.
 - Không chuyển microservices hoặc rewrite frontend trước khi P0/P1 hoàn tất.
 
 ## 4. Gói thực thi hiện tại
 
-Gói tiếp theo gồm 15 PR và 30 commit nguyên tử trong [danh mục work package](work-packages.md).
+Kế hoạch hiện có hai phase, tổng cộng 30 PR và 60 commit nguyên tử:
+
+- Phase 1 — ổn định/sản phẩm: [15 PR / 30 commit](work-packages.md).
+- Phase 2 — identity/security/email: [15 PR / 30 commit](security-auth-work-packages.md).
 
 - Phương án 3 thành viên: [team-plan-3-members.md](team-plan-3-members.md).
 - Phương án 5 thành viên: [team-plan-5-members.md](team-plan-5-members.md).
@@ -99,12 +105,12 @@ Một việc chỉ được nhận khi có:
 - Người review khác người tạo PR; tác giả tự giải thích được thay đổi.
 - Sau merge, issue/checklist và tài liệu liên quan được cập nhật.
 
-## 7. Sau gói 30 commit
+## 7. Sau hai phase 60 commit
 
 Ưu tiên kế tiếp được chọn từ dữ liệu QA, không chỉ từ số lượng tính năng:
 
 1. Integration test MySQL/Testcontainers và kiểm tra Flyway.
 2. Audit trạng thái đơn, optimistic locking và lịch sử thay đổi.
-3. Hồ sơ, địa chỉ, quên mật khẩu và thông báo trạng thái.
+3. Hồ sơ, nhiều địa chỉ và thông báo trạng thái đơn.
 4. Dashboard nâng cao và CSV.
 5. Recommendation baseline không AI; chỉ làm RAG khi baseline có metric và privacy review.
