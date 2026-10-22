@@ -1,4 +1,6 @@
-# Danh mục 15 PR / 30 commit nguyên tử
+# Phase 1 — 15 PR / 30 commit ổn định và sản phẩm
+
+Phase 2 cho email, JWT session, RBAC, MFA và audit nằm tại [security-auth-work-packages.md](security-auth-work-packages.md).
 
 ## Quy ước
 
