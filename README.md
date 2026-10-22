@@ -165,11 +165,12 @@ Index được tạo cho mã đơn, thời gian/trạng thái đơn, email ngư�
 ├── docs/
 │   ├── README.md             # Mục lục tài liệu
 │   ├── roadmap.md            # Lộ trình sản phẩm
-│   ├── work-packages.md      # 15 PR / 30 commit
+│   ├── work-packages.md      # Phase 1: 15 PR / 30 commit
+│   ├── security-auth-*.md    # Phase 2: email/JWT/RBAC/MFA
 │   ├── team-plan-*.md        # Phương án 3 hoặc 5 thành viên
 │   ├── git-workflow.md       # Quy trình branch/commit/PR
 │   ├── templates/            # Mẫu issue, PR và handoff
-│   └── skills/               # Skill tái sử dụng cho Codex
+│   └── skills/               
 ├── .env.example
 ├── AGENTS.md                 # Chỉ dẫn tải Git-flow skill
 └── README.md
