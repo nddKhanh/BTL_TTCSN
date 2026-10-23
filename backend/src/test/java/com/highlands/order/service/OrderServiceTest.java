@@ -202,7 +202,7 @@ class OrderServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(
-                ResourceNotFoundException.class,
+                ApiDomainException.class,
                 () -> orderService.getOrderByCode("COF-MISSING")
         );
     }
