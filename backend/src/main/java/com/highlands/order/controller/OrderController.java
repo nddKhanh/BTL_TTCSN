@@ -6,6 +6,9 @@ import com.highlands.order.dto.OrderResponse;
 import com.highlands.order.dto.UpdateOrderStatusRequest;
 import com.highlands.order.service.OrderService;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/orders")
+@Tag(name = "Orders", description = "Tạo, tra cứu và quản lý đơn hàng")
 public class OrderController {
 
     private final OrderService orderService;
@@ -27,6 +31,9 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Tạo đơn hàng", description = "Tạo đơn public hoặc gắn với tài khoản nếu gửi JWT.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Đặt hàng thành công")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Sản phẩm, size, topping hoặc coupon không hợp lệ")
     public ApiResponse<OrderResponse> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
             @AuthenticationPrincipal UserDetails user
@@ -37,11 +44,18 @@ public class OrderController {
     }
 
     @GetMapping("/{orderCode}")
+    @Operation(summary = "Tra cứu đơn hàng", description = "Tra cứu bằng mã đơn; mã lỗi ORDER_NOT_FOUND nếu không tồn tại.")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Tìm thấy đơn hàng")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Không tìm thấy đơn hàng")
     public ApiResponse<OrderResponse> getOrderByCode(@PathVariable String orderCode) {
         return ApiResponse.success(orderService.getOrderByCode(orderCode));
     }
 
     @GetMapping("/my-orders")
+    @Operation(summary = "Xem lịch sử đơn hàng", description = "Yêu cầu JWT của customer.")
+    @SecurityRequirement(name = "bearerAuth")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Danh sách đơn hàng")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Thiếu hoặc sai JWT")
     public ApiResponse<List<OrderResponse>> getMyOrders(@AuthenticationPrincipal UserDetails user) {
         if (user == null) {
             throw new IllegalArgumentException("Vui lòng đăng nhập để xem lịch sử đơn hàng");
