@@ -44,6 +44,22 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void handleDomainException_preservesCodeAndStatus() {
+        var response = handler.handleDomainException(
+                new ApiDomainException(
+                        ApiErrorCode.COUPON_EXPIRED,
+                        HttpStatus.BAD_REQUEST,
+                        "Mã giảm giá đã hết hạn"
+                ),
+                request("POST", "/api/v1/coupons/validate")
+        );
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(ApiErrorCode.COUPON_EXPIRED.name(), response.getBody().errorCode());
+        assertEquals("/api/v1/coupons/validate", response.getBody().path());
+    }
+
+    @Test
     void handleGeneralException_hidesInternalMessage() {
         var response = handler.handleGeneralException(
                 new RuntimeException("internal-database-detail"),
