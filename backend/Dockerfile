@@ -1,5 +1,7 @@
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends wget \
+    && rm -rf /var/lib/apt/lists/*
 RUN addgroup --system app && adduser --system --ingroup app app
 COPY target/order-*.jar app.jar
 USER app
