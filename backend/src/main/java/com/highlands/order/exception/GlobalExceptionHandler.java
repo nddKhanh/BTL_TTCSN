@@ -22,14 +22,6 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(ApiDomainException.class)
-    public ResponseEntity<ApiResponse<Void>> handleDomainException(
-            ApiDomainException ex,
-            HttpServletRequest request
-    ) {
-        return error(ex.getStatus(), ex.getErrorCode(), ex.getMessage(), request);
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleResourceNotFound(
             ResourceNotFoundException ex,

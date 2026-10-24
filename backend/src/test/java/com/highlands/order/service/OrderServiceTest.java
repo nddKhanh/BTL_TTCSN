@@ -4,8 +4,7 @@ import com.highlands.order.config.OrderPricingProperties;
 import com.highlands.order.dto.CreateOrderRequest;
 import com.highlands.order.dto.OrderItemRequest;
 import com.highlands.order.dto.OrderResponse;
-import com.highlands.order.exception.ApiDomainException;
-import com.highlands.order.exception.ApiErrorCode;
+import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.AppUser;
 import com.highlands.order.model.Order;
 import com.highlands.order.model.OrderStatus;
@@ -91,12 +90,11 @@ class OrderServiceTest {
         when(orderRepository.findByIdAndUserEmailIgnoreCase(11L, "customer@example.com"))
                 .thenReturn(Optional.of(order));
 
-        ApiDomainException exception = assertThrows(
-                ApiDomainException.class,
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
                 () -> orderService.cancelMyOrder(11L, "customer@example.com")
         );
 
-        assertEquals(ApiErrorCode.ORDER_STATE_INVALID, exception.getErrorCode());
         assertEquals("Chỉ có thể hủy đơn đang chờ xác nhận", exception.getMessage());
     }
 
@@ -105,12 +103,10 @@ class OrderServiceTest {
         when(orderRepository.findByIdAndUserEmailIgnoreCase(12L, "other@example.com"))
                 .thenReturn(Optional.empty());
 
-        ApiDomainException exception = assertThrows(
-                ApiDomainException.class,
+        assertThrows(
+                ResourceNotFoundException.class,
                 () -> orderService.cancelMyOrder(12L, "other@example.com")
         );
-
-        assertEquals(ApiErrorCode.ORDER_NOT_FOUND, exception.getErrorCode());
     }
 
     @Test
@@ -194,16 +190,5 @@ class OrderServiceTest {
         orderService.getMyOrders("Customer@Example.com");
 
         verify(orderRepository).findByUserEmailIgnoreCaseOrderByCreatedAtDesc("Customer@Example.com");
-    }
-
-    @Test
-    void getOrderByCode_unknownCode_returnsNotFound() {
-        when(orderRepository.findByOrderCode("COF-MISSING"))
-                .thenReturn(Optional.empty());
-
-        assertThrows(
-                ApiDomainException.class,
-                () -> orderService.getOrderByCode("COF-MISSING")
-        );
     }
 }

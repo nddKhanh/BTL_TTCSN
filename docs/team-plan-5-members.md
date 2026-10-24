@@ -7,7 +7,7 @@
 
 | Mã | GitHub username | Mảng chính | Người review mặc định |
 | --- | --- | --- | --- |
-| `M1` | `@khanh19042006` | API contract, OpenAPI, CI | `M2` |
+| `M1` | `@pending` | API contract, OpenAPI, CI | `M2` |
 | `M2` | `@pending` | Security, test nghiệp vụ, dashboard | `M3` |
 | `M3` | `@pending` | Order lookup, catalog backend, checkout | `M4` |
 | `M4` | `@pending` | Catalog UI, cart, accessibility | `M5` |
