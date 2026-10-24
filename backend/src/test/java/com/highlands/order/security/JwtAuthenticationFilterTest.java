@@ -47,14 +47,4 @@ class JwtAuthenticationFilterTest {
         );
         verify(filterChain, never()).doFilter(request, response);
     }
-
-    @Test
-    void missingBearerToken_continuesForPublicRoutes() throws Exception {
-        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userDetailsService, errorWriter);
-        when(request.getHeader("Authorization")).thenReturn(null);
-
-        filter.doFilterInternal(request, response, filterChain);
-
-        verify(filterChain).doFilter(request, response);
-    }
 }

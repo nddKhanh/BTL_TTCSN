@@ -6,15 +6,13 @@ import com.highlands.order.dto.OrderItemRequest;
 import com.highlands.order.dto.OrderResponse;
 import com.highlands.order.dto.ValidateCouponResponse;
 import com.highlands.order.config.OrderPricingProperties;
-import com.highlands.order.exception.ApiDomainException;
-import com.highlands.order.exception.ApiErrorCode;
+import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.*;
 import com.highlands.order.repository.OrderRepository;
 import com.highlands.order.repository.ProductRepository;
 import com.highlands.order.repository.ToppingRepository;
 import com.highlands.order.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -75,11 +73,7 @@ public class OrderService {
 
         for (OrderItemRequest itemReq : request.items()) {
             Product product = productRepository.findByIdAndIsActiveTrue(itemReq.productId())
-                    .orElseThrow(() -> new ApiDomainException(
-                            ApiErrorCode.PRODUCT_NOT_FOUND,
-                            HttpStatus.NOT_FOUND,
-                            "Sản phẩm ID " + itemReq.productId() + " không tồn tại"
-                    ));
+                    .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm ID " + itemReq.productId() + " không tồn tại"));
 
             BigDecimal unitPrice = product.getBasePrice();
 
@@ -93,14 +87,12 @@ public class OrderService {
                 toppingsStr = String.join(", ", itemReq.toppings());
                 Set<String> uniqueToppings = Set.copyOf(itemReq.toppings());
                 if (uniqueToppings.size() != itemReq.toppings().size()) {
-                    throw new ApiDomainException(ApiErrorCode.ORDER_ITEM_INVALID, HttpStatus.BAD_REQUEST,
-                            "Không được chọn topping trùng lặp");
+                    throw new IllegalArgumentException("Không được chọn topping trùng lặp");
                 }
                 for (String tName : uniqueToppings) {
                     BigDecimal tPrice = toppingPriceMap.get(tName);
                     if (tPrice == null) {
-                        throw new ApiDomainException(ApiErrorCode.ORDER_ITEM_INVALID, HttpStatus.BAD_REQUEST,
-                                "Topping không hợp lệ: " + tName);
+                        throw new IllegalArgumentException("Topping không hợp lệ: " + tName);
                     }
                     unitPrice = unitPrice.add(tPrice);
                 }
@@ -146,11 +138,7 @@ public class OrderService {
 
         if (authenticatedEmail != null && !authenticatedEmail.isBlank()) {
             AppUser authenticatedUser = userRepository.findByEmailIgnoreCase(authenticatedEmail)
-                    .orElseThrow(() -> new ApiDomainException(
-                            ApiErrorCode.USER_NOT_FOUND,
-                            HttpStatus.NOT_FOUND,
-                            "Không tìm thấy tài khoản đặt hàng"
-                    ));
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy tài khoản đặt hàng"));
             order.setUser(authenticatedUser);
         }
 
@@ -159,11 +147,7 @@ public class OrderService {
 
     public OrderResponse getOrderByCode(String orderCode) {
         Order order = orderRepository.findByOrderCode(orderCode)
-                    .orElseThrow(() -> new ApiDomainException(
-                            ApiErrorCode.ORDER_NOT_FOUND,
-                            HttpStatus.NOT_FOUND,
-                            "Không tìm thấy đơn hàng mã: " + orderCode
-                    ));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng mã: " + orderCode));
         return OrderResponse.from(order);
     }
 
@@ -223,21 +207,15 @@ public class OrderService {
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, String requestedStatus) {
         Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new ApiDomainException(
-                            ApiErrorCode.ORDER_NOT_FOUND,
-                            HttpStatus.NOT_FOUND,
-                            "Không tìm thấy đơn hàng ID: " + orderId
-                    ));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng ID: " + orderId));
         OrderStatus newStatus;
         try {
             newStatus = OrderStatus.valueOf(requestedStatus.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw new ApiDomainException(ApiErrorCode.ORDER_STATE_INVALID, HttpStatus.BAD_REQUEST,
-                    "Trạng thái đơn không hợp lệ: " + requestedStatus);
+            throw new IllegalArgumentException("Trạng thái đơn không hợp lệ: " + requestedStatus);
         }
         if (!order.getStatus().canTransitionTo(newStatus)) {
-            throw new ApiDomainException(ApiErrorCode.ORDER_STATE_INVALID, HttpStatus.BAD_REQUEST,
-                    "Không thể chuyển đơn từ " + order.getStatus() + " sang " + newStatus);
+            throw new IllegalArgumentException("Không thể chuyển đơn từ " + order.getStatus() + " sang " + newStatus);
         }
         order.setStatus(newStatus);
         return OrderResponse.from(orderRepository.save(order));
@@ -246,15 +224,10 @@ public class OrderService {
     @Transactional
     public OrderResponse cancelMyOrder(Long orderId, String email) {
         Order order = orderRepository.findByIdAndUserEmailIgnoreCase(orderId, email)
-                .orElseThrow(() -> new ApiDomainException(
-                        ApiErrorCode.ORDER_NOT_FOUND,
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy đơn hàng của bạn"
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng của bạn"));
 
         if (order.getStatus() != OrderStatus.PENDING) {
-            throw new ApiDomainException(ApiErrorCode.ORDER_STATE_INVALID, HttpStatus.BAD_REQUEST,
-                    "Chỉ có thể hủy đơn đang chờ xác nhận");
+            throw new IllegalArgumentException("Chỉ có thể hủy đơn đang chờ xác nhận");
         }
 
         order.setStatus(OrderStatus.CANCELLED);
@@ -268,15 +241,13 @@ public class OrderService {
         try {
             return OrderStatus.valueOf(requestedStatus.trim().toUpperCase());
         } catch (IllegalArgumentException exception) {
-            throw new ApiDomainException(ApiErrorCode.ORDER_STATE_INVALID, HttpStatus.BAD_REQUEST,
-                    "Trạng thái đơn không hợp lệ: " + requestedStatus);
+            throw new IllegalArgumentException("Trạng thái đơn không hợp lệ: " + requestedStatus);
         }
     }
 
     private ProductSize selectSize(Product product, String requestedSize) {
         if (product.getSizes().isEmpty()) {
-            throw new ApiDomainException(ApiErrorCode.ORDER_ITEM_INVALID, HttpStatus.BAD_REQUEST,
-                    "Sản phẩm chưa được cấu hình size: " + product.getName());
+            throw new IllegalArgumentException("Sản phẩm chưa được cấu hình size: " + product.getName());
         }
         if (requestedSize == null || requestedSize.isBlank()) {
             return product.getSizes().get(0);
@@ -284,7 +255,6 @@ public class OrderService {
         return product.getSizes().stream()
                 .filter(size -> size.getSizeName().equalsIgnoreCase(requestedSize.trim()))
                 .findFirst()
-                .orElseThrow(() -> new ApiDomainException(ApiErrorCode.ORDER_ITEM_INVALID, HttpStatus.BAD_REQUEST,
-                        "Size không hợp lệ cho sản phẩm " + product.getName()));
+                .orElseThrow(() -> new IllegalArgumentException("Size không hợp lệ cho sản phẩm " + product.getName()));
     }
 }
