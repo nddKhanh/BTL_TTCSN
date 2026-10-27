@@ -6,11 +6,14 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/categories")
 public class AdminCategoryController {
     private final CategoryService service;
     public AdminCategoryController(CategoryService service) { this.service = service; }
+    @GetMapping public ApiResponse<List<CategoryResponse>> getAll() { return ApiResponse.success(service.getAllCategories()); }
     @PostMapping @ResponseStatus(HttpStatus.CREATED) public ApiResponse<CategoryResponse> create(@Valid @RequestBody CategoryRequest request) { return ApiResponse.success("Tạo danh mục thành công", service.create(request)); }
     @PutMapping("/{id}") public ApiResponse<CategoryResponse> update(@PathVariable Long id, @Valid @RequestBody CategoryRequest request) { return ApiResponse.success("Cập nhật danh mục thành công", service.update(id, request)); }
     @DeleteMapping("/{id}") @ResponseStatus(HttpStatus.NO_CONTENT) public void delete(@PathVariable Long id) { service.delete(id); }
