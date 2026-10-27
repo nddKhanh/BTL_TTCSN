@@ -2,11 +2,8 @@ package com.highlands.order.service;
 
 import com.highlands.order.dto.*;
 import com.highlands.order.model.*;
-import com.highlands.order.exception.ApiDomainException;
-import com.highlands.order.exception.ApiErrorCode;
 import com.highlands.order.repository.UserRepository;
 import com.highlands.order.security.JwtService;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,13 +19,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = request.email().trim().toLowerCase();
-        if (users.existsByEmailIgnoreCase(email)) {
-            throw new ApiDomainException(
-                    ApiErrorCode.EMAIL_ALREADY_REGISTERED,
-                    HttpStatus.CONFLICT,
-                    "Email đã được sử dụng"
-            );
-        }
+        if (users.existsByEmailIgnoreCase(email)) throw new IllegalArgumentException("Email đã được sử dụng");
         AppUser user = users.save(AppUser.builder().fullName(request.fullName().trim()).email(email).phone(request.phone()).passwordHash(encoder.encode(request.password())).role(Role.CUSTOMER).build());
         return response(user);
     }
@@ -47,13 +38,7 @@ public class AuthService {
         return UserResponse.from(user);
     }
 
-    private AppUser findByEmail(String email) {
-        return users.findByEmailIgnoreCase(email).orElseThrow(() -> new ApiDomainException(
-                ApiErrorCode.USER_NOT_FOUND,
-                HttpStatus.NOT_FOUND,
-                "Không tìm thấy người dùng"
-        ));
-    }
+    private AppUser findByEmail(String email) { return users.findByEmailIgnoreCase(email).orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng")); }
     private AuthResponse response(AppUser user) { return new AuthResponse(jwt.createToken(user), UserResponse.from(user)); }
     private BadCredentialsException invalidCredentials() { return new BadCredentialsException("Email hoặc mật khẩu không đúng"); }
 }

@@ -3,12 +3,10 @@ package com.highlands.order.service;
 import com.highlands.order.dto.CouponRequest;
 import com.highlands.order.dto.CouponResponse;
 import com.highlands.order.dto.ValidateCouponResponse;
-import com.highlands.order.exception.ApiDomainException;
-import com.highlands.order.exception.ApiErrorCode;
+import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.Coupon;
 import com.highlands.order.model.CouponType;
 import com.highlands.order.repository.CouponRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,19 +33,14 @@ public class CouponService {
 
     private Coupon findCoupon(Long id) {
         return couponRepository.findById(id)
-                .orElseThrow(() -> new ApiDomainException(
-                        ApiErrorCode.COUPON_NOT_FOUND,
-                        HttpStatus.NOT_FOUND,
-                        "Không tìm thấy mã giảm giá ID: " + id
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy mã giảm giá ID: " + id));
     }
 
     @Transactional
     public CouponResponse createCoupon(CouponRequest request) {
         String code = request.code().trim().toUpperCase();
         if (couponRepository.existsByCodeIgnoreCase(code)) {
-            throw new ApiDomainException(ApiErrorCode.CONFLICT, HttpStatus.CONFLICT,
-                    "Mã giảm giá '" + code + "' đã tồn tại");
+            throw new IllegalArgumentException("Mã giảm giá '" + code + "' đã tồn tại");
         }
 
         Coupon coupon = Coupon.builder()
@@ -69,8 +62,7 @@ public class CouponService {
         String code = request.code().trim().toUpperCase();
 
         if (!coupon.getCode().equalsIgnoreCase(code) && couponRepository.existsByCodeIgnoreCase(code)) {
-            throw new ApiDomainException(ApiErrorCode.CONFLICT, HttpStatus.CONFLICT,
-                    "Mã giảm giá '" + code + "' đã tồn tại");
+            throw new IllegalArgumentException("Mã giảm giá '" + code + "' đã tồn tại");
         }
 
         coupon.setCode(code);
@@ -98,25 +90,18 @@ public class CouponService {
         }
 
         Coupon coupon = couponRepository.findByCodeIgnoreCase(code.trim())
-                .orElseThrow(() -> new ApiDomainException(
-                        ApiErrorCode.COUPON_NOT_FOUND,
-                        HttpStatus.NOT_FOUND,
-                        "Mã giảm giá '" + code + "' không hợp lệ"
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException("Mã giảm giá '" + code + "' không hợp lệ"));
 
         if (!Boolean.TRUE.equals(coupon.getActive())) {
-            throw new ApiDomainException(ApiErrorCode.COUPON_INACTIVE, HttpStatus.BAD_REQUEST,
-                    "Mã giảm giá '" + code + "' đã bị tạm ngưng");
+            throw new IllegalArgumentException("Mã giảm giá '" + code + "' đã bị tạm ngưng");
         }
 
         if (coupon.getExpiryDate() != null && coupon.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new ApiDomainException(ApiErrorCode.COUPON_EXPIRED, HttpStatus.BAD_REQUEST,
-                    "Mã giảm giá '" + code + "' đã hết hạn sử dụng");
+            throw new IllegalArgumentException("Mã giảm giá '" + code + "' đã hết hạn sử dụng");
         }
 
         if (coupon.getMinOrderAmount() != null && subtotal.compareTo(coupon.getMinOrderAmount()) < 0) {
-            throw new ApiDomainException(ApiErrorCode.COUPON_MINIMUM_NOT_MET, HttpStatus.BAD_REQUEST,
-                    "Đơn hàng tối thiểu để áp dụng mã là " + coupon.getMinOrderAmount() + " VNĐ");
+            throw new IllegalArgumentException("Đơn hàng tối thiểu để áp dụng mã là " + coupon.getMinOrderAmount() + " VNĐ");
         }
 
         BigDecimal discount = BigDecimal.ZERO;
