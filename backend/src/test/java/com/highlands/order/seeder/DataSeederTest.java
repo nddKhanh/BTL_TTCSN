@@ -1,6 +1,8 @@
 package com.highlands.order.seeder;
 
 import com.highlands.order.model.AppUser;
+import com.highlands.order.model.Category;
+import com.highlands.order.model.Product;
 import com.highlands.order.repository.CategoryRepository;
 import com.highlands.order.repository.CouponRepository;
 import com.highlands.order.repository.OrderRepository;
@@ -62,13 +64,18 @@ class DataSeederTest {
         when(userRepository.save(any(AppUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
         when(passwordEncoder.encode(anyString())).thenReturn("encoded-password");
         when(couponRepository.existsByCodeIgnoreCase(anyString())).thenReturn(false);
-        when(categoryRepository.count()).thenReturn(1L);
+        when(categoryRepository.findByCode(anyString())).thenAnswer(invocation -> Optional.of(
+                Category.builder().id(1L).code(invocation.getArgument(0)).build()));
+        when(toppingRepository.findAll()).thenReturn(java.util.List.of());
+        when(productRepository.findAll()).thenReturn(java.util.List.of());
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderRepository.count()).thenReturn(1L);
 
         dataSeeder.run();
 
         verify(userRepository, times(4)).save(any(AppUser.class));
         verify(couponRepository, times(3)).save(any());
-        verify(productRepository, never()).save(any());
+        verify(productRepository, times(22)).save(any(Product.class));
         verify(orderRepository, never()).save(any());
     }
 
@@ -77,12 +84,18 @@ class DataSeederTest {
         AppUser existingUser = new AppUser();
         when(userRepository.findByEmailIgnoreCase(anyString())).thenReturn(Optional.of(existingUser));
         when(couponRepository.existsByCodeIgnoreCase(anyString())).thenReturn(true);
-        when(categoryRepository.count()).thenReturn(1L);
+        when(categoryRepository.findByCode(anyString())).thenAnswer(invocation -> Optional.of(
+                Category.builder().id(1L).code(invocation.getArgument(0)).build()));
+        when(toppingRepository.findAll()).thenReturn(java.util.List.of());
+        when(productRepository.findAll()).thenReturn(java.util.List.of());
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderRepository.count()).thenReturn(1L);
 
         dataSeeder.run();
 
         verify(userRepository, never()).save(any());
         verify(passwordEncoder, never()).encode(anyString());
         verify(couponRepository, never()).save(any());
+        verify(productRepository, times(22)).save(any(Product.class));
     }
 }

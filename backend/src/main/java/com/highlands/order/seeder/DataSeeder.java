@@ -54,24 +54,20 @@ public class DataSeeder implements CommandLineRunner {
 
         seedDemoCoupons();
 
-        if (categoryRepository.count() > 0) {
-            return; // Không tạo lại catalog và đơn hàng mẫu đã có
-        }
-
         // 1. Tạo 6 Danh Mục Sản Phẩm
-        Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê Mộc Nhiên").imageUrl("https://placehold.co/480x320?text=Ca+Phe").build());
-        Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà Trái Cây & Trà Sữa").imageUrl("https://placehold.co/480x320?text=Tra").build());
-        Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay Special").imageUrl("https://placehold.co/480x320?text=Da+Xay").build());
-        Category juice = categoryRepository.save(Category.builder().code("JUICE").name("Nước Ép & Sinh Tố").imageUrl("https://placehold.co/480x320?text=Sinh+To").build());
-        Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh & Snack").imageUrl("https://placehold.co/480x320?text=Banh").build());
-        Category combo = categoryRepository.save(Category.builder().code("COMBO").name("Combo Tiết Kiệm").imageUrl("https://placehold.co/480x320?text=Combo").build());
+        Category coffee = seedCategory("COFFEE", "Cà Phê Mộc Nhiên", "https://placehold.co/480x320?text=Ca+Phe");
+        Category tea = seedCategory("TEA", "Trà Trái Cây & Trà Sữa", "https://placehold.co/480x320?text=Tra");
+        Category freeze = seedCategory("FREEZE", "Đá Xay Special", "https://placehold.co/480x320?text=Da+Xay");
+        Category juice = seedCategory("JUICE", "Nước Ép & Sinh Tố", "https://placehold.co/480x320?text=Sinh+To");
+        Category cake = seedCategory("CAKE", "Bánh & Snack", "https://placehold.co/480x320?text=Banh");
+        Category combo = seedCategory("COMBO", "Combo Tiết Kiệm", "https://placehold.co/480x320?text=Combo");
 
         // 2. Tạo 5 Topping
-        Topping thachDao = toppingRepository.save(Topping.builder().name("Thạch Đào").price(BigDecimal.valueOf(10000)).build());
-        Topping thachCaPhe = toppingRepository.save(Topping.builder().name("Thạch Cà Phê").price(BigDecimal.valueOf(10000)).build());
-        Topping kemCheese = toppingRepository.save(Topping.builder().name("Kem Cheese").price(BigDecimal.valueOf(10000)).build());
-        Topping tranChau = toppingRepository.save(Topping.builder().name("Trân Châu Đen").price(BigDecimal.valueOf(10000)).build());
-        Topping hatSen = toppingRepository.save(Topping.builder().name("Hạt Sen Extra").price(BigDecimal.valueOf(15000)).build());
+        seedTopping("Thạch Đào", 10000);
+        seedTopping("Thạch Cà Phê", 10000);
+        seedTopping("Kem Cheese", 10000);
+        seedTopping("Trân Châu Đen", 10000);
+        seedTopping("Hạt Sen Extra", 15000);
 
         // Helper để thêm Sản Phẩm với các Size chuẩn
         List<Product> seededProducts = new ArrayList<>();
@@ -111,6 +107,10 @@ public class DataSeeder implements CommandLineRunner {
         seededProducts.add(createSingleSizeProduct(combo, "Combo Xế Chiều Thư Giãn", "1 Trà Sen Vàng + 1 Bánh Croissant bơ tỏi.", 69000, "https://placehold.co/600x450?text=Combo+Xe+Chieu"));
 
         // 3. Tạo 9 Đơn Hàng Mẫu Đa Dạng Trạng Thái
+        if (orderRepository.count() > 0) {
+            return; // Catalog có thể được bổ sung, nhưng không tạo lại đơn mẫu.
+        }
+
         createSampleOrder(userA, seededProducts.get(0), "M", "100% Đá", "100% Đường", "Thạch Cà Phê", 2, OrderStatus.COMPLETED, "WELCOME10", BigDecimal.valueOf(6800));
         createSampleOrder(userB, seededProducts.get(5), "L", "70% Đá", "50% Đường", "Hạt Sen Extra", 1, OrderStatus.COMPLETED, "MOCNHIEN20K", BigDecimal.valueOf(20000));
         createSampleOrder(userC, seededProducts.get(10), "M", "100% Đá", "100% Đường", "Kem Cheese", 2, OrderStatus.DELIVERING, null, BigDecimal.ZERO);
@@ -131,6 +131,21 @@ public class DataSeeder implements CommandLineRunner {
                         .passwordHash(passwordEncoder.encode(password))
                         .role(role)
                         .build()));
+    }
+
+    private Category seedCategory(String code, String name, String imageUrl) {
+        return categoryRepository.findByCode(code)
+                .orElseGet(() -> categoryRepository.save(Category.builder()
+                        .code(code).name(name).imageUrl(imageUrl).build()));
+    }
+
+    private void seedTopping(String name, double price) {
+        boolean exists = toppingRepository.findAll().stream()
+                .anyMatch(topping -> topping.getName().equalsIgnoreCase(name));
+        if (!exists) {
+            toppingRepository.save(Topping.builder()
+                    .name(name).price(BigDecimal.valueOf(price)).build());
+        }
     }
 
     private void seedDemoCoupons() {
@@ -159,6 +174,15 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private Product createProduct(Category cat, String name, String desc, double basePrice, String imgUrl) {
+        Product existing = productRepository.findAll().stream()
+                .filter(product -> product.getCategory().getId().equals(cat.getId())
+                        && product.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+        if (existing != null) {
+            return existing;
+        }
+
         Product p = Product.builder()
                 .category(cat)
                 .name(name)
@@ -176,6 +200,15 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private Product createSingleSizeProduct(Category cat, String name, String desc, double basePrice, String imgUrl) {
+        Product existing = productRepository.findAll().stream()
+                .filter(product -> product.getCategory().getId().equals(cat.getId())
+                        && product.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+        if (existing != null) {
+            return existing;
+        }
+
         Product p = Product.builder()
                 .category(cat)
                 .name(name)
