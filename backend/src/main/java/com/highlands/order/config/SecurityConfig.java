@@ -3,6 +3,7 @@ package com.highlands.order.config;
 import com.highlands.order.exception.ApiErrorCode;
 import com.highlands.order.security.ApiErrorResponseWriter;
 import com.highlands.order.security.JwtAuthenticationFilter;
+import com.highlands.order.security.SecurityRoutePolicy;
 import org.springframework.http.HttpStatus;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
@@ -33,8 +34,8 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/v1/orders/my-orders").authenticated()
-                        .requestMatchers("/api/v1/auth/**", "/api/v1/categories/**", "/api/v1/products/**", "/api/v1/toppings/**", "/api/v1/coupons/**", "/api/v1/orders", "/api/v1/orders/*", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers("/api/v1/orders/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers(SecurityRoutePolicy.PUBLIC_ROUTES).permitAll()
+                        .requestMatchers(SecurityRoutePolicy.ADMIN_ROUTES).hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").authenticated()
                         .anyRequest().authenticated())
                 .exceptionHandling(exceptions -> exceptions

@@ -58,7 +58,7 @@
     <div class="modal-card">
       <div class="modal-header">
         <span class="modal-title" id="modalProductName">Tên Sản Phẩm</span>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <button class="modal-close" type="button" aria-label="Đóng chi tiết sản phẩm" onclick="closeModal()">&times;</button>
       </div>
 
       <div class="modal-body">
@@ -106,9 +106,9 @@
 
         <!-- Quantity Control -->
         <div class="qty-control">
-          <button class="qty-btn" onclick="changeQty(-1)">-</button>
+          <button class="qty-btn" type="button" aria-label="Giảm số lượng" onclick="changeQty(-1)">-</button>
           <span class="qty-val" id="modalQty">1</span>
-          <button class="qty-btn" onclick="changeQty(1)">+</button>
+          <button class="qty-btn" type="button" aria-label="Tăng số lượng" onclick="changeQty(1)">+</button>
         </div>
       </div>
 
@@ -124,7 +124,7 @@
   <div class="cart-drawer" id="cartDrawer">
     <div class="cart-header">
       <span style="font-weight:bold; font-size:18px;">Giỏ Hàng Của Bạn</span>
-      <button class="modal-close" onclick="toggleCartDrawer(false)">&times;</button>
+      <button class="modal-close" type="button" aria-label="Đóng giỏ hàng" onclick="toggleCartDrawer(false)">&times;</button>
     </div>
 
     <div class="cart-body" id="cartItemsList">

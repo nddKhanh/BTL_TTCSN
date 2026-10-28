@@ -204,6 +204,20 @@ public class OrderService {
         );
     }
 
+    public DashboardStatsResponse getDashboardStats(LocalDate from, LocalDate to) {
+        if (from == null && to == null) return getDashboardStats();
+        LocalDate start = from == null ? to : from;
+        LocalDate end = to == null ? from : to;
+        if (start.isAfter(end)) throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc");
+        LocalDateTime startTime = start.atStartOfDay();
+        LocalDateTime endTime = end.plusDays(1).atStartOfDay();
+        long completed = orderRepository.countByStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(OrderStatus.COMPLETED, startTime, endTime);
+        BigDecimal revenue = orderRepository.sumTotalAmountByStatusAndCreatedAtBetween(OrderStatus.COMPLETED, startTime, endTime);
+        return new DashboardStatsResponse(revenue, completed, orderRepository.countByStatus(OrderStatus.PENDING), completed,
+                orderRepository.countByStatus(OrderStatus.CANCELLED), productRepository.countByIsActiveTrue(), userRepository.count(),
+                orderRepository.findTop5ByOrderByCreatedAtDesc().stream().map(OrderResponse::from).toList());
+    }
+
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, String requestedStatus) {
         Order order = orderRepository.findById(orderId)

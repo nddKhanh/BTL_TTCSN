@@ -63,8 +63,8 @@ public class DataSeeder implements CommandLineRunner {
         Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà Trái Cây & Trà Sữa").imageUrl("https://placehold.co/480x320?text=Tra").build());
         Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay Special").imageUrl("https://placehold.co/480x320?text=Da+Xay").build());
         Category juice = categoryRepository.save(Category.builder().code("JUICE").name("Nước Ép & Sinh Tố").imageUrl("https://placehold.co/480x320?text=Sinh+To").build());
-        Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh & Snack").imageUrl("https://placehold.co/480x320?text=Banh").build());
-        Category combo = categoryRepository.save(Category.builder().code("COMBO").name("Combo Tiết Kiệm").imageUrl("https://placehold.co/480x320?text=Combo").build());
+        Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh & Snack").imageUrl("https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Cake_and_pastry_display%2C_Tokyo%2C_Japan.jpg/960px-Cake_and_pastry_display%2C_Tokyo%2C_Japan.jpg").build());
+        Category combo = categoryRepository.save(Category.builder().code("COMBO").name("Combo Tiết Kiệm").imageUrl("https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/A_beautifully_arranged_dessert_table_showcases_a_variety_of_sweets_and_pastries_surrounded_by_cheerful_blooms.jpg/960px-A_beautifully_arranged_dessert_table_showcases_a_variety_of_sweets_and_pastries_surrounded_by_cheerful_blooms.jpg").build());
 
         // 2. Tạo 5 Topping
         Topping thachDao = toppingRepository.save(Topping.builder().name("Thạch Đào").price(BigDecimal.valueOf(10000)).build());
@@ -102,13 +102,13 @@ public class DataSeeder implements CommandLineRunner {
         seededProducts.add(createProduct(juice, "Nước Ép Cam Tươi", "100% cam sành vắt tươi bổ sung Vitamin C tự nhiên.", 39000, "https://placehold.co/600x450?text=Nuoc+Ep+Cam"));
 
         // Danh mục 5: Bánh (3 món)
-        seededProducts.add(createSingleSizeProduct(cake, "Bánh Mì Que Pate", "Bánh mì que giòn rụm với nhân pate béo ngậy chuẩn vị.", 19000, "https://placehold.co/600x450?text=Banh+Mi+Que"));
-        seededProducts.add(createSingleSizeProduct(cake, "Bánh Croissant Bơ Tỏi", "Bánh sừng bò ngàn lớp thơm nức mùi bơ Pháp và tỏi nướng.", 29000, "https://placehold.co/600x450?text=Croissant"));
-        seededProducts.add(createSingleSizeProduct(cake, "Bánh Tiramisu Truyền Thống", "Bánh bông lan thấm đượm cà phê rum kết hợp lớp kem mascarpone.", 35000, "https://placehold.co/600x450?text=Tiramisu"));
+        seededProducts.add(createSingleSizeProduct(cake, "Bánh Mì Que Pate", "Bánh mì que giòn rụm với nhân pate béo ngậy chuẩn vị.", 19000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Pastry_%2829497%29.jpg/960px-Pastry_%2829497%29.jpg"));
+        seededProducts.add(createSingleSizeProduct(cake, "Bánh Croissant Bơ Tỏi", "Bánh sừng bò ngàn lớp thơm nức mùi bơ Pháp và tỏi nướng.", 29000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Slovenian_pastry_%2811330047425%29.jpg/960px-Slovenian_pastry_%2811330047425%29.jpg"));
+        seededProducts.add(createSingleSizeProduct(cake, "Bánh Tiramisu Truyền Thống", "Bánh bông lan thấm đượm cà phê rum kết hợp lớp kem mascarpone.", 35000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Piece_of_chocolate_cake_on_a_white_plate_decorated_with_chocolate_sauce.jpg/960px-Piece_of_chocolate_cake_on_a_white_plate_decorated_with_chocolate_sauce.jpg"));
 
         // Danh mục 6: Combo (2 món)
-        seededProducts.add(createSingleSizeProduct(combo, "Combo Bữa Sáng Năng Lượng", "1 Phin Sữa Đá + 1 Bánh Mì Que Pate tiết kiệm 10.000đ.", 45000, "https://placehold.co/600x450?text=Combo+Sang"));
-        seededProducts.add(createSingleSizeProduct(combo, "Combo Xế Chiều Thư Giãn", "1 Trà Sen Vàng + 1 Bánh Croissant bơ tỏi.", 69000, "https://placehold.co/600x450?text=Combo+Xe+Chieu"));
+        seededProducts.add(createSingleSizeProduct(combo, "Combo Bữa Sáng Năng Lượng", "1 Phin Sữa Đá + 1 Bánh Mì Que Pate tiết kiệm 10.000đ.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/A_charming_dessert_setup_showcases_an_assortment_of_cakes_and_pastries_adorned_with_floral_designs.jpg/960px-A_charming_dessert_setup_showcases_an_assortment_of_cakes_and_pastries_adorned_with_floral_designs.jpg"));
+        seededProducts.add(createSingleSizeProduct(combo, "Combo Xế Chiều Thư Giãn", "1 Trà Sen Vàng + 1 Bánh Croissant bơ tỏi.", 69000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/A_beautifully_arranged_dessert_table_showcases_a_white_swirled_cake_alongside_various_colorful_pastries.jpg/960px-A_beautifully_arranged_dessert_table_showcases_a_white_swirled_cake_alongside_various_colorful_pastries.jpg"));
 
         // 3. Tạo 9 Đơn Hàng Mẫu Đa Dạng Trạng Thái
         createSampleOrder(userA, seededProducts.get(0), "M", "100% Đá", "100% Đường", "Thạch Cà Phê", 2, OrderStatus.COMPLETED, "WELCOME10", BigDecimal.valueOf(6800));

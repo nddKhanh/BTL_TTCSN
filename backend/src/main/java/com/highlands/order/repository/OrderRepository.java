@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.math.BigDecimal;
 
 import com.highlands.order.model.OrderStatus;
 
@@ -51,4 +52,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findTop5ByOrderByCreatedAtDesc();
 
     List<Order> findByStatus(OrderStatus status);
+
+    @Query("select coalesce(sum(o.totalAmount), 0) from Order o where o.status = :status and o.createdAt >= :from and o.createdAt < :until")
+    BigDecimal sumTotalAmountByStatusAndCreatedAtBetween(@Param("status") OrderStatus status,
+                                                         @Param("from") LocalDateTime from,
+                                                         @Param("until") LocalDateTime until);
+
+    long countByStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(OrderStatus status, LocalDateTime from, LocalDateTime until);
 }
