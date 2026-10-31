@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @Transactional(readOnly = true)
@@ -39,6 +41,21 @@ public class ProductService {
         return products.stream()
                 .map(ProductResponse::from)
                 .toList();
+    }
+
+    public Page<ProductResponse> getProductsPage(Long categoryId, String keyword, Pageable pageable) {
+        String query = keyword == null ? "" : keyword.trim();
+        Page<Product> products;
+        if (categoryId != null) {
+            products = query.isEmpty()
+                    ? productRepository.findByCategoryIdAndIsActiveTrue(categoryId, pageable)
+                    : productRepository.findByCategoryIdAndNameContainingIgnoreCaseAndIsActiveTrue(categoryId, query, pageable);
+        } else {
+            products = query.isEmpty()
+                    ? productRepository.findByIsActiveTrue(pageable)
+                    : productRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(query, pageable);
+        }
+        return products.map(ProductResponse::from);
     }
 
     public List<ProductResponse> getAllProductsAdmin() {

@@ -61,8 +61,8 @@ public class DataSeeder implements CommandLineRunner {
         // 1. Tạo 6 Danh Mục Sản Phẩm
         Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê Mộc Nhiên").imageUrl("https://placehold.co/480x320?text=Ca+Phe").build());
         Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà Trái Cây & Trà Sữa").imageUrl("https://placehold.co/480x320?text=Tra").build());
-        Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay Special").imageUrl("https://placehold.co/480x320?text=Da+Xay").build());
-        Category juice = categoryRepository.save(Category.builder().code("JUICE").name("Nước Ép & Sinh Tố").imageUrl("https://placehold.co/480x320?text=Sinh+To").build());
+        Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay Special").imageUrl("https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Doctor_Oz_Berries_and_Greens_Smoothie_-_Dr._Oz_Blueberry_Smoothie.webm/960px--Doctor_Oz_Berries_and_Greens_Smoothie_-_Dr._Oz_Blueberry_Smoothie.webm.jpg").build());
+        Category juice = categoryRepository.save(Category.builder().code("JUICE").name("Nước Ép & Sinh Tố").imageUrl("https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a7/Green_Juice_Smoothie_Detox_Recipe._A_Gwyneth_Paltrow_blender_recipe..webm/960px--Green_Juice_Smoothie_Detox_Recipe._A_Gwyneth_Paltrow_blender_recipe..webm.jpg").build());
         Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh & Snack").imageUrl("https://placehold.co/480x320?text=Banh").build());
         Category combo = categoryRepository.save(Category.builder().code("COMBO").name("Combo Tiết Kiệm").imageUrl("https://placehold.co/480x320?text=Combo").build());
 
@@ -91,15 +91,15 @@ public class DataSeeder implements CommandLineRunner {
         seededProducts.add(createProduct(tea, "Trà Sữa Ô Long Mộc Nhiên", "Trà Ô Long đậm đà kết hợp sữa tươi thanh trùng ngọt dịu.", 42000, "https://placehold.co/600x450?text=Tra+Sua+O+Long"));
 
         // Danh mục 3: Đá Xay (4 món)
-        seededProducts.add(createProduct(freeze, "Freeze Trà Xanh", "Đá xay matcha Nhật lừng danh kết hợp thạch trà xanh giòn sần sật.", 55000, "https://placehold.co/600x450?text=Freeze+Tra+Xanh"));
-        seededProducts.add(createProduct(freeze, "Freeze Cà Phê Cốt Dừa", "Cà phê đắng nhẹ xay cùng cốt dừa béo thơm ngậy.", 55000, "https://placehold.co/600x450?text=Freeze+Cot+Dua"));
-        seededProducts.add(createProduct(freeze, "Freeze Socola Cookie", "Socola đậm đà kết hợp bánh cookie giòn tan và kem tươi phủ trên.", 59000, "https://placehold.co/600x450?text=Freeze+Socola"));
-        seededProducts.add(createProduct(freeze, "Freeze Chanh Dây Thạch Đào", "Vị chanh dây chua thanh giải nhiệt cực đã kèm thạch đào ngọt mát.", 55000, "https://placehold.co/600x450?text=Freeze+Chanh+Day"));
+        seededProducts.add(createProduct(freeze, "Freeze Trà Xanh", "Đá xay matcha Nhật lừng danh kết hợp thạch trà xanh giòn sần sật.", 55000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Fresh-mango-smoothie_02.jpg/960px-Fresh-mango-smoothie_02.jpg"));
+        seededProducts.add(createProduct(freeze, "Freeze Cà Phê Cốt Dừa", "Cà phê đắng nhẹ xay cùng cốt dừa béo thơm ngậy.", 55000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/Straberries%2C_blueberres%2C_raspberries%2C_goji_berries%2C_apple_juice%2C_agave_nectar_Smoothie_%283013386183%29.jpg/960px-Straberries%2C_blueberres%2C_raspberries%2C_goji_berries%2C_apple_juice%2C_agave_nectar_Smoothie_%283013386183%29.jpg"));
+        seededProducts.add(createProduct(freeze, "Freeze Socola Cookie", "Socola đậm đà kết hợp bánh cookie giòn tan và kem tươi phủ trên.", 59000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/Doctor_Oz_Chocolate_Covered_Blueberry_Green_Smoothie_Recipe_-_A_Dr._Oz_Green_Smoothie_Recipe.webm/960px--Doctor_Oz_Chocolate_Covered_Blueberry_Green_Smoothie_Recipe_-_A_Dr._Oz_Green_Smoothie_Recipe.webm.jpg"));
+        seededProducts.add(createProduct(freeze, "Freeze Chanh Dây Thạch Đào", "Vị chanh dây chua thanh giải nhiệt cực đã kèm thạch đào ngọt mát.", 55000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Preparing_healthy_drinks_and_snacks_with_fresh_fruits_in_a_cozy_kitchen.jpg/960px-Preparing_healthy_drinks_and_snacks_with_fresh_fruits_in_a_cozy_kitchen.jpg"));
 
         // Danh mục 4: Sinh Tố & Nước Ép (3 món)
-        seededProducts.add(createProduct(juice, "Sinh Tố Bơ Béo", "Bơ sáp chín cây xay sánh mịn béo ngậy thơm ngon.", 49000, "https://placehold.co/600x450?text=Sinh+To+Bo"));
-        seededProducts.add(createProduct(juice, "Sinh Tố Xoài Dừa", "Xoài chín ngọt mát quyện cốt dừa thơm lừng.", 45000, "https://placehold.co/600x450?text=Sinh+To+Xoai"));
-        seededProducts.add(createProduct(juice, "Nước Ép Cam Tươi", "100% cam sành vắt tươi bổ sung Vitamin C tự nhiên.", 39000, "https://placehold.co/600x450?text=Nuoc+Ep+Cam"));
+        seededProducts.add(createProduct(juice, "Sinh Tố Bơ Béo", "Bơ sáp chín cây xay sánh mịn béo ngậy thơm ngon.", 49000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Batido_de_papaya.jpg/960px-Batido_de_papaya.jpg"));
+        seededProducts.add(createProduct(juice, "Sinh Tố Xoài Dừa", "Xoài chín ngọt mát quyện cốt dừa thơm lừng.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Fresh-mango-smoothie_01.jpg/960px-Fresh-mango-smoothie_01.jpg"));
+        seededProducts.add(createProduct(juice, "Nước Ép Cam Tươi", "100% cam sành vắt tươi bổ sung Vitamin C tự nhiên.", 39000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Batido_de_pi%C3%B1a.jpg/960px-Batido_de_pi%C3%B1a.jpg"));
 
         // Danh mục 5: Bánh (3 món)
         seededProducts.add(createSingleSizeProduct(cake, "Bánh Mì Que Pate", "Bánh mì que giòn rụm với nhân pate béo ngậy chuẩn vị.", 19000, "https://placehold.co/600x450?text=Banh+Mi+Que"));

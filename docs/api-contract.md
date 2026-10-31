@@ -55,3 +55,26 @@ Khi có lỗi, `data` là `null`, `errorCode` là mã ổn định để fronten
 - `500 Internal Server Error`: lỗi ngoài dự kiến; response không chứa exception nội bộ.
 
 Validation request body dùng Jakarta Bean Validation trên DTO. Frontend nên hiển thị `message` cho người dùng và dùng `errorCode` cho các nhánh xử lý ổn định, không phân tích nội dung tiếng Việt của `message`.
+
+## Luồng auth và order
+
+Các endpoint dưới đây dùng JWT dạng Bearer khi yêu cầu đăng nhập. API chạy stateless; không dùng session cookie.
+
+| Method | Endpoint | Quyền | Status thành công |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/auth/register` | Công khai | `201 Created` |
+| `POST` | `/api/v1/auth/login` | Công khai | `200 OK` |
+| `POST` | `/api/v1/orders` | Công khai; gắn chủ đơn nếu có JWT | `201 Created` |
+| `GET` | `/api/v1/orders/{orderCode}` | Công khai | `200 OK` |
+| `GET` | `/api/v1/orders/my-orders` | `USER` hoặc `ADMIN` | `200 OK` |
+| `PATCH` | `/api/v1/orders/{orderId}/cancel` | Người dùng đã đăng nhập | `200 OK` |
+| `GET` | `/api/v1/orders/admin/all` | `ADMIN` | `200 OK` |
+| `PATCH` | `/api/v1/orders/admin/{orderId}/status` | `ADMIN` | `200 OK` |
+
+Gửi token trong header:
+
+```http
+Authorization: Bearer <access-token>
+```
+
+Token thiếu, sai hoặc hết hạn trả `401 Unauthorized` với `AUTHENTICATION_FAILED` hoặc `TOKEN_EXPIRED`. Token hợp lệ nhưng không đủ quyền trả `403 Forbidden` với `ACCESS_DENIED`.
