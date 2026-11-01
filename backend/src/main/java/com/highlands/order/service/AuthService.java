@@ -9,6 +9,7 @@ import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,6 +80,7 @@ public class AuthService {
         return user;
     }
 
+    @PreAuthorize("hasAuthority('PROFILE_READ')")
     public UserResponse me(String email) { return UserResponse.from(findByEmail(email)); }
 
     @Transactional
@@ -88,6 +90,7 @@ public class AuthService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('PROFILE_WRITE')")
     public UserResponse updateProfile(String email, UpdateProfileRequest request) {
         AppUser user = findByEmail(email); user.setFullName(request.fullName().trim()); user.setPhone(request.phone());
         return UserResponse.from(user);

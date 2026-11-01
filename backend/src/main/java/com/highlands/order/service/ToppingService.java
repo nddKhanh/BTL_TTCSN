@@ -6,6 +6,7 @@ import com.highlands.order.exception.ResourceNotFoundException;
 import com.highlands.order.model.Topping;
 import com.highlands.order.repository.ToppingRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class ToppingService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public ToppingResponse create(ToppingRequest request) {
         Topping topping = Topping.builder()
                 .name(request.name().trim())
@@ -36,6 +38,7 @@ public class ToppingService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public ToppingResponse update(Long id, ToppingRequest request) {
         Topping topping = toppingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy topping ID: " + id));
@@ -45,6 +48,7 @@ public class ToppingService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public void delete(Long id) {
         toppingRepository.deleteById(id);
     }
