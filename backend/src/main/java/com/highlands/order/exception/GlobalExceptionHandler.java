@@ -82,6 +82,14 @@ public class GlobalExceptionHandler {
         return error(HttpStatus.BAD_REQUEST, ApiErrorCode.INVALID_REQUEST, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(InvalidCouponException.class)
+    public ResponseEntity<ApiResponse<Void>> handleInvalidCoupon(
+            InvalidCouponException ex,
+            HttpServletRequest request
+    ) {
+        return error(HttpStatus.UNPROCESSABLE_ENTITY, ApiErrorCode.COUPON_INVALID, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleConflict(
             DataIntegrityViolationException ex,

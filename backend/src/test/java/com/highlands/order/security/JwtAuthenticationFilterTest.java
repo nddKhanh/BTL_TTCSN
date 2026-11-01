@@ -34,7 +34,7 @@ class JwtAuthenticationFilterTest {
     void invalidBearerToken_returnsUnauthorizedInsteadOfContinuingAsGuest() throws Exception {
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userDetailsService, errorWriter);
         when(request.getHeader("Authorization")).thenReturn("Bearer invalid-token");
-        when(jwtService.subject("invalid-token")).thenThrow(new JwtException("invalid"));
+        when(jwtService.email("invalid-token")).thenThrow(new JwtException("invalid"));
 
         filter.doFilterInternal(request, response, filterChain);
 
@@ -46,5 +46,15 @@ class JwtAuthenticationFilterTest {
                 "Phiên đăng nhập không hợp lệ"
         );
         verify(filterChain, never()).doFilter(request, response);
+    }
+
+    @Test
+    void missingBearerToken_continuesForPublicRoutes() throws Exception {
+        JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userDetailsService, errorWriter);
+        when(request.getHeader("Authorization")).thenReturn(null);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
     }
 }

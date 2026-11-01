@@ -39,6 +39,20 @@ const CartManager = {
     this.saveCart(cart);
   },
 
+  updateItem(index, quantity) {
+    const cart = this.getCart();
+    if (!cart[index]) return;
+    const nextQuantity = Math.max(1, Number(quantity) || 1);
+    cart[index].quantity = nextQuantity;
+    cart[index].subtotal = nextQuantity * cart[index].unitPrice;
+    this.saveCart(cart);
+  },
+
+  getShippingProgress(threshold = 200000) {
+    const subtotal = this.getTotal();
+    return { subtotal, threshold, remaining: Math.max(0, threshold - subtotal), free: subtotal >= threshold };
+  },
+
   clearCart() {
     localStorage.removeItem(CART_KEY);
     this.updateCartBadge();
