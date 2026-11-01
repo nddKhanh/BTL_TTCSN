@@ -5,6 +5,7 @@ import com.highlands.order.service.AuthService;
 import com.highlands.order.service.AccountLifecycleService;
 import com.highlands.order.service.RefreshSessionService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -23,8 +24,12 @@ public class AuthController {
     @PostMapping("/register") @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) { return ApiResponse.success("Đăng ký thành công", authService.register(request)); }
     @PostMapping("/login")
-    public ApiResponse<RefreshSessionService.TokenPair> login(@Valid @RequestBody LoginRequest request) {
-        return ApiResponse.success("Đăng nhập thành công", authService.loginSession(request));
+    public ApiResponse<RefreshSessionService.TokenPair> login(@Valid @RequestBody LoginRequest request,
+                                                               HttpServletRequest httpRequest) {
+        String forwarded = httpRequest.getHeader("X-Forwarded-For");
+        String ip = forwarded == null ? httpRequest.getRemoteAddr() : forwarded.split(",")[0].trim();
+        return ApiResponse.success("Đăng nhập thành công", authService.loginSession(
+                request, ip, httpRequest.getHeader("User-Agent")));
     }
     @PostMapping("/refresh")
     public ApiResponse<RefreshSessionService.TokenPair> refresh(@RequestBody RefreshRequest request) {

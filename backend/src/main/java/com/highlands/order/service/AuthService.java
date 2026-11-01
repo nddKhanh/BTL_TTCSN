@@ -8,6 +8,7 @@ import com.highlands.order.security.JwtService;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,11 +21,12 @@ public class AuthService {
     private final RefreshSessionService refreshSessions;
     private final AccountSecurityProperties securityProperties;
     private final AccountLifecycleService lifecycle;
+    private final ApplicationEventPublisher events;
     public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt,
                        RefreshSessionService refreshSessions, AccountSecurityProperties securityProperties,
-                       AccountLifecycleService lifecycle) {
+                       AccountLifecycleService lifecycle, ApplicationEventPublisher events) {
         this.users = users; this.encoder = encoder; this.jwt = jwt; this.refreshSessions = refreshSessions;
-        this.securityProperties = securityProperties; this.lifecycle = lifecycle;
+        this.securityProperties = securityProperties; this.lifecycle = lifecycle; this.events = events;
     }
 
     @Transactional
@@ -45,8 +47,11 @@ public class AuthService {
     }
 
     @Transactional(noRollbackFor = BadCredentialsException.class)
-    public RefreshSessionService.TokenPair loginSession(LoginRequest request) {
-        return refreshSessions.issue(authenticate(request));
+    public RefreshSessionService.TokenPair loginSession(LoginRequest request, String ipAddress, String userAgent) {
+        AppUser user = authenticate(request);
+        RefreshSessionService.TokenPair tokens = refreshSessions.issue(user);
+        events.publishEvent(new SuccessfulLoginEvent(user.getEmail(), LocalDateTime.now(), ipAddress, userAgent));
+        return tokens;
     }
 
     private AppUser authenticate(LoginRequest request) {
