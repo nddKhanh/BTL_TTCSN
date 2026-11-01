@@ -1,6 +1,7 @@
 package com.highlands.order.service;
 
 import com.highlands.order.dto.*;
+import com.highlands.order.config.AccountSecurityProperties;
 import com.highlands.order.model.*;
 import com.highlands.order.repository.UserRepository;
 import com.highlands.order.security.JwtService;
@@ -10,13 +11,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+
 @Service
 @Transactional(readOnly = true)
 public class AuthService {
     private final UserRepository users; private final PasswordEncoder encoder; private final JwtService jwt;
     private final RefreshSessionService refreshSessions;
-    public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt, RefreshSessionService refreshSessions) {
+    private final AccountSecurityProperties securityProperties;
+    public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt,
+                       RefreshSessionService refreshSessions, AccountSecurityProperties securityProperties) {
         this.users = users; this.encoder = encoder; this.jwt = jwt; this.refreshSessions = refreshSessions;
+        this.securityProperties = securityProperties;
     }
 
     @Transactional
@@ -27,18 +33,39 @@ public class AuthService {
         return response(user);
     }
 
+    @Transactional(noRollbackFor = BadCredentialsException.class)
     public AuthResponse login(LoginRequest request) {
         AppUser user = authenticate(request);
         return response(user);
     }
 
+    @Transactional(noRollbackFor = BadCredentialsException.class)
     public RefreshSessionService.TokenPair loginSession(LoginRequest request) {
         return refreshSessions.issue(authenticate(request));
     }
 
     private AppUser authenticate(LoginRequest request) {
         AppUser user = users.findByEmailIgnoreCase(request.email().trim()).orElseThrow(this::invalidCredentials);
-        if (!encoder.matches(request.password(), user.getPasswordHash())) throw invalidCredentials();
+        LocalDateTime now = LocalDateTime.now();
+        if (user.getAccountStatus() == AccountStatus.DISABLED
+                || user.getAccountStatus() == AccountStatus.PENDING_VERIFICATION) {
+            throw invalidCredentials();
+        }
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
+            throw invalidCredentials();
+        }
+        if (!encoder.matches(request.password(), user.getPasswordHash())) {
+            int failures = user.getFailedLoginCount() + 1;
+            user.setFailedLoginCount(failures);
+            if (failures >= securityProperties.maxFailures()) {
+                user.setAccountStatus(AccountStatus.LOCKED);
+                user.setLockedUntil(now.plusMinutes(securityProperties.lockMinutes()));
+            }
+            throw invalidCredentials();
+        }
+        user.setFailedLoginCount(0);
+        user.setLockedUntil(null);
+        user.setAccountStatus(AccountStatus.ACTIVE);
         return user;
     }
 

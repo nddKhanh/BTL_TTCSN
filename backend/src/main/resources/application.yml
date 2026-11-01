@@ -37,6 +37,10 @@ springdoc:
     path: /swagger-ui.html
 
 app:
+  account-security:
+    max-failures: ${AUTH_MAX_FAILURES:5}
+    lock-minutes: ${AUTH_LOCK_MINUTES:15}
+
   auth-rate-limit:
     requests: ${AUTH_RATE_LIMIT_REQUESTS:10}
     window-seconds: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:60}
