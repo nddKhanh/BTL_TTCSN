@@ -3,8 +3,13 @@ let modalQuantity = 1;
 let allToppings = [];
 let selectedCategoryId = null;
 let searchTimer = null;
+let lastFocusedElement = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  selectedCategoryId = params.get('categoryId') ? Number(params.get('categoryId')) : null;
+  const initialSearch = document.getElementById('productSearch');
+  if (initialSearch) initialSearch.value = params.get('keyword') || '';
   await loadCategories();
   await loadToppings();
   await loadProducts();
@@ -73,6 +78,9 @@ async function loadProducts() {
     const query = new URLSearchParams();
     if (selectedCategoryId) query.set('categoryId', selectedCategoryId);
     if (keyword) query.set('keyword', keyword);
+    const url = new URL(window.location.href);
+    url.search = query.toString();
+    window.history.replaceState({}, '', url);
     const endpoint = `/products${query.size ? `?${query}` : ''}`;
     const products = await fetchAPI(endpoint);
 
@@ -99,7 +107,7 @@ async function loadProducts() {
     });
     container.innerHTML = html;
   } catch (err) {
-    container.innerHTML = '<p style="color:red">Lỗi tải danh sách sản phẩm. Hãy chắc chắn Backend đang chạy!</p>';
+    container.innerHTML = '<p style="color:red">Lỗi tải danh sách sản phẩm. <button type="button" onclick="loadProducts()">Thử lại</button></p>';
   }
 }
 
@@ -153,15 +161,26 @@ async function openProductModal(productId) {
     if (noteInput) noteInput.value = '';
 
     updateModalPrice();
-    document.getElementById('productModal').classList.add('active');
+    lastFocusedElement = document.activeElement;
+    const modal = document.getElementById('productModal');
+    modal.hidden = false;
+    modal.classList.add('active');
+    modal.querySelector('.modal-close')?.focus();
   } catch (err) {
     alert('Không thể tải chi tiết sản phẩm!');
   }
 }
 
 function closeModal() {
-  document.getElementById('productModal').classList.remove('active');
+  const modal = document.getElementById('productModal');
+  modal.classList.remove('active');
+  modal.hidden = true;
+  lastFocusedElement?.focus();
 }
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && document.getElementById('productModal')?.classList.contains('active')) closeModal();
+});
 
 function changeQty(delta) {
   modalQuantity += delta;
@@ -271,14 +290,29 @@ function renderCartDrawer() {
       <div class="cart-item">
         <div>
           <div class="cart-item-name">${item.productName}</div>
-          <div class="cart-item-sub">SL: ${item.quantity} | ${opts}</div>
+          <div class="cart-item-sub">SL: <input class="cart-quantity" type="number" min="1" value="${item.quantity}" onchange="updateCartItemQuantity(${index}, this.value)" aria-label="Số lượng ${item.productName}"> | ${opts}</div>
           <div class="cart-item-price">${formatVND(item.subtotal)}</div>
         </div>
-        <button style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;" onclick="CartManager.removeItem(${index}); renderCartDrawer();">Xóa</button>
+        <button style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;" onclick="removeFromCart(${index});">Xóa</button>
       </div>
     `;
   });
 
   container.innerHTML = html;
   document.getElementById('cartTotalAmount').textContent = formatVND(CartManager.getTotal());
+  const progress = CartManager.getShippingProgress();
+  const shippingMessage = document.getElementById('shippingProgress');
+  if (shippingMessage) shippingMessage.textContent = progress.free
+    ? 'Bạn được miễn phí giao hàng.'
+    : `Mua thêm ${formatVND(progress.remaining)} để được miễn phí giao hàng.`;
+}
+
+function updateCartItemQuantity(index, quantity) {
+  CartManager.updateItem(index, quantity);
+  renderCartDrawer();
+}
+
+function removeFromCart(index) {
+  CartManager.removeItem(index);
+  renderCartDrawer();
 }

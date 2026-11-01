@@ -59,7 +59,7 @@ public class DataSeeder implements CommandLineRunner {
         }
 
         // 1. Tạo 6 Danh Mục Sản Phẩm
-        Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê Mộc Nhiên").imageUrl("https://placehold.co/480x320?text=Ca+Phe").build());
+        Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê Mộc Nhiên").imageUrl("https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/A_small_cup_of_coffee.JPG/960px-A_small_cup_of_coffee.JPG").build());
         Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà Trái Cây & Trà Sữa").imageUrl("https://placehold.co/480x320?text=Tra").build());
         Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay Special").imageUrl("https://placehold.co/480x320?text=Da+Xay").build());
         Category juice = categoryRepository.save(Category.builder().code("JUICE").name("Nước Ép & Sinh Tố").imageUrl("https://placehold.co/480x320?text=Sinh+To").build());
@@ -77,11 +77,12 @@ public class DataSeeder implements CommandLineRunner {
         List<Product> seededProducts = new ArrayList<>();
 
         // Danh mục 1: Cà Phê (5 món)
-        seededProducts.add(createProduct(coffee, "Phin Sữa Đá", "Cà phê rang đậm kết hợp sữa đặc ngọt béo, chuẩn gu đậm đà.", 29000, "https://placehold.co/600x450?text=Phin+Sua+Da"));
-        seededProducts.add(createProduct(coffee, "Phin Đen Đá", "Cà phê Phin nguyên chất đậm đà, đắng thanh giải nhiệt.", 29000, "https://placehold.co/600x450?text=Phin+Den+Da"));
-        seededProducts.add(createProduct(coffee, "Bạc Xỉu Mộc Nhiên", "Nhiều sữa ít cà phê, béo ngậy thanh ngọt dễ uống.", 35000, "https://placehold.co/600x450?text=Bac+Xiu"));
-        seededProducts.add(createProduct(coffee, "Cà Phê Muối Nắp Kem", "Lớp màng kem muối mặn béo kết hợp cà phê phin đắng nhẹ.", 39000, "https://placehold.co/600x450?text=Ca+Phe+Muoi"));
-        seededProducts.add(createProduct(coffee, "Americano Đá", "Cà phê Espresso pha loãng với nước đá mát lạnh sảng khoái.", 35000, "https://placehold.co/600x450?text=Americano"));
+        // Images: Wikimedia Commons thumbnails, fetched for the demo catalog.
+        seededProducts.add(createProduct(coffee, "Phin Sữa Đá", "Cà phê rang đậm kết hợp sữa đặc ngọt béo, chuẩn gu đậm đà.", 29000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Instant_coffee_with_milk_powder%2C_3-in-1_coffee_drink%2C_Ai_Petri%2C_Crimea.jpg/960px-Instant_coffee_with_milk_powder%2C_3-in-1_coffee_drink%2C_Ai_Petri%2C_Crimea.jpg"));
+        seededProducts.add(createProduct(coffee, "Phin Đen Đá", "Cà phê Phin nguyên chất đậm đà, đắng thanh giải nhiệt.", 29000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Food-beans-coffee-drink_%2824300616956%29.jpg/960px-Food-beans-coffee-drink_%2824300616956%29.jpg"));
+        seededProducts.add(createProduct(coffee, "Bạc Xỉu Mộc Nhiên", "Nhiều sữa ít cà phê, béo ngậy thanh ngọt dễ uống.", 35000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Kopi_O.jpg/960px-Kopi_O.jpg"));
+        seededProducts.add(createProduct(coffee, "Cà Phê Muối Nắp Kem", "Lớp màng kem muối mặn béo kết hợp cà phê phin đắng nhẹ.", 39000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Memorable_Coffee.jpg/960px-Memorable_Coffee.jpg"));
+        seededProducts.add(createProduct(coffee, "Americano Đá", "Cà phê Espresso pha loãng với nước đá mát lạnh sảng khoái.", 35000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/The_way_coffee_is_served_in_Sudan.jpg/960px-The_way_coffee_is_served_in_Sudan.jpg"));
 
         // Danh mục 2: Trà (5 món)
         seededProducts.add(createProduct(tea, "Trà Sen Vàng", "Hương trà thanh mát kết hợp hạt sen bùi ngậy và củ năng giòn ngọt.", 45000, "https://placehold.co/600x450?text=Tra+Sen+Vang"));

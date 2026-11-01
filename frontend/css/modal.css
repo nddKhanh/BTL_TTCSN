@@ -50,6 +50,13 @@
   cursor: pointer;
 }
 
+.modal-close:focus-visible,
+.btn-confirm-add:focus-visible,
+.cart-quantity:focus-visible {
+  outline: 3px solid #005fcc;
+  outline-offset: 2px;
+}
+
 .modal-body {
   padding: 20px;
   overflow-y: auto;
