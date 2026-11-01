@@ -6,6 +6,8 @@ import com.highlands.order.service.AccountLifecycleService;
 import com.highlands.order.service.RefreshSessionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,6 +53,18 @@ public class AuthController {
     public ApiResponse<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
         lifecycle.resetPassword(request.token(), request.newPassword());
         return ApiResponse.success("Đặt lại mật khẩu thành công", null);
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@RequestBody RefreshRequest request) {
+        refreshSessions.revokeCurrent(request.refreshToken());
+        return ApiResponse.success("Đăng xuất thành công", null);
+    }
+
+    @PostMapping("/logout-all")
+    public ApiResponse<Void> logoutAll(@AuthenticationPrincipal UserDetails user) {
+        if (user != null) refreshSessions.revokeAll(user.getUsername());
+        return ApiResponse.success("Đã đăng xuất khỏi tất cả thiết bị", null);
     }
 
     public record RefreshRequest(String refreshToken) { }
