@@ -51,4 +51,6 @@ app:
 
   jwt:
     secret: ${JWT_SECRET}
-    expiration-minutes: ${JWT_EXPIRATION_MINUTES:120}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
+    issuer: ${JWT_ISSUER:moc-nhien-order-api}
+    audience: ${JWT_AUDIENCE:moc-nhien-web}
