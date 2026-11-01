@@ -43,6 +43,7 @@
     document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const orderCode = urlParams.get('code');
+      const phone = urlParams.get('phone') || window.prompt('Nhập số điện thoại đặt hàng để tra cứu:');
 
       const card = document.getElementById('orderDetailsCard');
       if (!orderCode) {
@@ -51,7 +52,7 @@
       }
 
       try {
-        const order = await fetchAPI(`/orders/${orderCode}`);
+        const order = await fetchAPI(`/orders/${orderCode}?phone=${encodeURIComponent(phone || '')}`);
         let itemsHtml = '';
         order.items.forEach(i => {
           const opts = [
