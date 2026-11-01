@@ -37,6 +37,10 @@ springdoc:
     path: /swagger-ui.html
 
 app:
+  auth-rate-limit:
+    requests: ${AUTH_RATE_LIMIT_REQUESTS:10}
+    window-seconds: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:60}
+
   mail:
     enabled: ${MAIL_ENABLED:false}
     from: ${MAIL_FROM:no-reply@mocnhien.local}

@@ -12,6 +12,6 @@ class FakeMailGatewayTest {
         gateway.send("customer@example.com", "Verify", "token");
 
         assertEquals(1, gateway.outbox().size());
-        assertEquals("customer@example.com", gateway.outbox().getFirst().recipient());
+        assertEquals("customer@example.com", gateway.outbox().get(0).recipient());
     }
 }
