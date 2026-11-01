@@ -2,6 +2,7 @@ package com.highlands.order.controller;
 
 import com.highlands.order.dto.*;
 import com.highlands.order.service.AuthService;
+import com.highlands.order.service.AccountLifecycleService;
 import com.highlands.order.service.RefreshSessionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -12,8 +13,10 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private final AuthService authService;
     private final RefreshSessionService refreshSessions;
-    public AuthController(AuthService authService, RefreshSessionService refreshSessions) {
-        this.authService = authService; this.refreshSessions = refreshSessions;
+    private final AccountLifecycleService lifecycle;
+    public AuthController(AuthService authService, RefreshSessionService refreshSessions,
+                          AccountLifecycleService lifecycle) {
+        this.authService = authService; this.refreshSessions = refreshSessions; this.lifecycle = lifecycle;
     }
     @PostMapping("/register") @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) { return ApiResponse.success("Đăng ký thành công", authService.register(request)); }
@@ -26,5 +29,19 @@ public class AuthController {
         return ApiResponse.success(refreshSessions.rotate(request.refreshToken()));
     }
 
+    @PostMapping("/verify-email")
+    public ApiResponse<Void> verifyEmail(@RequestBody TokenRequest request) {
+        lifecycle.verifyEmail(request.token());
+        return ApiResponse.success("Xác minh email thành công", null);
+    }
+
+    @PostMapping("/resend-verification")
+    public ApiResponse<Void> resend(@RequestBody EmailRequest request) {
+        authService.resendVerification(request.email());
+        return ApiResponse.success("Nếu tài khoản tồn tại, email xác minh đã được gửi", null);
+    }
+
     public record RefreshRequest(String refreshToken) { }
+    public record TokenRequest(String token) { }
+    public record EmailRequest(String email) { }
 }

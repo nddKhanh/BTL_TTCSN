@@ -19,17 +19,22 @@ public class AuthService {
     private final UserRepository users; private final PasswordEncoder encoder; private final JwtService jwt;
     private final RefreshSessionService refreshSessions;
     private final AccountSecurityProperties securityProperties;
+    private final AccountLifecycleService lifecycle;
     public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt,
-                       RefreshSessionService refreshSessions, AccountSecurityProperties securityProperties) {
+                       RefreshSessionService refreshSessions, AccountSecurityProperties securityProperties,
+                       AccountLifecycleService lifecycle) {
         this.users = users; this.encoder = encoder; this.jwt = jwt; this.refreshSessions = refreshSessions;
-        this.securityProperties = securityProperties;
+        this.securityProperties = securityProperties; this.lifecycle = lifecycle;
     }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         String email = request.email().trim().toLowerCase();
         if (users.existsByEmailIgnoreCase(email)) throw new IllegalArgumentException("Email đã được sử dụng");
-        AppUser user = users.save(AppUser.builder().fullName(request.fullName().trim()).email(email).phone(request.phone()).passwordHash(encoder.encode(request.password())).role(Role.CUSTOMER).build());
+        AppUser user = users.save(AppUser.builder().fullName(request.fullName().trim()).email(email)
+                .phone(request.phone()).passwordHash(encoder.encode(request.password())).role(Role.CUSTOMER)
+                .accountStatus(AccountStatus.PENDING_VERIFICATION).emailVerified(false).build());
+        lifecycle.issueVerification(user);
         return response(user);
     }
 
@@ -70,6 +75,12 @@ public class AuthService {
     }
 
     public UserResponse me(String email) { return UserResponse.from(findByEmail(email)); }
+
+    @Transactional
+    public void resendVerification(String email) {
+        users.findByEmailIgnoreCase(email.trim()).filter(user -> !user.isEmailVerified())
+                .ifPresent(lifecycle::issueVerification);
+    }
 
     @Transactional
     public UserResponse updateProfile(String email, UpdateProfileRequest request) {
