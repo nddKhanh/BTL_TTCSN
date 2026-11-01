@@ -146,8 +146,15 @@ public class OrderService {
     }
 
     public OrderResponse getOrderByCode(String orderCode) {
+        return getOrderByCode(orderCode, null);
+    }
+
+    public OrderResponse getOrderByCode(String orderCode, String phone) {
         Order order = orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng mã: " + orderCode));
+        if (phone == null || phone.isBlank() || !order.getCustomerPhone().equals(phone.trim())) {
+            throw new IllegalArgumentException("Cần cung cấp đúng số điện thoại đặt hàng để tra cứu");
+        }
         return OrderResponse.from(order);
     }
 
@@ -202,6 +209,20 @@ public class OrderService {
                 totalUsers,
                 recentOrders
         );
+    }
+
+    public DashboardStatsResponse getDashboardStats(LocalDate from, LocalDate to) {
+        if (from == null && to == null) return getDashboardStats();
+        LocalDate start = from == null ? to : from;
+        LocalDate end = to == null ? from : to;
+        if (start.isAfter(end)) throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc");
+        LocalDateTime startTime = start.atStartOfDay();
+        LocalDateTime endTime = end.plusDays(1).atStartOfDay();
+        long completed = orderRepository.countByStatusAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(OrderStatus.COMPLETED, startTime, endTime);
+        BigDecimal revenue = orderRepository.sumTotalAmountByStatusAndCreatedAtBetween(OrderStatus.COMPLETED, startTime, endTime);
+        return new DashboardStatsResponse(revenue, completed, orderRepository.countByStatus(OrderStatus.PENDING), completed,
+                orderRepository.countByStatus(OrderStatus.CANCELLED), productRepository.countByIsActiveTrue(), userRepository.count(),
+                orderRepository.findTop5ByOrderByCreatedAtDesc().stream().map(OrderResponse::from).toList());
     }
 
     @Transactional

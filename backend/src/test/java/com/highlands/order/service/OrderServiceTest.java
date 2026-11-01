@@ -191,4 +191,15 @@ class OrderServiceTest {
 
         verify(orderRepository).findByUserEmailIgnoreCaseOrderByCreatedAtDesc("Customer@Example.com");
     }
+
+    @Test
+    void getOrderByCode_unknownCode_returnsNotFound() {
+        when(orderRepository.findByOrderCode("COF-MISSING"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(
+                ResourceNotFoundException.class,
+                () -> orderService.getOrderByCode("COF-MISSING")
+        );
+    }
 }

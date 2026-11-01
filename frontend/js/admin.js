@@ -358,7 +358,8 @@ async function loadAdminProducts() {
   if (!container) return;
 
   try {
-    const products = await fetchAPI('/admin/products');
+    const page = await fetchAPI('/admin/products/page?size=20&page=0');
+    const products = page?.content || [];
 
     if (!products || products.length === 0) {
       container.innerHTML = '<p style="padding:20px;">Chưa có sản phẩm nào.</p>';
