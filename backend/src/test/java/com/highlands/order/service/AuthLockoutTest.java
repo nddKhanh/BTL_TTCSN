@@ -28,7 +28,8 @@ class AuthLockoutTest {
         when(users.findByEmailIgnoreCase("user@example.com")).thenReturn(Optional.of(user));
         when(encoder.matches("wrong-password", "hash")).thenReturn(false);
         AuthService service = new AuthService(users, encoder, mock(JwtService.class),
-                mock(RefreshSessionService.class), new AccountSecurityProperties(2, 15));
+                mock(RefreshSessionService.class), new AccountSecurityProperties(2, 15),
+                mock(AccountLifecycleService.class));
         LoginRequest request = new LoginRequest("user@example.com", "wrong-password");
 
         BadCredentialsException first = assertThrows(BadCredentialsException.class, () -> service.login(request));
