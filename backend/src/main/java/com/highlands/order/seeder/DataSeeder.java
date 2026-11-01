@@ -60,7 +60,7 @@ public class DataSeeder implements CommandLineRunner {
 
         // 1. Tạo 6 Danh Mục Sản Phẩm
         Category coffee = categoryRepository.save(Category.builder().code("COFFEE").name("Cà Phê Mộc Nhiên").imageUrl("https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/A_small_cup_of_coffee.JPG/960px-A_small_cup_of_coffee.JPG").build());
-        Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà Trái Cây & Trà Sữa").imageUrl("https://placehold.co/480x320?text=Tra").build());
+        Category tea = categoryRepository.save(Category.builder().code("TEA").name("Trà Trái Cây & Trà Sữa").imageUrl("https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Tea%2C_turkish_tea%2C_drink%2C_cafe%2C_istanbul.jpg/960px-Tea%2C_turkish_tea%2C_drink%2C_cafe%2C_istanbul.jpg").build());
         Category freeze = categoryRepository.save(Category.builder().code("FREEZE").name("Đá Xay Special").imageUrl("https://placehold.co/480x320?text=Da+Xay").build());
         Category juice = categoryRepository.save(Category.builder().code("JUICE").name("Nước Ép & Sinh Tố").imageUrl("https://placehold.co/480x320?text=Sinh+To").build());
         Category cake = categoryRepository.save(Category.builder().code("CAKE").name("Bánh & Snack").imageUrl("https://placehold.co/480x320?text=Banh").build());
@@ -85,11 +85,11 @@ public class DataSeeder implements CommandLineRunner {
         seededProducts.add(createProduct(coffee, "Americano Đá", "Cà phê Espresso pha loãng với nước đá mát lạnh sảng khoái.", 35000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/The_way_coffee_is_served_in_Sudan.jpg/960px-The_way_coffee_is_served_in_Sudan.jpg"));
 
         // Danh mục 2: Trà (5 món)
-        seededProducts.add(createProduct(tea, "Trà Sen Vàng", "Hương trà thanh mát kết hợp hạt sen bùi ngậy và củ năng giòn ngọt.", 45000, "https://placehold.co/600x450?text=Tra+Sen+Vang"));
-        seededProducts.add(createProduct(tea, "Trà Đào Cam Sả", "Trà đen vị đào mộng nước thơm lừng hương sả tươi và cam tươi.", 45000, "https://placehold.co/600x450?text=Tra+Dao+Cam+Sa"));
-        seededProducts.add(createProduct(tea, "Trà Vải Lài", "Trà lài thơm ngát quyện cùng những trái vải mọng nước ngọt ngào.", 45000, "https://placehold.co/600x450?text=Tra+Vai+Lai"));
-        seededProducts.add(createProduct(tea, "Trà Ổi Hồng Kem Cheese", "Trà ổi hồng thanh nhẹ phủ lớp kem cheese béo mặn cuốn hút.", 49000, "https://placehold.co/600x450?text=Tra+Oi+Hong"));
-        seededProducts.add(createProduct(tea, "Trà Sữa Ô Long Mộc Nhiên", "Trà Ô Long đậm đà kết hợp sữa tươi thanh trùng ngọt dịu.", 42000, "https://placehold.co/600x450?text=Tra+Sua+O+Long"));
+        seededProducts.add(createProduct(tea, "Trà Sen Vàng", "Hương trà thanh mát kết hợp hạt sen bùi ngậy và củ năng giòn ngọt.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Tea_15.jpg/960px-Tea_15.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Đào Cam Sả", "Trà đen vị đào mộng nước thơm lừng hương sả tươi và cam tươi.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Tea_Break.jpg/960px-Tea_Break.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Vải Lài", "Trà lài thơm ngát quyện cùng những trái vải mọng nước ngọt ngào.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Tea_16.jpg/960px-Tea_16.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Ổi Hồng Kem Cheese", "Trà ổi hồng thanh nhẹ phủ lớp kem cheese béo mặn cuốn hút.", 49000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Tea_17.jpg/960px-Tea_17.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Sữa Ô Long Mộc Nhiên", "Trà Ô Long đậm đà kết hợp sữa tươi thanh trùng ngọt dịu.", 42000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Fresh_Milk_Tea_2.jpg/960px-Fresh_Milk_Tea_2.jpg"));
 
         // Danh mục 3: Đá Xay (4 món)
         seededProducts.add(createProduct(freeze, "Freeze Trà Xanh", "Đá xay matcha Nhật lừng danh kết hợp thạch trà xanh giòn sần sật.", 55000, "https://placehold.co/600x450?text=Freeze+Tra+Xanh"));
