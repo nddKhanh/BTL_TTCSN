@@ -5,7 +5,9 @@ import com.highlands.order.model.AccountStatus;
 import com.highlands.order.model.AppUser;
 import com.highlands.order.model.AuthToken;
 import com.highlands.order.repository.AuthTokenRepository;
+import com.highlands.order.repository.RefreshSessionRepository;
 import com.highlands.order.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +22,13 @@ public class AccountLifecycleService {
     private final AuthTokenRepository tokens;
     private final UserRepository users;
     private final MailGateway mail;
+    private final PasswordEncoder encoder;
+    private final RefreshSessionRepository refreshSessions;
 
-    public AccountLifecycleService(AuthTokenRepository tokens, UserRepository users, MailGateway mail) {
+    public AccountLifecycleService(AuthTokenRepository tokens, UserRepository users, MailGateway mail,
+                                   PasswordEncoder encoder, RefreshSessionRepository refreshSessions) {
         this.tokens = tokens; this.users = users; this.mail = mail;
+        this.encoder = encoder; this.refreshSessions = refreshSessions;
     }
 
     public void issueVerification(AppUser user) {
@@ -40,6 +46,26 @@ public class AccountLifecycleService {
         user.setEmailVerified(true);
         user.setAccountStatus(AccountStatus.ACTIVE);
         users.save(user);
+    }
+
+    public void requestPasswordReset(String email) {
+        users.findByEmailIgnoreCase(email.trim()).ifPresent(user -> {
+            tokens.deleteByUserIdAndPurpose(user.getId(), AuthToken.TokenPurpose.PASSWORD_RESET);
+            String raw = randomToken();
+            tokens.save(AuthToken.builder().user(user).purpose(AuthToken.TokenPurpose.PASSWORD_RESET)
+                    .tokenHash(RefreshSessionService.hash(raw)).expiresAt(LocalDateTime.now().plusMinutes(30)).build());
+            mail.send(user.getEmail(), "Đặt lại mật khẩu Mộc Nhiên", "Mã đặt lại mật khẩu: " + raw);
+        });
+    }
+
+    public void resetPassword(String rawToken, String newPassword) {
+        AuthToken token = validToken(rawToken, AuthToken.TokenPurpose.PASSWORD_RESET);
+        token.setUsedAt(LocalDateTime.now());
+        AppUser user = token.getUser();
+        user.setPasswordHash(encoder.encode(newPassword));
+        user.setPasswordChangedAt(LocalDateTime.now());
+        refreshSessions.findAllByUserIdAndRevokedAtIsNull(user.getId())
+                .forEach(session -> session.setRevokedAt(LocalDateTime.now()));
     }
 
     private AuthToken validToken(String rawToken, AuthToken.TokenPurpose purpose) {

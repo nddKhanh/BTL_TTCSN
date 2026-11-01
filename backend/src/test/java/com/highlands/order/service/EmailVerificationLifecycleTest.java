@@ -5,9 +5,11 @@ import com.highlands.order.model.AccountStatus;
 import com.highlands.order.model.AppUser;
 import com.highlands.order.model.AuthToken;
 import com.highlands.order.repository.AuthTokenRepository;
+import com.highlands.order.repository.RefreshSessionRepository;
 import com.highlands.order.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -22,7 +24,8 @@ class EmailVerificationLifecycleTest {
         AuthTokenRepository tokens = mock(AuthTokenRepository.class);
         UserRepository users = mock(UserRepository.class);
         FakeMailGateway mail = new FakeMailGateway();
-        AccountLifecycleService service = new AccountLifecycleService(tokens, users, mail);
+        AccountLifecycleService service = new AccountLifecycleService(tokens, users, mail,
+                mock(PasswordEncoder.class), mock(RefreshSessionRepository.class));
         AppUser user = AppUser.builder().id(7L).email("user@example.com")
                 .accountStatus(AccountStatus.PENDING_VERIFICATION).build();
         ArgumentCaptor<AuthToken> captor = ArgumentCaptor.forClass(AuthToken.class);

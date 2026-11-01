@@ -41,7 +41,20 @@ public class AuthController {
         return ApiResponse.success("Nếu tài khoản tồn tại, email xác minh đã được gửi", null);
     }
 
+    @PostMapping("/forgot-password")
+    public ApiResponse<Void> forgotPassword(@RequestBody EmailRequest request) {
+        lifecycle.requestPasswordReset(request.email());
+        return ApiResponse.success("Nếu tài khoản tồn tại, hướng dẫn đặt lại mật khẩu đã được gửi", null);
+    }
+
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@RequestBody ResetPasswordRequest request) {
+        lifecycle.resetPassword(request.token(), request.newPassword());
+        return ApiResponse.success("Đặt lại mật khẩu thành công", null);
+    }
+
     public record RefreshRequest(String refreshToken) { }
     public record TokenRequest(String token) { }
     public record EmailRequest(String email) { }
+    public record ResetPasswordRequest(String token, String newPassword) { }
 }
