@@ -14,7 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AuthService {
     private final UserRepository users; private final PasswordEncoder encoder; private final JwtService jwt;
-    public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt) { this.users = users; this.encoder = encoder; this.jwt = jwt; }
+    private final RefreshSessionService refreshSessions;
+    public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt, RefreshSessionService refreshSessions) {
+        this.users = users; this.encoder = encoder; this.jwt = jwt; this.refreshSessions = refreshSessions;
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -25,9 +28,18 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        AppUser user = authenticate(request);
+        return response(user);
+    }
+
+    public RefreshSessionService.TokenPair loginSession(LoginRequest request) {
+        return refreshSessions.issue(authenticate(request));
+    }
+
+    private AppUser authenticate(LoginRequest request) {
         AppUser user = users.findByEmailIgnoreCase(request.email().trim()).orElseThrow(this::invalidCredentials);
         if (!encoder.matches(request.password(), user.getPasswordHash())) throw invalidCredentials();
-        return response(user);
+        return user;
     }
 
     public UserResponse me(String email) { return UserResponse.from(findByEmail(email)); }
