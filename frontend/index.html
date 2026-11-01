@@ -48,14 +48,14 @@
     </div>
 
     <!-- Product Grid -->
-    <div class="product-grid" id="productGrid">
+    <div class="product-grid" id="productGrid" aria-live="polite" aria-busy="false">
       <!-- Products loaded dynamically via JS -->
     </div>
   </main>
 
   <!-- Product Detail Modal -->
-  <div class="modal-overlay" id="productModal">
-    <div class="modal-card">
+  <div class="modal-overlay" id="productModal" role="dialog" aria-modal="true" aria-labelledby="modalProductName" hidden>
+    <div class="modal-card" tabindex="-1">
       <div class="modal-header">
         <span class="modal-title" id="modalProductName">Tên Sản Phẩm</span>
         <button class="modal-close" type="button" aria-label="Đóng chi tiết sản phẩm" onclick="closeModal()">&times;</button>
@@ -101,7 +101,8 @@
         <!-- Item Note Option -->
         <div class="option-group">
           <div class="option-title">Ghi Chú Cho Món này</div>
-          <input type="text" id="modalItemNote" placeholder="Ví dụ: Ít đắng, nhiều sữa, mang đi..." style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:6px;">
+          <label for="modalItemNote">Ghi chú món</label>
+          <input type="text" id="modalItemNote" aria-label="Ghi chú món" placeholder="Ví dụ: Ít đắng, nhiều sữa, mang đi..." style="width:100%; padding:8px 12px; border:1px solid var(--border-color); border-radius:6px;">
         </div>
 
         <!-- Quantity Control -->
@@ -132,6 +133,7 @@
     </div>
 
     <div class="cart-footer">
+      <p id="shippingProgress" aria-live="polite" style="font-size:13px;"></p>
       <div class="cart-total-row">
         <span>Tổng tiền:</span>
         <span id="cartTotalAmount" style="color:var(--primary-red);">0đ</span>

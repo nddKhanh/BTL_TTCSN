@@ -8,6 +8,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/admin/toppings")
 public class AdminToppingController {
@@ -16,6 +18,11 @@ public class AdminToppingController {
 
     public AdminToppingController(ToppingService service) {
         this.service = service;
+    }
+
+    @GetMapping
+    public ApiResponse<List<ToppingResponse>> getAll() {
+        return ApiResponse.success(service.getAllToppings());
     }
 
     @PostMapping
