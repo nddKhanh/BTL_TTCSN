@@ -2,6 +2,7 @@ package com.highlands.order.config;
 
 import com.highlands.order.exception.ApiErrorCode;
 import com.highlands.order.security.ApiErrorResponseWriter;
+import com.highlands.order.security.AuthRateLimitFilter;
 import com.highlands.order.security.JwtAuthenticationFilter;
 import com.highlands.order.security.SecurityRoutePolicy;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -28,9 +34,11 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtFilter,
+            AuthRateLimitFilter rateLimitFilter,
             ApiErrorResponseWriter errorWriter
     ) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
+                .cors(org.springframework.security.config.Customizer.withDefaults())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/v1/orders/my-orders").authenticated()
@@ -56,7 +64,21 @@ public class SecurityConfig {
                                 ApiErrorCode.ACCESS_DENIED,
                                 "Bạn không có quyền thực hiện thao tác này"
                         )))
+                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOriginPatterns(List.of("*"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        return source;
     }
 }

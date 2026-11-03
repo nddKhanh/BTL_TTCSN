@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'http://localhost:8081/api/v1';
 
 // Auth Token & User Helpers
 function getAuthToken() {
@@ -24,10 +24,13 @@ function logout() {
 async function fetchAPI(endpoint, options = {}) {
   try {
     const token = getAuthToken();
-    const headers = {
-      'Content-Type': 'application/json',
-      ...options.headers
-    };
+    const headers = { ...options.headers };
+
+    // GET requests should stay CORS-simple. Sending application/json without
+    // a request body forces an unnecessary preflight in some browsers.
+    if (options.body != null) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
@@ -122,4 +125,3 @@ function renderHeaderAuth() {
 document.addEventListener('DOMContentLoaded', () => {
   renderHeaderAuth();
 });
-

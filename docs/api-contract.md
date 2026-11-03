@@ -40,6 +40,8 @@ Khi có lỗi, `data` là `null`, `errorCode` là mã ổn định để fronten
 | `RESOURCE_NOT_FOUND` | 404 | Không tìm thấy dữ liệu nghiệp vụ |
 | `ROUTE_NOT_FOUND` | 404 | Không tồn tại endpoint |
 | `CONFLICT` | 409 | Trùng dữ liệu hoặc dữ liệu đang được tham chiếu |
+| `COUPON_INVALID` | 422 | Mã giảm giá hết hạn, chưa đủ điều kiện hoặc không tồn tại |
+| `ORDER_LOOKUP_PROOF_REQUIRED` | 403 | Tra cứu đơn khách cần thêm bằng chứng sở hữu |
 | `INTERNAL_ERROR` | 500 | Lỗi ngoài dự kiến; chi tiết chỉ được ghi ở backend |
 
 ## Quy ước status
@@ -78,3 +80,16 @@ Authorization: Bearer <access-token>
 ```
 
 Token thiếu, sai hoặc hết hạn trả `401 Unauthorized` với `AUTHENTICATION_FAILED` hoặc `TOKEN_EXPIRED`. Token hợp lệ nhưng không đủ quyền trả `403 Forbidden` với `ACCESS_DENIED`.
+## OpenAPI
+
+Swagger UI: `/swagger-ui.html`; tài liệu máy đọc: `/v3/api-docs`. Các endpoint auth dùng `Authorization: Bearer <access-token>`.
+
+Ví dụ response lỗi coupon:
+
+```json
+{
+  "success": false,
+  "errorCode": "COUPON_INVALID",
+  "message": "Mã đã hết hạn"
+}
+```

@@ -34,7 +34,7 @@ class JwtAuthenticationFilterTest {
     void invalidBearerToken_returnsUnauthorizedInsteadOfContinuingAsGuest() throws Exception {
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userDetailsService, errorWriter);
         when(request.getHeader("Authorization")).thenReturn("Bearer invalid-token");
-        when(jwtService.subject("invalid-token")).thenThrow(new JwtException("invalid"));
+        when(jwtService.email("invalid-token")).thenThrow(new JwtException("invalid"));
 
         filter.doFilterInternal(request, response, filterChain);
 
