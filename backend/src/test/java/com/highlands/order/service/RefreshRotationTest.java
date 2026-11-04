@@ -59,4 +59,47 @@ class RefreshRotationTest {
         verify(repository, never()).save(any());
         verifyNoInteractions(jwt);
     }
+
+    @Test
+    void inactiveAccountsCannotRefreshAndTheirSessionsAreRevoked() {
+        for (AccountStatus status : new AccountStatus[]{AccountStatus.DISABLED,
+                AccountStatus.PENDING_VERIFICATION, AccountStatus.LOCKED}) {
+            var user = user();
+            user.setAccountStatus(status);
+            var current = session(user);
+            when(repository.findByTokenHash(any())).thenReturn(Optional.of(current));
+            when(repository.findAllByUserIdAndRevokedAtIsNull(7L)).thenReturn(List.of(current));
+            assertThrows(BadCredentialsException.class, () -> service.rotate("refresh-token"));
+            assertNotNull(current.getRevokedAt());
+        }
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void tokensPredatingPasswordChangeAndExpiredSessionsAreRejected() {
+        var user = user();
+        user.setPasswordChangedAt(LocalDateTime.now().minusMinutes(1));
+        var current = session(user);
+        when(repository.findByTokenHash(any())).thenReturn(Optional.of(current));
+        when(repository.findAllByUserIdAndRevokedAtIsNull(7L)).thenReturn(List.of(current));
+        assertThrows(BadCredentialsException.class, () -> service.rotate("old-password-token"));
+        assertNotNull(current.getRevokedAt());
+        var expired = session(user());
+        expired.setExpiresAt(LocalDateTime.now().minusSeconds(1));
+        when(repository.findByTokenHash(any())).thenReturn(Optional.of(expired));
+        when(repository.findAllByFamilyIdAndRevokedAtIsNull("family")).thenReturn(List.of(expired));
+        assertThrows(BadCredentialsException.class, () -> service.rotate("expired-token"));
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void malformedOrUnknownTokensReturnTheSameAuthenticationFailure() {
+        when(repository.findByTokenHash(any())).thenReturn(Optional.empty());
+        String message = assertThrows(BadCredentialsException.class, () -> service.rotate("unknown")).getMessage();
+        for (String token : new String[]{null, "", " ", "x".repeat(129)}) {
+            assertEquals(message, assertThrows(BadCredentialsException.class, () -> service.rotate(token)).getMessage());
+        }
+        verify(repository, never()).save(any());
+        verifyNoInteractions(jwt);
+    }
 }
