@@ -4,6 +4,7 @@ import com.highlands.order.dto.UserResponse;
 import com.highlands.order.model.AppUser;
 import com.highlands.order.model.RefreshSession;
 import com.highlands.order.repository.RefreshSessionRepository;
+import com.highlands.order.repository.UserRepository;
 import com.highlands.order.security.JwtService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +23,10 @@ public class RefreshSessionService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private final RefreshSessionRepository sessions;
     private final JwtService jwt;
+    private final UserRepository users;
 
-    public RefreshSessionService(RefreshSessionRepository sessions, JwtService jwt) {
-        this.sessions = sessions;
-        this.jwt = jwt;
+    public RefreshSessionService(RefreshSessionRepository sessions, JwtService jwt, UserRepository users) {
+        this.sessions = sessions; this.jwt = jwt; this.users = users;
     }
 
     public TokenPair issue(AppUser user) {
@@ -45,6 +46,16 @@ public class RefreshSessionService {
         current.setRevokedAt(now);
         current.setReplacedByHash(hash(next.refreshToken()));
         return next;
+    }
+
+    public void revokeCurrent(String rawToken) {
+        sessions.findByTokenHash(hash(rawToken)).ifPresent(session -> session.setRevokedAt(LocalDateTime.now()));
+    }
+
+    public void revokeAll(String email) {
+        users.findByEmailIgnoreCase(email).ifPresent(user ->
+                sessions.findAllByUserIdAndRevokedAtIsNull(user.getId())
+                        .forEach(session -> session.setRevokedAt(LocalDateTime.now())));
     }
 
     private TokenPair create(AppUser user, String familyId) {

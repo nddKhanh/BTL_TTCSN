@@ -8,6 +8,7 @@ import com.highlands.order.dto.ProductResponse;
 import com.highlands.order.repository.CategoryRepository;
 import com.highlands.order.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -77,6 +78,7 @@ public class ProductService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public ProductResponse create(ProductRequest request) {
         Product product = Product.builder()
                 .category(category(request.categoryId()))
@@ -90,6 +92,7 @@ public class ProductService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));
@@ -103,6 +106,7 @@ public class ProductService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public void hide(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm có ID: " + id));

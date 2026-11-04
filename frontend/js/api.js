@@ -10,18 +10,29 @@ function getAuthUser() {
   return user ? JSON.parse(user) : null;
 }
 
-function setAuth(token, user) {
+function setAuth(token, user, refreshToken = null) {
   localStorage.setItem('authToken', token);
   localStorage.setItem('authUser', JSON.stringify(user));
+  if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
 }
 
-function logout() {
+async function logout() {
+  const refreshToken = localStorage.getItem('refreshToken');
+  if (refreshToken) {
+    try {
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken })
+      });
+    } catch (_) { /* local logout must always succeed */ }
+  }
   localStorage.removeItem('authToken');
   localStorage.removeItem('authUser');
+  localStorage.removeItem('refreshToken');
   window.location.href = 'index.html';
 }
 
-async function fetchAPI(endpoint, options = {}) {
+async function fetchAPI(endpoint, options = {}, retried = false) {
   try {
     const token = getAuthToken();
     const headers = { ...options.headers };
@@ -42,9 +53,16 @@ async function fetchAPI(endpoint, options = {}) {
     });
 
     const result = await response.json();
-    if (response.status === 401) {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('authUser');
+    if (response.status === 401 && !retried && localStorage.getItem('refreshToken')) {
+      const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: localStorage.getItem('refreshToken') })
+      });
+      const refreshResult = await refreshResponse.json();
+      if (refreshResponse.ok && refreshResult.success) {
+        setAuth(refreshResult.data.accessToken, refreshResult.data.user, refreshResult.data.refreshToken);
+        return fetchAPI(endpoint, options, true);
+      }
     }
     if (!response.ok || !result.success) {
       throw new Error(result.message || 'Có lỗi xảy ra!');
@@ -54,6 +72,12 @@ async function fetchAPI(endpoint, options = {}) {
     console.error(`[API Error] ${endpoint}:`, error);
     throw error;
   }
+}
+
+async function logoutAll() {
+  await fetchAPI('/auth/logout-all', { method: 'POST' });
+  localStorage.clear();
+  window.location.href = 'login.html';
 }
 
 // Global Currency Formatter for VND

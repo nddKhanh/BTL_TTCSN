@@ -13,6 +13,7 @@ import com.highlands.order.repository.ProductRepository;
 import com.highlands.order.repository.ToppingRepository;
 import com.highlands.order.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -164,6 +165,7 @@ public class OrderService {
                 .toList();
     }
 
+    @PreAuthorize("hasAuthority('ORDER_READ')")
     public List<OrderResponse> getAllOrders(
             String requestedStatus,
             String keyword,
@@ -184,6 +186,7 @@ public class OrderService {
                 .toList();
     }
 
+    @PreAuthorize("hasAuthority('DASHBOARD_READ')")
     public DashboardStatsResponse getDashboardStats() {
         List<Order> completedOrders = orderRepository.findByStatus(OrderStatus.COMPLETED);
         BigDecimal totalRevenue = completedOrders.stream()
@@ -211,6 +214,7 @@ public class OrderService {
         );
     }
 
+    @PreAuthorize("hasAuthority('DASHBOARD_READ')")
     public DashboardStatsResponse getDashboardStats(LocalDate from, LocalDate to) {
         if (from == null && to == null) return getDashboardStats();
         LocalDate start = from == null ? to : from;
@@ -226,6 +230,7 @@ public class OrderService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('ORDER_READ')")
     public OrderResponse updateOrderStatus(Long orderId, String requestedStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng ID: " + orderId));
