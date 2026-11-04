@@ -2,6 +2,7 @@ package com.highlands.order.config;
 
 import com.highlands.order.exception.ApiErrorCode;
 import com.highlands.order.security.ApiErrorResponseWriter;
+import com.highlands.order.security.AuthRateLimitFilter;
 import com.highlands.order.security.JwtAuthenticationFilter;
 import com.highlands.order.security.SecurityRoutePolicy;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtFilter,
+            AuthRateLimitFilter rateLimitFilter,
             ApiErrorResponseWriter errorWriter
     ) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
@@ -62,6 +64,7 @@ public class SecurityConfig {
                                 ApiErrorCode.ACCESS_DENIED,
                                 "Bạn không có quyền thực hiện thao tác này"
                         )))
+                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

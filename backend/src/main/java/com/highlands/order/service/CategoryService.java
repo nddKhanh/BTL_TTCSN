@@ -7,6 +7,7 @@ import com.highlands.order.model.Category;
 import com.highlands.order.repository.CategoryRepository;
 import com.highlands.order.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public CategoryResponse create(CategoryRequest request) {
         Category category = Category.builder()
                 .code(request.code().trim().toUpperCase())
@@ -40,6 +42,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public CategoryResponse update(Long id, CategoryRequest request) {
         Category category = find(id);
         category.setCode(request.code().trim().toUpperCase());
@@ -49,6 +52,7 @@ public class CategoryService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('CATALOG_WRITE')")
     public void delete(Long id) {
         if (productRepository.existsByCategoryId(id)) {
             throw new IllegalArgumentException("Không thể xóa danh mục còn sản phẩm");
