@@ -123,9 +123,8 @@
         const result = await response.json();
 
         if (result.success && result.data) {
-          setAuth(result.data.token, result.data.user);
-          alert(`Đăng ký thành công! Chào mừng ${result.data.user.fullName}`);
-          window.location.href = 'index.html';
+          sessionStorage.setItem('pendingVerificationEmail', email);
+          window.location.href = `verify-email.html?email=${encodeURIComponent(email)}`;
         } else {
           errorDiv.textContent = result.message || 'Đăng ký thất bại!';
           errorDiv.style.display = 'block';
