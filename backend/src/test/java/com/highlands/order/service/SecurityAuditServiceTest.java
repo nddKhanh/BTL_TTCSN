@@ -3,7 +3,8 @@ package com.highlands.order.service;
 import com.highlands.order.model.SecurityAuditEvent;
 import com.highlands.order.repository.SecurityAuditEventRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
@@ -21,7 +22,7 @@ class SecurityAuditServiceTest {
         SecurityAuditEvent event = SecurityAuditEvent.builder().id(1L).eventType("LOGIN").result("SUCCESS")
                 .actorEmail("person@example.com").ipAddress("192.168.10.22").userAgent("x".repeat(120))
                 .details("Session issued").occurredAt(LocalDateTime.now()).build();
-        when(repository.findAll(any(Specification.class), any(Sort.class))).thenReturn(List.of(event));
+        when(repository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(event)));
 
         var result = new SecurityAuditService(repository).search("login", "success", null, null).get(0);
 
