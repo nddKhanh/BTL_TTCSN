@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xác minh email - Mộc Nhiên Coffee</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .verify-card { max-width: 520px; margin: 56px auto; padding: 36px; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow); }
+    .verify-card h1 { color: var(--primary-red); font-size: 25px; }
+    .status { padding: 12px; margin: 18px 0; border-radius: 6px; background: #f4f4f4; }
+    .status.success { color: #176b37; background: #e8f6ed; }
+    .status.error { color: #8b1a1a; background: #fdeaea; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="verify-card">
+      <h1>Xác minh địa chỉ email</h1>
+      <p id="instructions">Mở liên kết trong email để kích hoạt tài khoản của bạn.</p>
+      <div id="status" class="status" role="status" aria-live="polite">Đang kiểm tra liên kết…</div>
+      <button id="resend" class="btn-submit" type="button">Gửi lại email xác minh</button>
+      <p><a href="login.html">Quay lại đăng nhập</a></p>
+    </section>
+  </main>
+  <script src="js/api.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token');
+    const email = params.get('email') || sessionStorage.getItem('pendingVerificationEmail');
+    const status = document.getElementById('status');
+    const resend = document.getElementById('resend');
+
+    function show(message, type = '') {
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+
+    async function verify() {
+      if (!token) {
+        show('Email xác minh đã được gửi. Liên kết chỉ sử dụng được một lần.');
+        return;
+      }
+      try {
+        await fetchAPI('/auth/verify-email', { method: 'POST', body: JSON.stringify({ token }) });
+        sessionStorage.removeItem('pendingVerificationEmail');
+        show('Xác minh thành công. Bạn có thể đăng nhập ngay.', 'success');
+        resend.hidden = true;
+      } catch (_) {
+        show('Liên kết không hợp lệ, đã hết hạn hoặc đã được sử dụng.', 'error');
+      }
+    }
+
+    resend.addEventListener('click', async () => {
+      if (!email) return show('Vui lòng đăng ký lại hoặc mở trang này từ màn hình đăng ký.', 'error');
+      resend.disabled = true;
+      try {
+        await fetchAPI('/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) });
+        show('Nếu tài khoản hợp lệ, email xác minh mới đã được gửi.', 'success');
+      } catch (error) {
+        show(error.message.includes('quá nhiều') ? 'Bạn gửi lại quá nhanh. Vui lòng thử sau.' : error.message, 'error');
+      } finally {
+        resend.disabled = false;
+      }
+    });
+
+    verify();
+  </script>
+</body>
+</html>

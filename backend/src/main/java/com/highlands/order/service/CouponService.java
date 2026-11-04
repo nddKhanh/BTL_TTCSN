@@ -8,6 +8,7 @@ import com.highlands.order.model.Coupon;
 import com.highlands.order.model.CouponType;
 import com.highlands.order.repository.CouponRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -37,6 +38,7 @@ public class CouponService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('COUPON_WRITE')")
     public CouponResponse createCoupon(CouponRequest request) {
         String code = request.code().trim().toUpperCase();
         if (couponRepository.existsByCodeIgnoreCase(code)) {
@@ -57,6 +59,7 @@ public class CouponService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('COUPON_WRITE')")
     public CouponResponse updateCoupon(Long id, CouponRequest request) {
         Coupon coupon = findCoupon(id);
         String code = request.code().trim().toUpperCase();
@@ -79,6 +82,7 @@ public class CouponService {
     }
 
     @Transactional
+    @PreAuthorize("hasAuthority('COUPON_WRITE')")
     public void deleteCoupon(Long id) {
         Coupon coupon = findCoupon(id);
         couponRepository.delete(coupon);

@@ -111,7 +111,7 @@
         const result = await response.json();
 
         if (result.success && result.data) {
-          setAuth(result.data.token, result.data.user);
+          setAuth(result.data.accessToken, result.data.user, result.data.refreshToken);
           alert(`Đăng nhập thành công! Chào mừng ${result.data.user.fullName}`);
           if (result.data.user.role === 'ADMIN') {
             window.location.href = 'admin.html';
