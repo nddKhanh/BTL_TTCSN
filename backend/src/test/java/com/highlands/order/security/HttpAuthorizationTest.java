@@ -72,6 +72,28 @@ class HttpAuthorizationTest {
         verify(TestConfig.AUDIT, times(1)).search(null, null, null, null);
     }
 
+    @Test
+    void logoutAllAndMfaRejectAnonymousRequestsAndUseAuthenticatedIdentity() throws Exception {
+        mvc.perform(post("/api/v1/auth/logout-all"))
+                .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.errorCode").value("AUTHENTICATION_FAILED"));
+        mvc.perform(post("/api/v1/auth/mfa/setup")).andExpect(status().isUnauthorized());
+        verifyNoInteractions(context.getBean(RefreshSessionService.class), context.getBean(MfaService.class));
+        mvc.perform(post("/api/v1/auth/logout-all").header("Authorization", "Bearer customer"))
+                .andExpect(status().isOk());
+        verify(context.getBean(RefreshSessionService.class)).revokeAll("customer@example.com");
+    }
+
+    @Test
+    void missingPermissionDoesNotInvokeAuditAndErrorsDoNotLeakInternals() throws Exception {
+        var result = mvc.perform(get("/api/v1/admin/security-audit").header("Authorization", "Bearer admin-no-report"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.path").value("/api/v1/admin/security-audit"))
+                .andReturn().getResponse().getContentAsString();
+        org.junit.jupiter.api.Assertions.assertFalse(result.contains("AccessDeniedException"));
+        org.junit.jupiter.api.Assertions.assertFalse(result.contains("PreAuthorize"));
+        verifyNoInteractions(TestConfig.AUDIT);
+    }
+
     @Configuration
     @EnableWebMvc
     @Import({SecurityConfig.class, AdminSecurityAuditController.class, AuthController.class, GlobalExceptionHandler.class})
