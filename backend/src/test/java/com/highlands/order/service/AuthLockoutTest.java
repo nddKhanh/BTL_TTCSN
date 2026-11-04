@@ -9,6 +9,7 @@ import com.highlands.order.security.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.Optional;
 
@@ -29,7 +30,7 @@ class AuthLockoutTest {
         when(encoder.matches("wrong-password", "hash")).thenReturn(false);
         AuthService service = new AuthService(users, encoder, mock(JwtService.class),
                 mock(RefreshSessionService.class), new AccountSecurityProperties(2, 15),
-                mock(AccountLifecycleService.class));
+                mock(AccountLifecycleService.class), mock(ApplicationEventPublisher.class));
         LoginRequest request = new LoginRequest("user@example.com", "wrong-password");
 
         BadCredentialsException first = assertThrows(BadCredentialsException.class, () -> service.login(request));

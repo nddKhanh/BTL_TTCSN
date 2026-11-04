@@ -4,10 +4,13 @@ import com.highlands.order.dto.*;
 import com.highlands.order.service.AuthService;
 import com.highlands.order.service.AccountLifecycleService;
 import com.highlands.order.service.RefreshSessionService;
+import com.highlands.order.service.MfaService;
 import jakarta.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,15 +19,20 @@ public class AuthController {
     private final AuthService authService;
     private final RefreshSessionService refreshSessions;
     private final AccountLifecycleService lifecycle;
+    private final MfaService mfa;
     public AuthController(AuthService authService, RefreshSessionService refreshSessions,
-                          AccountLifecycleService lifecycle) {
-        this.authService = authService; this.refreshSessions = refreshSessions; this.lifecycle = lifecycle;
+                          AccountLifecycleService lifecycle, MfaService mfa) {
+        this.authService = authService; this.refreshSessions = refreshSessions; this.lifecycle = lifecycle; this.mfa = mfa;
     }
     @PostMapping("/register") @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AuthResponse> register(@Valid @RequestBody RegisterRequest request) { return ApiResponse.success("Đăng ký thành công", authService.register(request)); }
     @PostMapping("/login")
-    public ApiResponse<RefreshSessionService.TokenPair> login(@Valid @RequestBody LoginRequest request) {
-        return ApiResponse.success("Đăng nhập thành công", authService.loginSession(request));
+    public ApiResponse<RefreshSessionService.TokenPair> login(@Valid @RequestBody LoginRequest request,
+                                                               HttpServletRequest httpRequest) {
+        String forwarded = httpRequest.getHeader("X-Forwarded-For");
+        String ip = forwarded == null ? httpRequest.getRemoteAddr() : forwarded.split(",")[0].trim();
+        return ApiResponse.success("Đăng nhập thành công", authService.loginSession(
+                request, ip, httpRequest.getHeader("User-Agent")));
     }
     @PostMapping("/refresh")
     public ApiResponse<RefreshSessionService.TokenPair> refresh(@RequestBody RefreshRequest request) {
@@ -67,8 +75,31 @@ public class AuthController {
         return ApiResponse.success("Đã đăng xuất khỏi tất cả thiết bị", null);
     }
 
+    @PostMapping("/mfa/setup")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<MfaService.Setup> setupMfa(@AuthenticationPrincipal UserDetails user) {
+        return ApiResponse.success(mfa.start(user.getUsername()));
+    }
+
+    @PostMapping("/mfa/confirm")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<java.util.List<String>> confirmMfa(@AuthenticationPrincipal UserDetails user,
+                                                          @RequestBody MfaCodeRequest request) {
+        return ApiResponse.success("MFA đã được bật; hãy lưu recovery codes ở nơi an toàn",
+                mfa.confirm(user.getUsername(), request.code()));
+    }
+
+    @PostMapping("/mfa/challenge")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<Void> challengeMfa(@AuthenticationPrincipal UserDetails user,
+                                          @RequestBody MfaCodeRequest request) {
+        mfa.challenge(user.getUsername(), request.code());
+        return ApiResponse.success("Xác thực MFA thành công", null);
+    }
+
     public record RefreshRequest(String refreshToken) { }
     public record TokenRequest(String token) { }
     public record EmailRequest(String email) { }
     public record ResetPasswordRequest(String token, String newPassword) { }
+    public record MfaCodeRequest(String code) { }
 }
