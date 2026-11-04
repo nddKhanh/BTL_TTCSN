@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.math.BigDecimal;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.highlands.order.model.OrderStatus;
 
@@ -48,6 +50,33 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     );
 
     long countByStatus(OrderStatus status);
+
+    // Do not fetch collections here: the database must apply the page limit.
+    @Query(value = """
+            select orders from Order orders
+            where (:status is null or orders.status = :status)
+              and (:keyword is null
+                   or lower(orders.orderCode) like lower(concat('%', :keyword, '%'))
+                   or lower(orders.customerName) like lower(concat('%', :keyword, '%'))
+                   or orders.customerPhone like concat('%', :keyword, '%'))
+              and (:createdFrom is null or orders.createdAt >= :createdFrom)
+              and (:createdUntil is null or orders.createdAt < :createdUntil)
+            """, countQuery = """
+            select count(orders) from Order orders
+            where (:status is null or orders.status = :status)
+              and (:keyword is null
+                   or lower(orders.orderCode) like lower(concat('%', :keyword, '%'))
+                   or lower(orders.customerName) like lower(concat('%', :keyword, '%'))
+                   or orders.customerPhone like concat('%', :keyword, '%'))
+              and (:createdFrom is null or orders.createdAt >= :createdFrom)
+              and (:createdUntil is null or orders.createdAt < :createdUntil)
+            """)
+    Page<Order> searchPageForAdmin(
+            @Param("status") OrderStatus status,
+            @Param("keyword") String keyword,
+            @Param("createdFrom") LocalDateTime createdFrom,
+            @Param("createdUntil") LocalDateTime createdUntil,
+            Pageable pageable);
 
     List<Order> findTop5ByOrderByCreatedAtDesc();
 
