@@ -151,9 +151,15 @@ public class OrderService {
     }
 
     public OrderResponse getOrderByCode(String orderCode, String phone) {
+        return getOrderByCode(orderCode, phone, null);
+    }
+
+    public OrderResponse getOrderByCode(String orderCode, String phone, String authenticatedEmail) {
         Order order = orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng mã: " + orderCode));
-        if (phone == null || phone.isBlank() || !order.getCustomerPhone().equals(phone.trim())) {
+        boolean owner = authenticatedEmail != null && !authenticatedEmail.isBlank() && order.getUser() != null
+                && authenticatedEmail.equalsIgnoreCase(order.getUser().getEmail());
+        if (!owner && (phone == null || phone.isBlank() || !order.getCustomerPhone().equals(phone.trim()))) {
             throw new IllegalArgumentException("Cần cung cấp đúng số điện thoại đặt hàng để tra cứu");
         }
         return OrderResponse.from(order);

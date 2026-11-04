@@ -38,8 +38,10 @@ public class OrderController {
 
     @GetMapping("/{orderCode}")
     public ApiResponse<OrderResponse> getOrderByCode(@PathVariable String orderCode,
-                                                     @RequestParam(required = false) String phone) {
-        return ApiResponse.success(orderService.getOrderByCode(orderCode, phone));
+                                                     @RequestParam(required = false) String phone,
+                                                     @AuthenticationPrincipal UserDetails user) {
+        return ApiResponse.success(orderService.getOrderByCode(orderCode, phone,
+                user == null ? null : user.getUsername()));
     }
 
     @GetMapping("/my-orders")
