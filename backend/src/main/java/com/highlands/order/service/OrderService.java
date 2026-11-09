@@ -15,6 +15,9 @@ import com.highlands.order.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -151,9 +154,15 @@ public class OrderService {
     }
 
     public OrderResponse getOrderByCode(String orderCode, String phone) {
+        return getOrderByCode(orderCode, phone, null);
+    }
+
+    public OrderResponse getOrderByCode(String orderCode, String phone, String authenticatedEmail) {
         Order order = orderRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đơn hàng mã: " + orderCode));
-        if (phone == null || phone.isBlank() || !order.getCustomerPhone().equals(phone.trim())) {
+        boolean owner = authenticatedEmail != null && !authenticatedEmail.isBlank() && order.getUser() != null
+                && authenticatedEmail.equalsIgnoreCase(order.getUser().getEmail());
+        if (!owner && (phone == null || phone.isBlank() || !order.getCustomerPhone().equals(phone.trim()))) {
             throw new IllegalArgumentException("Cần cung cấp đúng số điện thoại đặt hàng để tra cứu");
         }
         return OrderResponse.from(order);
@@ -184,6 +193,22 @@ public class OrderService {
         return orderRepository.searchForAdmin(status, normalizedKeyword, fromDateTime, untilDateTime).stream()
                 .map(OrderResponse::from)
                 .toList();
+    }
+
+    @PreAuthorize("hasAuthority('ORDER_READ')")
+    public Page<OrderResponse> getAllOrdersPage(String requestedStatus, String keyword,
+                                               LocalDate createdFrom, LocalDate createdTo, int page, int size) {
+        if (page < 0 || size < 1 || size > 100)
+            throw new IllegalArgumentException("Phân trang không hợp lệ");
+        if (createdFrom != null && createdTo != null && createdFrom.isAfter(createdTo))
+            throw new IllegalArgumentException("Ngày bắt đầu không được sau ngày kết thúc");
+        OrderStatus status = parseOptionalStatus(requestedStatus);
+        String normalizedKeyword = keyword == null || keyword.isBlank() ? null : keyword.trim();
+        LocalDateTime from = createdFrom == null ? null : createdFrom.atStartOfDay();
+        LocalDateTime until = createdTo == null ? null : createdTo.plusDays(1).atStartOfDay();
+        return orderRepository.searchPageForAdmin(status, normalizedKeyword, from, until,
+                        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt", "id")))
+                .map(OrderResponse::from);
     }
 
     @PreAuthorize("hasAuthority('DASHBOARD_READ')")

@@ -2,11 +2,13 @@ package com.highlands.order.service;
 
 import com.highlands.order.dto.UserResponse;
 import com.highlands.order.model.AppUser;
+import com.highlands.order.model.AccountStatus;
 import com.highlands.order.model.RefreshSession;
 import com.highlands.order.repository.RefreshSessionRepository;
 import com.highlands.order.repository.UserRepository;
 import com.highlands.order.security.JwtService;
 import org.springframework.stereotype.Service;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
@@ -33,14 +35,24 @@ public class RefreshSessionService {
         return create(user, UUID.randomUUID().toString());
     }
 
+    @Transactional(noRollbackFor = BadCredentialsException.class)
     public TokenPair rotate(String rawToken) {
         LocalDateTime now = LocalDateTime.now();
         RefreshSession current = sessions.findByTokenHash(hash(rawToken))
-                .orElseThrow(() -> new IllegalArgumentException("Refresh token không hợp lệ"));
+                .orElseThrow(this::invalidToken);
         if (!current.activeAt(now)) {
             sessions.findAllByFamilyIdAndRevokedAtIsNull(current.getFamilyId())
                     .forEach(session -> session.setRevokedAt(now));
-            throw new IllegalArgumentException("Refresh token đã hết hạn hoặc được sử dụng");
+            throw invalidToken();
+        }
+        AppUser user = current.getUser();
+        if (user.getAccountStatus() != AccountStatus.ACTIVE
+                || (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now))
+                || (user.getPasswordChangedAt() != null && (current.getCreatedAt() == null
+                    || !current.getCreatedAt().isAfter(user.getPasswordChangedAt())))) {
+            sessions.findAllByUserIdAndRevokedAtIsNull(user.getId())
+                    .forEach(session -> session.setRevokedAt(now));
+            throw invalidToken();
         }
         TokenPair next = create(current.getUser(), current.getFamilyId());
         current.setRevokedAt(now);
@@ -67,12 +79,19 @@ public class RefreshSessionService {
     }
 
     static String hash(String value) {
+        if (value == null || value.isBlank() || value.length() > 128) {
+            throw new BadCredentialsException("Refresh token không hợp lệ");
+        }
         try {
             return java.util.HexFormat.of().formatHex(
                     MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException ex) {
             throw new IllegalStateException(ex);
         }
+    }
+
+    private BadCredentialsException invalidToken() {
+        return new BadCredentialsException("Refresh token không hợp lệ");
     }
 
     private static String randomToken() {

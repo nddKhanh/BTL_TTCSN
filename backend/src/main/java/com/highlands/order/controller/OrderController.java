@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 @RestController
 @RequestMapping("/api/v1/orders")
@@ -38,8 +39,10 @@ public class OrderController {
 
     @GetMapping("/{orderCode}")
     public ApiResponse<OrderResponse> getOrderByCode(@PathVariable String orderCode,
-                                                     @RequestParam(required = false) String phone) {
-        return ApiResponse.success(orderService.getOrderByCode(orderCode, phone));
+                                                     @RequestParam(required = false) String phone,
+                                                     @AuthenticationPrincipal UserDetails user) {
+        return ApiResponse.success(orderService.getOrderByCode(orderCode, phone,
+                user == null ? null : user.getUsername()));
     }
 
     @GetMapping("/my-orders")
@@ -70,6 +73,17 @@ public class OrderController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdTo
     ) {
         return ApiResponse.success(orderService.getAllOrders(status, keyword, createdFrom, createdTo));
+    }
+
+    @GetMapping("/admin/page")
+    public ApiResponse<Page<OrderResponse>> getOrdersPage(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate createdTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ApiResponse.success(orderService.getAllOrdersPage(status, keyword, createdFrom, createdTo, page, size));
     }
 
     @PatchMapping("/admin/{orderId}/status")

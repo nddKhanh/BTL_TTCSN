@@ -1,6 +1,7 @@
 let categoriesCache = [];
 let couponsCache = [];
 let adminOrdersCache = [];
+const productPaging = { page: 0, size: 20, totalPages: 0, totalElements: 0, loading: false, requestId: 0 };
 
 document.addEventListener('DOMContentLoaded', async () => {
   const user = getAuthUser();
@@ -353,13 +354,43 @@ async function deleteCoupon(id) {
 }
 
 // ---------------- 3. PRODUCTS MANAGEMENT ----------------
-async function loadAdminProducts() {
+function renderProductPager() {
+  const previous = document.getElementById('productPreviousPage');
+  const next = document.getElementById('productNextPage');
+  const status = document.getElementById('productPageStatus');
+  if (previous) previous.disabled = productPaging.loading || productPaging.page === 0;
+  if (next) next.disabled = productPaging.loading || productPaging.page + 1 >= productPaging.totalPages;
+  if (status) status.textContent = productPaging.loading ? 'Đang tải sản phẩm...'
+    : `Trang ${productPaging.page + 1} / ${Math.max(1, productPaging.totalPages)} (${productPaging.totalElements} sản phẩm)`;
+}
+
+function changeAdminProductPage(delta) {
+  const page = productPaging.page + delta;
+  if (productPaging.loading || !Number.isInteger(delta) || page < 0 || page >= productPaging.totalPages) return;
+  return loadAdminProducts(page);
+}
+
+async function loadAdminProducts(requestedPage = productPaging.page) {
   const container = document.getElementById('adminProductsList');
-  if (!container) return;
+  if (!container || !Number.isInteger(requestedPage) || requestedPage < 0) return;
+  const requestId = ++productPaging.requestId;
+  productPaging.loading = true;
+  container.setAttribute('aria-busy', 'true');
+  renderProductPager();
 
   try {
-    const page = await fetchAPI('/admin/products/page?size=20&page=0');
-    const products = page?.content || [];
+    const query = new URLSearchParams({ size: String(productPaging.size), page: String(requestedPage) });
+    const page = await fetchAPI(`/admin/products/page?${query}`);
+    if (requestId !== productPaging.requestId) return;
+    if (!page || !Array.isArray(page.content) || !Number.isInteger(page.totalPages)
+        || page.totalPages < 0 || !Number.isInteger(page.totalElements) || page.totalElements < 0)
+      throw new Error('Dữ liệu phân trang không hợp lệ');
+    const products = page.content;
+    productPaging.totalPages = page.totalPages;
+    productPaging.totalElements = page.totalElements;
+    if (products.length === 0 && requestedPage > 0 && requestedPage >= page.totalPages)
+      return loadAdminProducts(Math.max(0, page.totalPages - 1));
+    productPaging.page = requestedPage;
 
     if (!products || products.length === 0) {
       container.innerHTML = '<p style="padding:20px;">Chưa có sản phẩm nào.</p>';
@@ -382,14 +413,14 @@ async function loadAdminProducts() {
     `;
 
     products.forEach(p => {
-      const catName = p.category ? p.category.name : 'N/A';
+      const catName = escapeHtml(p.category ? p.category.name : 'N/A');
       const statusBadge = p.isActive ? '<span class="badge-active">Đang bán</span>' : '<span class="badge-hidden">Tạm ẩn</span>';
-      const img = p.imageUrl || 'https://placehold.co/50x50?text=Food';
+      const img = escapeHtml(p.imageUrl || 'https://placehold.co/50x50?text=Food');
 
       html += `
         <tr>
           <td><img src="${img}" style="width:48px; height:48px; object-fit:cover; border-radius:6px;"></td>
-          <td><strong>${p.name}</strong><br><small style="color:var(--text-muted);">${p.description || ''}</small></td>
+          <td><strong>${escapeHtml(p.name)}</strong><br><small style="color:var(--text-muted);">${escapeHtml(p.description || '')}</small></td>
           <td>${catName}</td>
           <td style="color:var(--primary-red); font-weight:bold;">${formatVND(p.basePrice)}</td>
           <td>${statusBadge}</td>
@@ -404,7 +435,15 @@ async function loadAdminProducts() {
     html += '</tbody></table>';
     container.innerHTML = html;
   } catch (err) {
-    container.innerHTML = `<p style="color:red; padding:20px;">Lỗi nạp sản phẩm: ${err.message}</p>`;
+    if (requestId !== productPaging.requestId) return;
+    container.innerHTML = `<p role="alert" style="color:red; padding:20px;">Lỗi nạp sản phẩm: ${escapeHtml(err.message)}</p>
+      <button type="button" onclick="loadAdminProducts()">Thử lại</button>`;
+  } finally {
+    if (requestId === productPaging.requestId) {
+      productPaging.loading = false;
+      container.setAttribute('aria-busy', 'false');
+      renderProductPager();
+    }
   }
 }
 
@@ -684,7 +723,7 @@ function setupFormListeners() {
         alert('Thêm sản phẩm mới thành công!');
       }
       closeAdminModal('productFormModal');
-      await loadAdminProducts();
+      await loadAdminProducts(id ? productPaging.page : 0);
     } catch (err) {
       alert('Lỗi: ' + err.message);
     }

@@ -230,6 +230,11 @@
       <div id="adminProductsList" class="admin-table-card">
         <p style="padding:20px;">Đang tải sản phẩm...</p>
       </div>
+      <nav aria-label="Phân trang sản phẩm" style="display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:16px;">
+        <button id="productPreviousPage" type="button" onclick="changeAdminProductPage(-1)" disabled>Trang trước</button>
+        <span id="productPageStatus" role="status" aria-live="polite">Trang 1 / 1</span>
+        <button id="productNextPage" type="button" onclick="changeAdminProductPage(1)" disabled>Trang sau</button>
+      </nav>
     </div>
 
     <!-- Section 4: Categories -->

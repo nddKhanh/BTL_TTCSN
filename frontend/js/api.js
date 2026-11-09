@@ -1,4 +1,7 @@
 const API_BASE_URL = 'http://localhost:8081/api/v1';
+let refreshInFlight = null;
+let authRevision = 0;
+let lastRefresh = null;
 
 // Auth Token & User Helpers
 function getAuthToken() {
@@ -11,13 +14,58 @@ function getAuthUser() {
 }
 
 function setAuth(token, user, refreshToken = null) {
+  authRevision++;
+  lastRefresh = null;
   localStorage.setItem('authToken', token);
   localStorage.setItem('authUser', JSON.stringify(user));
   if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+  else localStorage.removeItem('refreshToken');
+}
+
+function clearAuth() {
+  authRevision++;
+  lastRefresh = null;
+  for (const key of ['authToken', 'authUser', 'refreshToken']) localStorage.removeItem(key);
+}
+
+async function readApiResult(response) {
+  if (response.status === 204) return { success: true, data: null };
+  try { return await response.json(); }
+  catch (_) { throw new Error('Phản hồi máy chủ không hợp lệ'); }
+}
+
+async function refreshAuth() {
+  if (!refreshInFlight) {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const accessToken = getAuthToken();
+    const revision = authRevision;
+    if (!refreshToken) return false;
+    refreshInFlight = (async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refreshToken })
+        });
+        const result = await readApiResult(response);
+        if (!response.ok || !result.success || !result.data?.accessToken || !result.data?.refreshToken)
+          throw new Error('Phiên đăng nhập đã hết hạn');
+        // A logout or a new login must never be overwritten by an older refresh.
+        if (authRevision !== revision || localStorage.getItem('refreshToken') !== refreshToken) return false;
+        setAuth(result.data.accessToken, result.data.user, result.data.refreshToken);
+        lastRefresh = { from: accessToken, to: result.data.accessToken };
+        return true;
+      } catch (_) {
+        if (authRevision === revision && localStorage.getItem('refreshToken') === refreshToken) clearAuth();
+        return false;
+      }
+    })().finally(() => { refreshInFlight = null; });
+  }
+  return refreshInFlight;
 }
 
 async function logout() {
   const refreshToken = localStorage.getItem('refreshToken');
+  clearAuth();
   if (refreshToken) {
     try {
       await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -26,9 +74,6 @@ async function logout() {
       });
     } catch (_) { /* local logout must always succeed */ }
   }
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('authUser');
-  localStorage.removeItem('refreshToken');
   window.location.href = 'index.html';
 }
 
@@ -52,17 +97,12 @@ async function fetchAPI(endpoint, options = {}, retried = false) {
       headers
     });
 
-    const result = await response.json();
-    if (response.status === 401 && !retried && localStorage.getItem('refreshToken')) {
-      const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: localStorage.getItem('refreshToken') })
-      });
-      const refreshResult = await refreshResponse.json();
-      if (refreshResponse.ok && refreshResult.success) {
-        setAuth(refreshResult.data.accessToken, refreshResult.data.user, refreshResult.data.refreshToken);
+    const result = await readApiResult(response);
+    const publicAuth = /^\/auth\/(?:login|register|refresh|forgot-password|reset-password|verify-email|resend-verification)(?:[/?]|$)/.test(endpoint);
+    if (response.status === 401 && !retried && !publicAuth && localStorage.getItem('refreshToken')) {
+      // A delayed 401 may arrive after another request has already rotated the token.
+      if ((lastRefresh?.from === token && lastRefresh.to === getAuthToken()) || await refreshAuth())
         return fetchAPI(endpoint, options, true);
-      }
     }
     if (!response.ok || !result.success) {
       throw new Error(result.message || 'Có lỗi xảy ra!');
@@ -76,7 +116,7 @@ async function fetchAPI(endpoint, options = {}, retried = false) {
 
 async function logoutAll() {
   await fetchAPI('/auth/logout-all', { method: 'POST' });
-  localStorage.clear();
+  clearAuth();
   window.location.href = 'login.html';
 }
 

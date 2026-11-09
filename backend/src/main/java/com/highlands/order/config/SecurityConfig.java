@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(a -> a
                         .requestMatchers("/api/v1/orders/my-orders").authenticated()
+                        .requestMatchers("/api/v1/auth/logout-all", "/api/v1/auth/mfa/**").authenticated()
                         .requestMatchers(SecurityRoutePolicy.PUBLIC_ROUTES).permitAll()
                         .requestMatchers(SecurityRoutePolicy.ADMIN_ROUTES).hasRole("ADMIN")
                         .requestMatchers("/api/v1/users/**").authenticated()
@@ -64,8 +65,8 @@ public class SecurityConfig {
                                 ApiErrorCode.ACCESS_DENIED,
                                 "Bạn không có quyền thực hiện thao tác này"
                         )))
-                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class)
                 .build();
     }
 
