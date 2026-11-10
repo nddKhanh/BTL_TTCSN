@@ -80,7 +80,7 @@ PENDING ──> CONFIRMED ──> DELIVERING ──> COMPLETED
 | Hỗ trợ code | Lombok |
 
 Frontend không cần Node.js hoặc bước build. Backend cung cấp REST API JSON tại tiền tố
-`/api/v1`; frontend gọi API bằng Fetch và lưu JWT/giỏ hàng trong trình duyệt.
+`/api/v1`; frontend gọi API bằng Fetch, dùng cùng origin trong stack Docker và lưu JWT/giỏ hàng trong trình duyệt.
 
 ## Kiến trúc
 
@@ -88,8 +88,11 @@ Frontend không cần Node.js hoặc bước build. Backend cung cấp REST API 
 flowchart LR
     UI[Vanilla JS UI] -->|HTTP/JSON| API[REST Controllers]
     API --> SEC[Spring Security + JWT]
-    SEC --> SVC[Service / Transaction]
-    SVC --> REPO[Spring Data JPA Repository]
+    SEC --> APP[Application use cases]
+    APP --> PORT[ApprovalPort]
+    PORT --> LOCAL[LocalApprovalAdapter]
+    APP --> REPO[Spring Data JPA Repository]
+    LOCAL --> REPO
     REPO --> DB[(MySQL)]
     FLYWAY[Flyway migrations] --> DB
     UI --> CART[(Local Storage cart)]
@@ -100,7 +103,10 @@ Backend theo kiến trúc phân tầng:
 | Tầng | Trách nhiệm |
 | --- | --- |
 | `controller` | Khai báo endpoint, nhận request, validation và trả `ApiResponse` |
-| `service` | Nghiệp vụ xác thực, catalog, coupon, tính giá, đơn hàng và dashboard |
+| `application` | Use case đặt, đọc, xét duyệt, fulfillment, định giá và dashboard |
+| `domain` | Trạng thái, action và policy approval/fulfillment không phụ thuộc DX-OS |
+| `infrastructure` | `LocalApprovalAdapter` và implementation cho các port |
+| `service` | Nghiệp vụ xác thực, catalog và coupon chưa thuộc lát cắt order refactor |
 | `repository` | Truy vấn dữ liệu bằng Spring Data JPA và JPQL |
 | `model` | JPA Entity, enum quyền, loại coupon và trạng thái đơn |
 | `dto` | Request/response cho auth, hồ sơ, đơn, coupon và dashboard |
@@ -116,6 +122,8 @@ Luồng đặt hàng chính:
 3. Backend đọc giá hiện hành từ database, kiểm tra lựa chọn và tự tính toàn bộ đơn.
 4. Coupon và phí giao hàng được xác thực ở service; frontend không quyết định tổng tiền cuối.
 5. Đơn lưu snapshot tên sản phẩm, đơn giá, tùy chọn, giảm giá, phí giao và tổng tiền.
+6. Cùng transaction đó tạo yêu cầu xét duyệt qua `ApprovalPort` với local adapter mặc định.
+7. Approval và fulfillment thay đổi bằng action có version/request ID; frontend không gửi status đích.
 
 ## Mô hình dữ liệu
 
@@ -127,8 +135,11 @@ Luồng đặt hàng chính:
 | `product_sizes` | Size và phụ thu theo sản phẩm |
 | `toppings` | Topping và giá phụ thu |
 | `coupons` | Mã giảm giá, loại, giá trị, điều kiện và hạn dùng |
-| `orders` | Người nhận, trạng thái và snapshot tổng tiền; có thể gắn với `users` |
+| `orders` | Người nhận, fulfillment, optimistic-lock version và snapshot tổng tiền; có thể gắn với `users` |
 | `order_items` | Snapshot sản phẩm, size, topping, đá/đường, giá và số lượng |
+| `order_approvals` | Một yêu cầu xét duyệt/version cho mỗi order |
+| `approval_history` | Actor, action, kết quả, lý do và request ID chống lặp |
+| `fulfillment_history` | Lịch sử chuẩn bị/giao hàng và request ID chống lặp |
 
 Index được tạo cho mã đơn, thời gian/trạng thái đơn, email người dùng, tên sản phẩm và mã coupon.
 
@@ -138,10 +149,13 @@ Index được tạo cho mã đơn, thời gian/trạng thái đơn, email ngư�
 .
 ├── backend/
 │   ├── src/main/java/com/highlands/order/
+│   │   ├── application/      # Use case và ApprovalPort
 │   │   ├── config/           # Security, CORS, typed properties
 │   │   ├── controller/       # REST API public/customer/admin
+│   │   ├── domain/           # Policy approval và fulfillment
 │   │   ├── dto/              # Request và response DTO
 │   │   ├── exception/        # Global exception handling
+│   │   ├── infrastructure/   # Local adapter
 │   │   ├── model/            # JPA Entity và enum
 │   │   ├── repository/       # Spring Data JPA
 │   │   ├── security/         # JWT filter/service
@@ -156,6 +170,8 @@ Index được tạo cho mã đơn, thời gian/trạng thái đơn, email ngư�
 ├── frontend/
 │   ├── css/                  # Style chung và modal
 │   ├── js/                   # API client, catalog, cart, checkout, admin
+│   ├── Dockerfile            # Image Nginx phục vụ static UI
+│   ├── nginx.conf            # Reverse proxy /api sang backend
 │   ├── index.html            # Storefront
 │   ├── checkout.html
 │   ├── order-status.html
@@ -172,22 +188,61 @@ Index được tạo cho mã đơn, thời gian/trạng thái đơn, email ngư�
 │   ├── templates/            # Mẫu issue, PR và handoff
 │   └── skills/               
 ├── .env.example
+├── docker-compose.yml        # MySQL + backend + frontend
 ├── AGENTS.md                 # Chỉ dẫn tải Git-flow skill
 └── README.md
 ```
 
 ## Cài đặt và chạy local
 
-### Yêu cầu
+### Cách khuyến nghị: Docker Compose
+
+Yêu cầu Docker Desktop hoặc Docker Engine có Compose plugin.
+Từ thư mục gốc dự án, tạo file môi trường:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Sinh secret Base64 từ 32 byte ngẫu nhiên và điền kết quả vào `JWT_SECRET` trong `.env`:
+
+```powershell
+$secretBytes = New-Object byte[] 32
+[Security.Cryptography.RandomNumberGenerator]::Fill($secretBytes)
+[Convert]::ToBase64String($secretBytes)
+```
+
+`MFA_ENCRYPTION_KEY` có thể để trống trong local để dùng cùng giá trị với `JWT_SECRET`.
+Không commit `.env` hoặc secret thật lên Git.
+
+Dựng và chờ toàn bộ stack sẵn sàng:
+
+```powershell
+docker compose up -d --build --wait
+```
+
+Các địa chỉ mặc định:
+
+- Giao diện: `http://localhost:3000`
+- API: `http://localhost:8080/api/v1`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+`docker compose down` dừng stack nhưng giữ volume MySQL.
+Chỉ dùng `docker compose down -v` khi chủ động muốn xóa database local của stack này.
+
+### Cách thủ công
+
+#### Yêu cầu
 
 - JDK 17.
 - MySQL 8.x đang chạy.
 - Trình duyệt hiện đại.
-- Live Server hoặc một static HTTP server được khuyến nghị cho frontend.
+- Một static server có thể reverse proxy `/api` sang backend được khuyến nghị cho frontend.
 
 Không cần cài Maven toàn cục vì repository đã có Maven Wrapper.
 
-### 1. Tạo cấu hình môi trường
+#### 1. Tạo cấu hình môi trường
 
 Từ thư mục gốc dự án:
 
@@ -208,7 +263,7 @@ JWT_SECRET=your_base64_secret
 `JWT_SECRET` phải là chuỗi Base64 sinh từ ít nhất 32 byte ngẫu nhiên. Không commit `.env` hoặc
 secret thật lên Git.
 
-### 2. Chạy backend
+#### 2. Chạy backend
 
 ```powershell
 Set-Location backend
@@ -222,17 +277,18 @@ Các địa chỉ mặc định:
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
 - OpenAPI JSON: `http://localhost:8080/v3/api-docs`
 
-### 3. Chạy frontend
+#### 3. Chạy frontend
 
-Mở thư mục `frontend` bằng Live Server, hoặc dùng static server bất kỳ. Điểm vào chính:
+Phục vụ thư mục `frontend` bằng static server có reverse proxy `/api` tới `http://localhost:8080`.
+Điểm vào chính:
 
 - Storefront: `frontend/index.html`
 - Quản trị: `frontend/admin.html`
 - Checkout: `frontend/checkout.html`
 - Lịch sử đơn: `frontend/my-orders.html`
 
-Frontend hiện dùng URL API trong `frontend/js/api.js`. Khi backend chạy ở host/port khác, cập
-nhật hằng `API_BASE_URL` trong file này.
+Frontend mặc định gọi `/api/v1` cùng origin.
+Nếu chạy frontend và backend ở origin khác, đặt `globalThis.APP_CONFIG.API_BASE_URL` trước khi tải `frontend/js/api.js` và cấu hình CORS phù hợp.
 
 ## Tài khoản và dữ liệu demo
 
@@ -283,14 +339,18 @@ Response lỗi dùng cùng envelope, kèm mã lỗi ổn định và URI request
 | Order | `POST /api/v1/orders` | Public/JWT tùy chọn | Tạo đơn; tự gắn user nếu đăng nhập |
 | Order | `GET /api/v1/orders/{orderCode}` | Public | Tra cứu đơn theo mã |
 | Order | `GET /api/v1/orders/my-orders` | Authenticated | Lịch sử đơn của tài khoản |
-| Order | `PATCH /api/v1/orders/{id}/cancel` | Authenticated | Hủy đơn `PENDING` thuộc tài khoản |
+| Approval | `GET /api/v1/orders/{id}/approval[/actions,/history]` | Owner/Admin | Trạng thái, action và lịch sử xét duyệt |
+| Approval | `POST /api/v1/orders/{id}/approval/actions/{action}` | Theo action metadata | Chấp nhận, từ chối hoặc rút có version/request ID |
+| Fulfillment | `GET /api/v1/orders/{id}/fulfillment/history` | Owner/Admin | Lịch sử chuẩn bị và giao hàng |
+| Fulfillment | `POST /api/v1/orders/{id}/fulfillment/actions/{action}` | `ORDER_FULFILL` | Chuẩn bị, giao, hoàn tất hoặc hủy |
+| Order | `PATCH /api/v1/orders/{id}/cancel` | Authenticated | Endpoint tương thích ánh xạ sang `withdraw` |
 | Admin | `GET /api/v1/admin/dashboard` | Admin | Thống kê tổng quan |
 | Admin | `/api/v1/admin/categories/**` | Admin | Tạo, cập nhật, xóa danh mục |
 | Admin | `/api/v1/admin/products/**` | Admin | Liệt kê, tạo, cập nhật, ẩn sản phẩm |
 | Admin | `/api/v1/admin/toppings/**` | Admin | Tạo, cập nhật, xóa topping |
 | Admin | `/api/v1/admin/coupons/**` | Admin | CRUD coupon |
 | Admin order | `GET /api/v1/orders/admin/all` | Admin | Tìm và lọc đơn |
-| Admin order | `PATCH /api/v1/orders/admin/{id}/status` | Admin | Cập nhật trạng thái |
+| Admin order | `PATCH /api/v1/orders/admin/{id}/status` | Admin | Đã khóa; trả `410 LEGACY_ENDPOINT_DISABLED` |
 
 Gửi JWT qua header:
 
@@ -307,20 +367,24 @@ Set-Location backend
 .\mvnw.cmd clean test
 ```
 
-Bộ test hiện có 16 test method cho service đơn hàng, seeder, JWT filter, hợp đồng xử lý lỗi và
-response DTO. Test tính giá đầy đủ, controller test và integration test với MySQL vẫn nằm trong
-roadmap P0.
+Bộ test backend hiện kiểm tra use case, policy, local approval adapter, idempotency, optimistic locking, security, migration contract và regression hiện có.
+Frontend có test cho action metadata và không gọi endpoint status cũ.
+Migration vẫn phải được chạy thử trên bản sao MySQL theo [hướng dẫn vận hành database](docs/database-operations.md) trước khi triển khai dữ liệu thật.
 
 ## Cấu hình môi trường
 
 | Biến | Mặc định | Ý nghĩa |
 | --- | --- | --- |
-| `SERVER_PORT` | `8080` | Cổng backend |
+| `MYSQL_HOST_PORT` | `3306` | Cổng MySQL công bố bởi Compose |
+| `BACKEND_HOST_PORT` | `8080` | Cổng backend công bố bởi Compose |
+| `FRONTEND_HOST_PORT` | `3000` | Cổng frontend công bố bởi Compose |
 | `SPRING_PROFILES_ACTIVE` | `demo` trong `.env.example` | Profile chạy ứng dụng |
 | `DB_URL` | MySQL local `coffee_order_db` | JDBC URL |
 | `DB_USERNAME` | `root` | Tài khoản database |
 | `DB_PASSWORD` | rỗng | Mật khẩu database |
+| `APPROVAL_PROVIDER` | `local` | Chọn implementation `ApprovalPort`; phase này chỉ hỗ trợ local |
 | `JWT_SECRET` | không có | Base64 secret bắt buộc cho JWT |
+| `MFA_ENCRYPTION_KEY` | dùng `JWT_SECRET` trong Compose | Khóa mã hóa secret MFA |
 | `JWT_EXPIRATION_MINUTES` | `120` | Thời hạn token |
 | `SHIPPING_FEE` | `15000` | Phí giao hàng |
 | `FREE_SHIPPING_THRESHOLD` | `200000` | Ngưỡng miễn phí giao |
@@ -347,7 +411,8 @@ ngoài phạm vi hiện tại:
 - Tra cứu đơn public hiện chỉ dựa vào mã đơn; cần bổ sung số điện thoại hoặc token tra cứu trong P0.
 - Hợp đồng lỗi, `errorCode` và metadata response vẫn đang được chuẩn hóa trong P0.
 - CORS hiện phục vụ phát triển local và cần giới hạn origin trước khi deploy production.
-- Chưa có môi trường deploy production và integration/E2E test hoàn chỉnh.
+- Đã có image và Compose stack đồng bộ cho local; production hardening, registry và deployment pipeline chưa thuộc phạm vi hiện tại.
+- PoF DX-OS đã xác nhận dynamic schema/topology nhưng action API còn thiếu contract retry/concurrency cần cho cutover; xem [kết quả PoF](docs/dxos-pof/RESULTS.md).
 
 Toàn bộ kế hoạch, phương án chia việc và Git workflow được tập trung tại
 [trung tâm tài liệu](docs/README.md).
