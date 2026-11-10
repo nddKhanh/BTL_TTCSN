@@ -6,6 +6,8 @@ public enum Permission {
     ORDER_CREATE,
     ORDER_READ_OWN,
     ORDER_READ,
+    ORDER_APPROVE,
+    ORDER_FULFILL,
     CATALOG_WRITE,
     COUPON_WRITE,
     DASHBOARD_READ,
