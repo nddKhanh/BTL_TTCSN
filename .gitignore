@@ -26,5 +26,6 @@ Thumbs.db
 .agents/
 .codex/
 .claude/
+.local/
 
 .idea/
