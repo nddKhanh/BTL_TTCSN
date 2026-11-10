@@ -16,7 +16,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Highlands Coffee Order API")
                         .version("v1")
-                        .description("API đặt đồ uống, xác thực JWT và quản trị đơn hàng."))
+                        .description("API đặt đồ uống độc lập với approval và fulfillment theo action."))
                 .components(new Components().addSecuritySchemes("bearerAuth", new SecurityScheme()
                         .type(SecurityScheme.Type.HTTP)
                         .scheme("bearer")
