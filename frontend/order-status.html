@@ -77,7 +77,8 @@
           <h3 style="color:var(--primary-red); margin-bottom:12px;">Mã Đơn: ${order.orderCode}</h3>
           <p><strong>Người nhận:</strong> ${order.customerName} (${order.customerPhone})</p>
           <p><strong>Địa chỉ:</strong> ${order.deliveryAddress}</p>
-          <p><strong>Trạng thái:</strong> <span style="font-weight:bold; color:var(--primary-red);">${order.status}</span></p>
+          <p><strong>Xét duyệt:</strong> <span style="font-weight:bold; color:var(--primary-red);">${formatApprovalStatus(order.approvalStatus)}</span></p>
+          <p><strong>Thực hiện đơn:</strong> <span style="font-weight:bold; color:var(--primary-red);">${formatFulfillmentStatus(order.fulfillmentStatus)}</span></p>
           <p><strong>Tạm tính:</strong> ${formatVND(order.subtotal)}</p>
           ${couponText}
           <p><strong>Phí giao hàng:</strong> ${order.shippingFee === 0 ? 'Miễn phí' : formatVND(order.shippingFee)}</p>
@@ -90,6 +91,25 @@
         card.innerHTML = `<p style="color:red">Lỗi tải thông tin đơn hàng (${orderCode}). Vui lòng kiểm tra lại Backend!</p>`;
       }
     });
+
+    function formatApprovalStatus(status) {
+      return ({
+        PENDING: 'Chờ duyệt',
+        ACCEPTED: 'Đã chấp nhận',
+        REJECTED: 'Đã từ chối',
+        WITHDRAWN: 'Đã rút'
+      })[status] || status || 'Chưa có';
+    }
+
+    function formatFulfillmentStatus(status) {
+      return ({
+        NOT_STARTED: 'Chưa chuẩn bị',
+        PREPARING: 'Đang chuẩn bị',
+        DELIVERING: 'Đang giao hàng',
+        COMPLETED: 'Hoàn thành',
+        CANCELLED: 'Đã hủy'
+      })[status] || status || 'Chưa có';
+    }
   </script>
 </body>
 </html>
