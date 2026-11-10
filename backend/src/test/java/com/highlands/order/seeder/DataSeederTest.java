@@ -1,11 +1,15 @@
 package com.highlands.order.seeder;
 
+import com.highlands.order.config.ApprovalProviderProperties;
 import com.highlands.order.model.AppUser;
 import com.highlands.order.model.Category;
 import com.highlands.order.model.Product;
 import com.highlands.order.repository.CategoryRepository;
 import com.highlands.order.repository.CouponRepository;
 import com.highlands.order.repository.OrderRepository;
+import com.highlands.order.repository.OrderApprovalRepository;
+import com.highlands.order.repository.ApprovalHistoryRepository;
+import com.highlands.order.repository.FulfillmentHistoryRepository;
 import com.highlands.order.repository.ProductRepository;
 import com.highlands.order.repository.ToppingRepository;
 import com.highlands.order.repository.UserRepository;
@@ -41,6 +45,12 @@ class DataSeederTest {
     @Mock
     private OrderRepository orderRepository;
     @Mock
+    private OrderApprovalRepository orderApprovalRepository;
+    @Mock
+    private ApprovalHistoryRepository approvalHistoryRepository;
+    @Mock
+    private FulfillmentHistoryRepository fulfillmentHistoryRepository;
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     private DataSeeder dataSeeder;
@@ -54,7 +64,11 @@ class DataSeederTest {
                 couponRepository,
                 userRepository,
                 orderRepository,
-                passwordEncoder
+                orderApprovalRepository,
+                approvalHistoryRepository,
+                fulfillmentHistoryRepository,
+                passwordEncoder,
+                new ApprovalProviderProperties("local")
         );
     }
 
@@ -97,5 +111,35 @@ class DataSeederTest {
         verify(passwordEncoder, never()).encode(anyString());
         verify(couponRepository, never()).save(any());
         verify(productRepository, times(22)).save(any(Product.class));
+    }
+
+    @Test
+    void run_dxosProviderSkipsLocalSampleOrders() {
+        dataSeeder = new DataSeeder(
+                categoryRepository,
+                productRepository,
+                toppingRepository,
+                couponRepository,
+                userRepository,
+                orderRepository,
+                orderApprovalRepository,
+                approvalHistoryRepository,
+                fulfillmentHistoryRepository,
+                passwordEncoder,
+                new ApprovalProviderProperties("dxos")
+        );
+        when(userRepository.findByEmailIgnoreCase(anyString())).thenReturn(Optional.of(new AppUser()));
+        when(couponRepository.existsByCodeIgnoreCase(anyString())).thenReturn(true);
+        when(categoryRepository.findByCode(anyString())).thenAnswer(invocation -> Optional.of(
+                Category.builder().id(1L).code(invocation.getArgument(0)).build()));
+        when(toppingRepository.findAll()).thenReturn(java.util.List.of());
+        when(productRepository.findAll()).thenReturn(java.util.List.of());
+        when(productRepository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        dataSeeder.run();
+
+        verify(orderRepository, never()).count();
+        verify(orderRepository, never()).save(any());
+        verify(orderApprovalRepository, never()).save(any());
     }
 }
