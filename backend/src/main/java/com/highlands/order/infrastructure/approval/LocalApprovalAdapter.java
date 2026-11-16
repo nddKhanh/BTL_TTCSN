@@ -48,6 +48,7 @@ public class LocalApprovalAdapter implements ApprovalPort {
     public Snapshot submit(Submission submission, ApprovalActor actor, String requestId) {
         var existing = approvals.findByOrder_Id(submission.orderId());
         if (existing.isPresent()) {
+            requireLocal(existing.get());
             ApprovalHistory previous = history.findByApproval_IdAndRequestId(existing.get().getId(), requestId)
                     .orElseThrow(() -> conflict("Đơn hàng đã có yêu cầu xét duyệt"));
             if (!"SUBMIT".equals(previous.getAction())) {
@@ -58,6 +59,7 @@ public class LocalApprovalAdapter implements ApprovalPort {
 
         OrderApproval approval = OrderApproval.builder()
                 .approvalRef(UUID.randomUUID().toString())
+                .provider(ApprovalProvider.LOCAL)
                 .order(orders.getReferenceById(submission.orderId()))
                 .status(ApprovalStatus.PENDING)
                 .createdBy(actor.actorId())
@@ -78,6 +80,7 @@ public class LocalApprovalAdapter implements ApprovalPort {
     public Snapshot getByOrderId(Long orderId, ApprovalActor actor) {
         OrderApproval approval = approvals.findByOrder_Id(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu xét duyệt của đơn hàng"));
+        requireLocal(approval);
         ensureCanRead(approval, actor);
         return snapshot(approval);
     }
@@ -87,7 +90,9 @@ public class LocalApprovalAdapter implements ApprovalPort {
         if (orderIds.isEmpty()) {
             return Map.of();
         }
-        return approvals.findByOrder_IdIn(orderIds).stream()
+        List<OrderApproval> found = approvals.findByOrder_IdIn(orderIds);
+        found.forEach(this::requireLocal);
+        return found.stream()
                 .map(this::snapshot)
                 .collect(Collectors.toMap(Snapshot::orderId, Function.identity()));
     }
@@ -117,6 +122,7 @@ public class LocalApprovalAdapter implements ApprovalPort {
     ) {
         OrderApproval approval = approvals.findByApprovalRef(approvalRef)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu xét duyệt"));
+        requireLocal(approval);
         ApprovalAction localAction = ApprovalAction.fromApiName(action);
         var previous = history.findByApproval_IdAndRequestId(approval.getId(), requestId);
         if (previous.isPresent()) {
@@ -165,6 +171,7 @@ public class LocalApprovalAdapter implements ApprovalPort {
     public java.util.List<HistoryEntry> history(String approvalRef, ApprovalActor actor) {
         OrderApproval approval = approvals.findByApprovalRef(approvalRef)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu xét duyệt"));
+        requireLocal(approval);
         ensureCanRead(approval, actor);
         return history.findByApproval_IdOrderByCreatedAtAscIdAsc(approval.getId()).stream()
                 .map(item -> new HistoryEntry(
@@ -182,6 +189,12 @@ public class LocalApprovalAdapter implements ApprovalPort {
     private void ensureCanRead(OrderApproval approval, ApprovalActor actor) {
         if (!ApprovalPolicy.canRead(approval.getCreatedBy(), actor)) {
             throw new AccessDeniedException("Bạn không có quyền xem yêu cầu xét duyệt này");
+        }
+    }
+
+    private void requireLocal(OrderApproval approval) {
+        if (approval.getProvider() != null && approval.getProvider() != ApprovalProvider.LOCAL) {
+            throw conflict("Approval đã thuộc DX-OS; hãy chuyển APPROVAL_PROVIDER về dxos");
         }
     }
 

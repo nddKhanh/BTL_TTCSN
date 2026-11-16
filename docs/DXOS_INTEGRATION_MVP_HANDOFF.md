@@ -22,6 +22,9 @@ Nó không bao gồm tự động hóa hạ tầng Keycloak, kiểm tra giao di�
 - `approval_history.request_id` được dùng làm ledger chống replay phía TTCSN.
 - `expectedVersion` được kiểm tra trước khi gửi action.
 - Migration V10 mở rộng `approval_ref` lên 100 ký tự và `action` lên 64 ký tự.
+- Migration V11 lưu provider, approval ref Local và thời điểm hoàn tất chuyển đổi sang DX-OS.
+- API admin hỗ trợ preflight và migrate approval Local theo metadata workflow DX-OS hiện tại.
+- Lịch sử sau cutover hợp nhất sự kiện Local, mốc `MIGRATE_TO_DXOS` và sự kiện DX-OS.
 - Seeder không tạo order và approval local khi provider là `dxos`.
 - `.env.example`, `application.yml` và `docker-compose.yml` đã có cấu hình DX-OS bằng placeholder.
 - Không có mật khẩu hoặc token runtime của phiên kiểm tra được ghi vào source.
@@ -61,7 +64,7 @@ PoF về thay đổi model V1, V2 và V3 được ghi riêng tại [Kết quả 
 | Đồng bộ chủ động | Chưa làm | MVP đọc lại DX-OS theo request; chưa có webhook, event checkpoint hoặc consumer |
 | Identity theo từng người dùng | Chưa làm | MVP dùng một requester và một approver dùng chung; production cần subject mapping hoặc token delegation |
 | Guest checkout ở chế độ DX-OS | Không hỗ trợ | MVP yêu cầu user TTCSN đã đăng nhập để xác định owner |
-| Dữ liệu approval cũ | Không migrate | Chỉ cutover trên database sạch hoặc tự xây migration/reconciliation cho dữ liệu local hiện có |
+| Dữ liệu approval cũ | Có preflight và migration phục vụ demo | Chạy migration ngay sau khi backend nhận provider `dxos`; production vẫn cần reconciliation cho cửa sổ lỗi giữa external create và lưu mapping |
 | Hiệu năng danh sách admin | Chưa đo tải | Adapter đang đọc từng record DX-OS theo từng order; cần batch API hoặc cache nếu số order lớn |
 | Test riêng cho DX-OS adapter | Chưa thêm mock test chuyên biệt | Phạm vi này dùng live E2E và test hiện có; có thể bổ sung contract test khi DX-OS ổn định contract |
 | Hardening production | Chưa thực hiện | Cần secret manager, TLS, rotation, observability, retry policy và cảnh báo lỗi đồng bộ |

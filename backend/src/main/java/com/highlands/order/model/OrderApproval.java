@@ -1,6 +1,7 @@
 package com.highlands.order.model;
 
 import com.highlands.order.domain.approval.ApprovalStatus;
+import com.highlands.order.domain.approval.ApprovalProvider;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,6 +22,15 @@ public class OrderApproval {
 
     @Column(nullable = false, unique = true, length = 100)
     private String approvalRef;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private ApprovalProvider provider;
+
+    @Column(length = 100)
+    private String localApprovalRef;
+
+    private LocalDateTime migrationCompletedAt;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false, unique = true)
@@ -49,6 +59,9 @@ public class OrderApproval {
     void prePersist() {
         if (status == null) {
             status = ApprovalStatus.PENDING;
+        }
+        if (provider == null) {
+            provider = ApprovalProvider.LOCAL;
         }
         if (createdAt == null) {
             createdAt = LocalDateTime.now();

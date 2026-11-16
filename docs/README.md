@@ -19,6 +19,7 @@
 - [Lộ trình xác thực, phân quyền, JWT và email](security-auth-roadmap.md).
 - [Vận hành database](database-operations.md).
 - [Runtime và runbook demo DX-OS](dxos-demo-runtime.md): kết luận đã kiểm chứng, cấu hình cách ly và các bước UI cần QA.
+- [Cấu hình demo từ Local sang DX-OS](dxos-configuration/README.md): khởi chạy TTCSN độc lập, cấu hình model/OIDC, migrate dữ liệu và cutover provider.
 - [Kế hoạch RAG tương lai](future-rag-plan.md).
 - [Lịch sử dự án](project-history.md).
 

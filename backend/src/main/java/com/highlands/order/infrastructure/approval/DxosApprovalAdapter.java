@@ -2,6 +2,7 @@ package com.highlands.order.infrastructure.approval;
 
 import com.highlands.order.application.approval.ApprovalPort;
 import com.highlands.order.domain.approval.ApprovalActor;
+import com.highlands.order.domain.approval.ApprovalProvider;
 import com.highlands.order.domain.approval.ApprovalPolicy;
 import com.highlands.order.domain.approval.ApprovalStatus;
 import com.highlands.order.exception.ApiDomainException;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,6 +62,7 @@ public class DxosApprovalAdapter implements ApprovalPort {
         }
         var existing = approvals.findByOrder_Id(submission.orderId());
         if (existing.isPresent()) {
+            requireDxos(existing.get());
             ApprovalHistory previous = history.findByApproval_IdAndRequestId(existing.get().getId(), requestId)
                     .orElseThrow(() -> conflict("Đơn hàng đã có yêu cầu xét duyệt"));
             if (!"SUBMIT".equals(previous.getAction())) {
@@ -73,6 +77,7 @@ public class DxosApprovalAdapter implements ApprovalPort {
         DxosApiClient.RecordData remote = client.create(submission);
         OrderApproval approval = OrderApproval.builder()
                 .approvalRef(remote.id())
+                .provider(ApprovalProvider.DXOS)
                 .order(orders.getReferenceById(submission.orderId()))
                 .status(status(remote.status()))
                 .createdBy(actor.actorId())
@@ -95,6 +100,7 @@ public class DxosApprovalAdapter implements ApprovalPort {
     public Snapshot getByOrderId(Long orderId, ApprovalActor actor) {
         OrderApproval approval = approvals.findByOrder_Id(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu xét duyệt của đơn hàng"));
+        requireDxos(approval);
         ensureCanRead(approval, actor);
         return snapshot(approval, client.get(approval.getApprovalRef(), identity(approval, actor)));
     }
@@ -104,7 +110,9 @@ public class DxosApprovalAdapter implements ApprovalPort {
         if (orderIds.isEmpty()) {
             return Map.of();
         }
-        return approvals.findByOrder_IdIn(orderIds).stream()
+        List<OrderApproval> found = approvals.findByOrder_IdIn(orderIds);
+        found.forEach(this::requireDxos);
+        return found.stream()
                 .map(approval -> snapshot(
                         approval,
                         client.get(approval.getApprovalRef(), DxosApiClient.RemoteIdentity.APPROVER)
@@ -158,6 +166,7 @@ public class DxosApprovalAdapter implements ApprovalPort {
         }
         OrderApproval approval = approvals.findByApprovalRef(approvalRef)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu xét duyệt"));
+        requireDxos(approval);
         ensureCanRead(approval, actor);
         var previous = history.findByApproval_IdAndRequestId(approval.getId(), requestId);
         DxosApiClient.RemoteIdentity identity = identity(approval, actor);
@@ -205,8 +214,21 @@ public class DxosApprovalAdapter implements ApprovalPort {
     public List<HistoryEntry> history(String approvalRef, ApprovalActor actor) {
         OrderApproval approval = approvals.findByApprovalRef(approvalRef)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu xét duyệt"));
+        requireDxos(approval);
         ensureCanRead(approval, actor);
-        return client.events(approvalRef, identity(approval, actor)).stream()
+        List<HistoryEntry> combined = new ArrayList<>(history
+                .findByApproval_IdOrderByCreatedAtAscIdAsc(approval.getId()).stream()
+                .map(item -> new HistoryEntry(
+                        item.getAction(),
+                        item.getActorId(),
+                        item.getFromStatus() == null ? null : item.getFromStatus().name().toLowerCase(Locale.ROOT),
+                        item.getToStatus().name().toLowerCase(Locale.ROOT),
+                        item.getReason(),
+                        item.getCreatedAt(),
+                        item.getRequestId()
+                ))
+                .toList());
+        combined.addAll(client.events(approvalRef, identity(approval, actor)).stream()
                 .map(event -> new HistoryEntry(
                         event.action(),
                         event.actor(),
@@ -216,12 +238,25 @@ public class DxosApprovalAdapter implements ApprovalPort {
                         local(event.at()),
                         "dxos-event:" + event.id()
                 ))
-                .toList();
+                .toList());
+        combined.sort(Comparator.comparing(HistoryEntry::createdAt));
+        return List.copyOf(combined);
     }
 
     private void ensureCanRead(OrderApproval approval, ApprovalActor actor) {
         if (!ApprovalPolicy.canRead(approval.getCreatedBy(), actor)) {
             throw new AccessDeniedException("Bạn không có quyền xem yêu cầu xét duyệt này");
+        }
+    }
+
+    private void requireDxos(OrderApproval approval) {
+        if (approval.getProvider() != ApprovalProvider.DXOS
+                || (approval.getLocalApprovalRef() != null && approval.getMigrationCompletedAt() == null)) {
+            throw new ApiDomainException(
+                    ApiErrorCode.APPROVAL_MIGRATION_REQUIRED,
+                    HttpStatus.CONFLICT,
+                    "Approval cục bộ chưa được chuyển sang DX-OS"
+            );
         }
     }
 
