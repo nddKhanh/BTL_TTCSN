@@ -231,6 +231,17 @@ Các địa chỉ mặc định:
 `docker compose down` dừng stack nhưng giữ volume MySQL.
 Chỉ dùng `docker compose down -v` khi chủ động muốn xóa database local của stack này.
 
+### Chạy với DX-OS
+
+Khách hàng tự tạo `dxos.yaml` theo contract trong `dxos.example.yaml`, sao chép `.env.dxos.example` thành `.env`, điền các trường còn trống, sau đó chạy:
+
+```powershell
+.\scripts\setup-dxos.ps1
+```
+
+Script tự tải bản phát hành DX-OS đã ghim, kiểm tra checksum, pull toàn bộ stack nền tảng, apply model, cấp service client và khởi động TTCSN.
+Xem [hướng dẫn tích hợp DX-OS](docs/dxos-configuration/README.md) để biết các biến bắt buộc và cách xử lý dữ liệu Local đã tồn tại.
+
 ### Cách thủ công
 
 #### Yêu cầu
@@ -382,7 +393,10 @@ Migration vẫn phải được chạy thử trên bản sao MySQL theo [hướn
 | `DB_URL` | MySQL local `coffee_order_db` | JDBC URL |
 | `DB_USERNAME` | `root` | Tài khoản database |
 | `DB_PASSWORD` | rỗng | Mật khẩu database |
-| `APPROVAL_PROVIDER` | `local` | Chọn implementation `ApprovalPort`; phase này chỉ hỗ trợ local |
+| `APPROVAL_PROVIDER` | `local` trong `.env.example` | Chọn `local` hoặc `dxos`; `.env.dxos.example` dùng `dxos` |
+| `DXOS_HOST_PORT` | `19080` | Cổng gateway của stack DX-OS do installer triển khai |
+| `DXOS_POSTGRES_HOST_PORT` | `127.0.0.1:55432` | Cổng loopback PostgreSQL của DX-OS |
+| `DXOS_BASE_URL` | installer tự điền | Gateway DX-OS mà container backend truy cập |
 | `JWT_SECRET` | không có | Base64 secret bắt buộc cho JWT |
 | `MFA_ENCRYPTION_KEY` | dùng `JWT_SECRET` trong Compose | Khóa mã hóa secret MFA |
 | `JWT_EXPIRATION_MINUTES` | `120` | Thời hạn token |

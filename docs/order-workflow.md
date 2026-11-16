@@ -4,8 +4,8 @@
 
 BTL_TTCSN vẫn là ứng dụng bán cà phê độc lập.
 Danh mục, giỏ hàng, định giá, coupon, COD, giao hàng và dashboard thuộc ứng dụng.
-Phần xét duyệt đi qua `ApprovalPort` và hiện được thực thi bởi `LocalApprovalAdapter`.
-`APPROVAL_PROVIDER` mặc định là `local`; adapter tương lai đăng ký implementation tương ứng với provider mới.
+Phần xét duyệt đi qua `ApprovalPort` và được thực thi bởi `LocalApprovalAdapter` hoặc `DxosApprovalAdapter`.
+`APPROVAL_PROVIDER` chọn `local` hoặc `dxos`; `.env.dxos.example` dùng `dxos`.
 Không có tên trạng thái, endpoint, token hoặc thư viện DX-OS trong domain ứng dụng.
 
 ## Trạng thái và action

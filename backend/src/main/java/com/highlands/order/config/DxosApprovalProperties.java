@@ -10,8 +10,6 @@ public record DxosApprovalProperties(
         String model,
         String entity,
         String realm,
-        String clientId,
-        String clientSecret,
         Duration connectTimeout,
         Duration readTimeout,
         Identity requester,
@@ -23,8 +21,6 @@ public record DxosApprovalProperties(
         model = defaultText(model, "ttcsn_order_approval");
         entity = defaultText(entity, "approval");
         realm = defaultText(realm, "dxos");
-        clientId = defaultText(clientId, "ttcsn-mvp");
-        clientSecret = clientSecret == null ? "" : clientSecret;
         connectTimeout = connectTimeout == null ? Duration.ofSeconds(3) : connectTimeout;
         readTimeout = readTimeout == null ? Duration.ofSeconds(8) : readTimeout;
         requester = requester == null ? new Identity("", "") : requester;
@@ -46,15 +42,15 @@ public record DxosApprovalProperties(
         return baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
     }
 
-    public record Identity(String username, String password) {
+    public record Identity(String clientId, String clientSecret) {
         public Identity {
-            username = username == null ? "" : username;
-            password = password == null ? "" : password;
+            clientId = clientId == null ? "" : clientId;
+            clientSecret = clientSecret == null ? "" : clientSecret;
         }
     }
 
     private static void requireIdentity(String name, Identity identity) {
-        if (identity.username().isBlank() || identity.password().isBlank()) {
+        if (identity.clientId().isBlank() || identity.clientSecret().isBlank()) {
             throw new IllegalStateException("Thiếu credential DX-OS cho identity " + name);
         }
     }

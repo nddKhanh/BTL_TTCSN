@@ -1,0 +1,30 @@
+# Reference only. The customer must review and save their own model as dxos.yaml.
+format: 0
+name: replace_with_customer_model
+roles:
+  - name: REQUESTER
+    description: Người tạo yêu cầu
+  - name: APPROVER
+    description: Người xử lý yêu cầu
+    staff: true
+entities:
+  replace_with_customer_entity:
+    label: Yêu cầu xử lý
+    fields:
+      order_id: {type: number, label: ID đơn hàng, required: true, unique: true}
+      order_code: {type: text, label: Mã đơn hàng, required: true, unique: true}
+      requester_name: {type: text, label: Người yêu cầu, required: true}
+      total_amount: {type: number, label: Tổng tiền, required: true}
+    access: {REQUESTER: own, APPROVER: all}
+    process:
+      handler: APPROVER
+      states:
+        pending: {label: Chờ xử lý}
+        reviewing: {label: Đang xử lý}
+        accepted: {label: Đã duyệt, terminal: true}
+        rejected: {label: Từ chối, terminal: true}
+      actions:
+        start_review: {label: Tiếp nhận, from: pending, to: reviewing}
+        approve: {label: Duyệt, from: reviewing, to: accepted}
+        reject: {label: Từ chối, from: reviewing, to: rejected, needs_note: true}
+        withdraw: {label: Rút yêu cầu, from: [pending, reviewing]}

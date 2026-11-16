@@ -44,16 +44,14 @@ app:
       model: ${DXOS_MODEL:ttcsn_order_approval}
       entity: ${DXOS_ENTITY:approval}
       realm: ${DXOS_REALM:dxos}
-      client-id: ${DXOS_CLIENT_ID:ttcsn-mvp}
-      client-secret: ${DXOS_CLIENT_SECRET:}
       connect-timeout: ${DXOS_CONNECT_TIMEOUT:3s}
       read-timeout: ${DXOS_READ_TIMEOUT:8s}
       requester:
-        username: ${DXOS_REQUESTER_USERNAME:}
-        password: ${DXOS_REQUESTER_PASSWORD:}
+        client-id: ${DXOS_REQUESTER_CLIENT_ID:}
+        client-secret: ${DXOS_REQUESTER_CLIENT_SECRET:}
       approver:
-        username: ${DXOS_APPROVER_USERNAME:}
-        password: ${DXOS_APPROVER_PASSWORD:}
+        client-id: ${DXOS_APPROVER_CLIENT_ID:}
+        client-secret: ${DXOS_APPROVER_CLIENT_SECRET:}
 
   mfa:
     encryption-key: ${MFA_ENCRYPTION_KEY:${JWT_SECRET}}
