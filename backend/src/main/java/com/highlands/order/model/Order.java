@@ -1,5 +1,6 @@
 package com.highlands.order.model;
 
+import com.highlands.order.domain.fulfillment.FulfillmentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -52,6 +53,14 @@ public class Order {
     @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private FulfillmentStatus fulfillmentStatus;
+
+    @Version
+    @Column(nullable = false)
+    private Long version;
+
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -69,6 +78,9 @@ public class Order {
         }
         if (status == null) {
             status = OrderStatus.PENDING;
+        }
+        if (fulfillmentStatus == null) {
+            fulfillmentStatus = FulfillmentStatus.NOT_STARTED;
         }
     }
 }

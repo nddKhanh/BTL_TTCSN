@@ -53,3 +53,18 @@ khi chưa có cửa sổ bảo trì và bản sao lưu đã được kiểm tra.
 
 Production không tự baseline một schema không có lịch sử Flyway. Nếu tiếp quản database cũ,
 hãy sao lưu, kiểm tra schema, chạy migration trên bản khôi phục trước rồi mới baseline có chủ đích.
+
+## Migration workflow đơn hàng
+
+Migration workflow bổ sung approval, approval history, fulfillment history và optimistic-lock version.
+Migration backfill giữ nguyên `orders.status` để client cũ tiếp tục đọc được trong thời gian chuyển đổi.
+Quy tắc ánh xạ được mô tả tại [ranh giới workflow đơn hàng](order-workflow.md).
+
+Trước khi triển khai migration, phải tạo và kiểm tra backup theo phần trên.
+Chạy backend trước trên database khôi phục và xác nhận Flyway hoàn tất cùng Hibernate `validate`.
+Đối chiếu số dòng `orders` với `order_approvals`; mỗi order cũ phải có đúng một approval.
+Đối chiếu mọi `approval_history.request_id` và `fulfillment_history.request_id` không trùng trong cùng workflow.
+
+Flyway không dùng down migration tự động cho thay đổi này.
+Rollback ứng dụng phải đi kèm khôi phục toàn bộ backup trước migration vào database mới.
+Không chỉ xóa bảng workflow vì backend cũ có thể tiếp tục ghi `orders.status` và làm mất lịch sử quyết định đã phát sinh.

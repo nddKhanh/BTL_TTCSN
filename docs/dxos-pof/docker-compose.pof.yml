@@ -1,0 +1,21 @@
+services:
+  postgres:
+    volumes:
+      - ${DXOS_POF_POSTGRES_DIR:?}:/var/lib/postgresql/data
+
+  seaweedfs:
+    volumes:
+      - ${DXOS_POF_SEAWEEDFS_DIR:?}:/data
+
+  backend:
+    volumes:
+      - ${DXOS_POF_MODELS_DIR:?}:/models:ro
+      - ${DXOS_POF_WEBHOOKS_DIR:?}:/webhooks:ro
+
+  apisix-config:
+    volumes:
+      - ${DXOS_POF_APISIX_DIR:?}:/out
+
+  apisix:
+    volumes:
+      - ${DXOS_POF_APISIX_DIR:?}/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro

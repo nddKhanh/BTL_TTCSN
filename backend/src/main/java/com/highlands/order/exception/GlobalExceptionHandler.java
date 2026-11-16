@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
@@ -104,6 +105,27 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         return error(HttpStatus.CONFLICT, ApiErrorCode.CONFLICT, "Dữ liệu đã tồn tại hoặc đang được sử dụng", request);
+    }
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(
+            ObjectOptimisticLockingFailureException ex,
+            HttpServletRequest request
+    ) {
+        return error(
+                HttpStatus.CONFLICT,
+                ApiErrorCode.WORKFLOW_CONFLICT,
+                "Dữ liệu đã thay đổi; hãy tải lại trước khi thực hiện",
+                request
+        );
+    }
+
+    @ExceptionHandler(ApiDomainException.class)
+    public ResponseEntity<ApiResponse<Void>> handleDomainException(
+            ApiDomainException ex,
+            HttpServletRequest request
+    ) {
+        return error(ex.getStatus(), ex.getErrorCode(), ex.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)

@@ -2,26 +2,63 @@ services:
   mysql:
     image: mysql:8.4
     environment:
-      MYSQL_DATABASE: highlands
-      MYSQL_USER: highlands
-      MYSQL_PASSWORD: highlands
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-highlands}
+      MYSQL_USER: ${MYSQL_USER:-highlands}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-highlands}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
     ports:
-      - "3306:3306"
+      - "${MYSQL_HOST_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
       interval: 10s
       timeout: 5s
       retries: 10
+      start_period: 20s
+
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      DB_URL: jdbc:mysql://mysql:3306/highlands
-      DB_USERNAME: highlands
-      DB_PASSWORD: highlands
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-demo}
+      DB_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-highlands}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USERNAME: ${MYSQL_USER:-highlands}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-highlands}
+      APPROVAL_PROVIDER: ${APPROVAL_PROVIDER:-local}
+      DXOS_BASE_URL: ${DXOS_BASE_URL:-http://host.docker.internal:19080}
+      DXOS_MODEL: ${DXOS_MODEL:-ttcsn_order_approval}
+      DXOS_ENTITY: ${DXOS_ENTITY:-approval}
+      DXOS_REALM: ${DXOS_REALM:-dxos}
+      DXOS_CLIENT_ID: ${DXOS_CLIENT_ID:-ttcsn-mvp}
+      DXOS_CLIENT_SECRET: ${DXOS_CLIENT_SECRET:-}
+      DXOS_CONNECT_TIMEOUT: ${DXOS_CONNECT_TIMEOUT:-3s}
+      DXOS_READ_TIMEOUT: ${DXOS_READ_TIMEOUT:-8s}
+      DXOS_REQUESTER_USERNAME: ${DXOS_REQUESTER_USERNAME:-}
+      DXOS_REQUESTER_PASSWORD: ${DXOS_REQUESTER_PASSWORD:-}
+      DXOS_APPROVER_USERNAME: ${DXOS_APPROVER_USERNAME:-}
+      DXOS_APPROVER_PASSWORD: ${DXOS_APPROVER_PASSWORD:-}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:-${JWT_SECRET}}
+      JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-120}
+      JWT_ISSUER: ${JWT_ISSUER:-moc-nhien-order-api}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-moc-nhien-web}
+      SHIPPING_FEE: ${SHIPPING_FEE:-15000}
+      FREE_SHIPPING_THRESHOLD: ${FREE_SHIPPING_THRESHOLD:-200000}
     ports:
-      - "8080:8080"
+      - "${BACKEND_HOST_PORT:-8080}:8080"
     depends_on:
       mysql:
         condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "${FRONTEND_HOST_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

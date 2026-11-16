@@ -1,5 +1,8 @@
 package com.highlands.order.seeder;
 
+import com.highlands.order.config.ApprovalProviderProperties;
+import com.highlands.order.domain.approval.ApprovalStatus;
+import com.highlands.order.domain.fulfillment.FulfillmentStatus;
 import com.highlands.order.model.*;
 import com.highlands.order.repository.*;
 import org.springframework.boot.CommandLineRunner;
@@ -12,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Component
 @Profile({"dev", "demo"})
@@ -23,7 +27,11 @@ public class DataSeeder implements CommandLineRunner {
     private final CouponRepository couponRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final OrderApprovalRepository orderApprovalRepository;
+    private final ApprovalHistoryRepository approvalHistoryRepository;
+    private final FulfillmentHistoryRepository fulfillmentHistoryRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApprovalProviderProperties approvalProvider;
 
     public DataSeeder(CategoryRepository categoryRepository,
                       ProductRepository productRepository,
@@ -31,14 +39,22 @@ public class DataSeeder implements CommandLineRunner {
                       CouponRepository couponRepository,
                       UserRepository userRepository,
                       OrderRepository orderRepository,
-                      PasswordEncoder passwordEncoder) {
+                      OrderApprovalRepository orderApprovalRepository,
+                      ApprovalHistoryRepository approvalHistoryRepository,
+                      FulfillmentHistoryRepository fulfillmentHistoryRepository,
+                      PasswordEncoder passwordEncoder,
+                      ApprovalProviderProperties approvalProvider) {
         this.categoryRepository = categoryRepository;
         this.productRepository = productRepository;
         this.toppingRepository = toppingRepository;
         this.couponRepository = couponRepository;
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
+        this.orderApprovalRepository = orderApprovalRepository;
+        this.approvalHistoryRepository = approvalHistoryRepository;
+        this.fulfillmentHistoryRepository = fulfillmentHistoryRepository;
         this.passwordEncoder = passwordEncoder;
+        this.approvalProvider = approvalProvider;
     }
 
     @Override
@@ -106,6 +122,10 @@ public class DataSeeder implements CommandLineRunner {
         // Danh mục 6: Combo (2 món)
         seededProducts.add(createSingleSizeProduct(combo, "Combo Bữa Sáng Năng Lượng", "1 Phin Sữa Đá + 1 Bánh Mì Que Pate tiết kiệm 10.000đ.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/A_charming_dessert_setup_showcases_an_assortment_of_cakes_and_pastries_adorned_with_floral_designs.jpg/960px-A_charming_dessert_setup_showcases_an_assortment_of_cakes_and_pastries_adorned_with_floral_designs.jpg"));
         seededProducts.add(createSingleSizeProduct(combo, "Combo Xế Chiều Thư Giãn", "1 Trà Sen Vàng + 1 Bánh Croissant bơ tỏi.", 69000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/A_beautifully_arranged_dessert_table_showcases_a_white_swirled_cake_alongside_various_colorful_pastries.jpg/960px-A_beautifully_arranged_dessert_table_showcases_a_white_swirled_cake_alongside_various_colorful_pastries.jpg"));
+
+        if (approvalProvider.usesDxos()) {
+            return;
+        }
 
         // 3. Tạo 9 Đơn Hàng Mẫu Đa Dạng Trạng Thái
         if (orderRepository.count() > 0) {
@@ -234,6 +254,7 @@ public class DataSeeder implements CommandLineRunner {
         BigDecimal totalAmount = itemSubtotal.subtract(discount).add(shippingFee);
         if (totalAmount.compareTo(BigDecimal.ZERO) < 0) totalAmount = BigDecimal.ZERO;
 
+        FulfillmentStatus fulfillmentStatus = fulfillmentStatus(status);
         Order order = Order.builder()
                 .orderCode(code)
                 .customerName(user.getFullName())
@@ -241,6 +262,7 @@ public class DataSeeder implements CommandLineRunner {
                 .deliveryAddress("123 Đường 3/2, Quận 10, TP. Hồ Chí Minh")
                 .note("Giao giờ hành chính giúp em ạ.")
                 .status(status)
+                .fulfillmentStatus(fulfillmentStatus)
                 .subtotal(itemSubtotal)
                 .discountAmount(discount)
                 .couponCode(couponCode)
@@ -264,6 +286,51 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
 
         order.getItems().add(item);
-        orderRepository.save(order);
+        order = orderRepository.save(order);
+        ApprovalStatus approvalStatus = approvalStatus(status);
+        OrderApproval approval = orderApprovalRepository.save(OrderApproval.builder()
+                .approvalRef(UUID.randomUUID().toString())
+                .order(order)
+                .status(approvalStatus)
+                .createdBy("user:" + user.getId())
+                .createdAt(LocalDateTime.now())
+                .decidedBy(approvalStatus.isTerminal() ? "seed" : null)
+                .decidedAt(approvalStatus.isTerminal() ? LocalDateTime.now() : null)
+                .build());
+        approvalHistoryRepository.save(ApprovalHistory.builder()
+                .approval(approval)
+                .action("SEED")
+                .actorId("seed")
+                .toStatus(approvalStatus)
+                .reason("Demo data")
+                .requestId("seed:" + code)
+                .build());
+        fulfillmentHistoryRepository.save(FulfillmentHistory.builder()
+                .order(order)
+                .action("SEED")
+                .actorId("seed")
+                .fromStatus(fulfillmentStatus)
+                .toStatus(fulfillmentStatus)
+                .reason("Demo data")
+                .requestId("seed:" + code)
+                .build());
+    }
+
+    private ApprovalStatus approvalStatus(OrderStatus status) {
+        return switch (status) {
+            case PENDING -> ApprovalStatus.PENDING;
+            case CANCELLED -> ApprovalStatus.WITHDRAWN;
+            case CONFIRMED, DELIVERING, COMPLETED -> ApprovalStatus.ACCEPTED;
+        };
+    }
+
+    private FulfillmentStatus fulfillmentStatus(OrderStatus status) {
+        return switch (status) {
+            case PENDING -> FulfillmentStatus.NOT_STARTED;
+            case CONFIRMED -> FulfillmentStatus.PREPARING;
+            case DELIVERING -> FulfillmentStatus.DELIVERING;
+            case COMPLETED -> FulfillmentStatus.COMPLETED;
+            case CANCELLED -> FulfillmentStatus.CANCELLED;
+        };
     }
 }

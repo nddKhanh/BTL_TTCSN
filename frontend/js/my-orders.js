@@ -60,7 +60,7 @@ async function loadMyOrders() {
               <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">Ngày đặt: ${dateStr}</div>
             </div>
             <div>
-              ${getStatusBadge(o.status)}
+              ${getWorkflowStatus(o)}
             </div>
           </div>
 
@@ -77,11 +77,13 @@ async function loadMyOrders() {
               <strong style="font-size:18px; color:var(--primary-red);">${formatVND(o.totalAmount)}</strong>
             </div>
           </div>
-          
+
           <div style="text-align:right; margin-top:12px;">
-            ${o.status === 'PENDING' ? `<button class="btn-cancel-order" onclick="cancelOrder(${o.id}, '${escapeHtml(o.orderCode)}')">Hủy đơn</button>` : ''}
+            ${(o.availableApprovalActions || []).includes('withdraw') ? `<button class="btn-cancel-order" onclick="withdrawOrder(${o.id}, ${o.approvalVersion})">Rút yêu cầu</button>` : ''}
+            <button class="action-btn" onclick="showOrderHistory(${o.id})">Xem lịch sử</button>
             <a href="order-status.html?code=${o.orderCode}" style="font-size:13px; color:var(--primary-red); font-weight:600; text-decoration:none;">Xem chi tiết & tra cứu &rarr;</a>
           </div>
+          <div id="workflowHistory-${o.id}" style="display:none; margin-top:12px;"></div>
         </div>
       `;
     });
@@ -93,25 +95,73 @@ async function loadMyOrders() {
   }
 }
 
-async function cancelOrder(orderId, orderCode) {
-  if (!window.confirm(`Bạn có chắc muốn hủy đơn ${orderCode}?`)) return;
+async function withdrawOrder(orderId, expectedVersion) {
+  if (!window.confirm('Bạn có chắc muốn rút yêu cầu đặt hàng này?')) return;
 
   try {
-    await fetchAPI(`/orders/${orderId}/cancel`, { method: 'PATCH' });
-    showToast(`Đã hủy đơn ${orderCode}`);
+    await fetchAPI(`/orders/${orderId}/approval/actions/withdraw`, {
+      method: 'POST',
+      body: JSON.stringify({
+        requestId: newWorkflowRequestId(),
+        expectedVersion,
+        reason: 'Khách hàng rút yêu cầu'
+      })
+    });
+    showToast('Đã rút yêu cầu đặt hàng');
     await loadMyOrders();
   } catch (error) {
     showToast(error.message, 'error');
+    await loadMyOrders();
   }
 }
 
-function getStatusBadge(status) {
-  const map = {
-    'PENDING': '<span style="background:#fff3cd; color:#856404; padding:4px 10px; border-radius:12px; font-size:13px; font-weight:bold;">Chờ xác nhận</span>',
-    'CONFIRMED': '<span style="background:#cce5ff; color:#004085; padding:4px 10px; border-radius:12px; font-size:13px; font-weight:bold;">Đã xác nhận</span>',
-    'DELIVERING': '<span style="background:#d4edda; color:#155724; padding:4px 10px; border-radius:12px; font-size:13px; font-weight:bold;">Đang giao hàng</span>',
-    'COMPLETED': '<span style="background:#28a745; color:#fff; padding:4px 10px; border-radius:12px; font-size:13px; font-weight:bold;">Hoàn thành</span>',
-    'CANCELLED': '<span style="background:#dc3545; color:#fff; padding:4px 10px; border-radius:12px; font-size:13px; font-weight:bold;">Đã hủy</span>'
-  };
-  return map[status] || status;
+async function showOrderHistory(orderId) {
+  const container = document.getElementById(`workflowHistory-${orderId}`);
+  if (!container) return;
+  if (container.style.display !== 'none') {
+    container.style.display = 'none';
+    return;
+  }
+  container.style.display = 'block';
+  container.textContent = 'Đang tải lịch sử...';
+  try {
+    const [approval, fulfillment] = await Promise.all([
+      fetchAPI(`/orders/${orderId}/approval/history`),
+      fetchAPI(`/orders/${orderId}/fulfillment/history`)
+    ]);
+    container.innerHTML = `${renderHistory('Xét duyệt', approval)}${renderHistory('Thực hiện', fulfillment)}`;
+  } catch (error) {
+    container.textContent = error.message;
+  }
+}
+
+function renderHistory(title, entries) {
+  const rows = (entries || []).map(entry => `
+    <li>${escapeHtml(entry.action)} · ${new Date(entry.createdAt).toLocaleString('vi-VN')}${entry.reason ? ` · ${escapeHtml(entry.reason)}` : ''}</li>
+  `).join('');
+  return `<div><strong>${title}</strong>${rows ? `<ul style="padding-left:20px;">${rows}</ul>` : '<p>Chưa có sự kiện.</p>'}</div>`;
+}
+
+function newWorkflowRequestId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+    return globalThis.crypto.randomUUID();
+  }
+  return `workflow-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function getWorkflowStatus(order) {
+  const approval = {
+    PENDING: 'Chờ duyệt',
+    ACCEPTED: 'Đã chấp nhận',
+    REJECTED: 'Đã từ chối',
+    WITHDRAWN: 'Đã rút'
+  }[order.approvalStatus] || order.approvalStatus || 'Chưa có';
+  const fulfillment = {
+    NOT_STARTED: 'Chưa chuẩn bị',
+    PREPARING: 'Đang chuẩn bị',
+    DELIVERING: 'Đang giao hàng',
+    COMPLETED: 'Hoàn thành',
+    CANCELLED: 'Đã hủy'
+  }[order.fulfillmentStatus] || order.fulfillmentStatus || 'Chưa có';
+  return `<div>${escapeHtml(approval)}</div><small>${escapeHtml(fulfillment)}</small>`;
 }

@@ -37,6 +37,24 @@ springdoc:
     path: /swagger-ui.html
 
 app:
+  approval:
+    provider: ${APPROVAL_PROVIDER:local}
+    dxos:
+      base-url: ${DXOS_BASE_URL:http://localhost:19080}
+      model: ${DXOS_MODEL:ttcsn_order_approval}
+      entity: ${DXOS_ENTITY:approval}
+      realm: ${DXOS_REALM:dxos}
+      client-id: ${DXOS_CLIENT_ID:ttcsn-mvp}
+      client-secret: ${DXOS_CLIENT_SECRET:}
+      connect-timeout: ${DXOS_CONNECT_TIMEOUT:3s}
+      read-timeout: ${DXOS_READ_TIMEOUT:8s}
+      requester:
+        username: ${DXOS_REQUESTER_USERNAME:}
+        password: ${DXOS_REQUESTER_PASSWORD:}
+      approver:
+        username: ${DXOS_APPROVER_USERNAME:}
+        password: ${DXOS_APPROVER_PASSWORD:}
+
   mfa:
     encryption-key: ${MFA_ENCRYPTION_KEY:${JWT_SECRET}}
 
