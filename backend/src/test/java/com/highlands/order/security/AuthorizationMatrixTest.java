@@ -24,6 +24,15 @@ class AuthorizationMatrixTest {
         assertFalse(seed.contains("('CUSTOMER', 'REPORT_READ')"));
         assertTrue(seed.contains("('ADMIN', 'CATALOG_WRITE')"));
         assertTrue(seed.contains("('ADMIN', 'REPORT_READ')"));
+
+        String workflowSeed;
+        try (var stream = getClass().getResourceAsStream("/db/migration/V8__create_order_workflow.sql")) {
+            assertNotNull(stream);
+            workflowSeed = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        assertTrue(workflowSeed.contains("('ADMIN', 'ORDER_APPROVE')"));
+        assertTrue(workflowSeed.contains("('ADMIN', 'ORDER_FULFILL')"));
+        assertFalse(workflowSeed.contains("('CUSTOMER', 'ORDER_APPROVE')"));
     }
 
     @Test

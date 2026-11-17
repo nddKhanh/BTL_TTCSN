@@ -33,6 +33,7 @@ public class Product {
     @Column(nullable = false)
     private BigDecimal basePrice;
 
+    @Column(length = 1024)
     private String imageUrl;
 
     @Builder.Default

@@ -1,0 +1,5 @@
+ALTER TABLE categories
+    MODIFY COLUMN image_url VARCHAR(1024);
+
+ALTER TABLE products
+    MODIFY COLUMN image_url VARCHAR(1024);

@@ -1,0 +1,29 @@
+format: 0
+name: ttcsn_order_approval
+roles:
+  - name: REQUESTER
+    description: Người tạo đơn hàng
+  - name: APPROVER
+    description: Nhân viên xét duyệt đơn hàng
+    staff: true
+entities:
+  approval:
+    label: Yêu cầu duyệt đơn hàng
+    fields:
+      order_id: {type: number, label: ID đơn hàng, required: true, unique: true}
+      order_code: {type: text, label: Mã đơn hàng, required: true, unique: true}
+      requester_name: {type: text, label: Người yêu cầu, required: true}
+      total_amount: {type: number, label: Tổng tiền, required: true}
+      review_note: {type: text, label: Ghi chú thẩm định, renamed_from: routing_note}
+      priority: {type: choice, label: Mức ưu tiên, required: true, default: normal, options: [normal, urgent]}
+    access: {REQUESTER: own, APPROVER: all}
+    process:
+      handler: APPROVER
+      states:
+        pending: {label: Chờ duyệt}
+        accepted: {label: Đã duyệt, terminal: true}
+        rejected: {label: Từ chối, terminal: true}
+      actions:
+        approve: {label: Duyệt, from: pending, to: accepted}
+        reject: {label: Từ chối, from: pending, to: rejected, needs_note: true}
+        withdraw: {label: Rút yêu cầu, from: pending}

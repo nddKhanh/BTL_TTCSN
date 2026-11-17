@@ -1,7 +1,9 @@
 package com.highlands.order.dto;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record OrderItemRequest(
@@ -10,7 +12,8 @@ public record OrderItemRequest(
 
     String sizeName,
 
-    List<String> toppings,
+    List<@NotBlank(message = "Tên topping không được để trống")
+            @Size(max = 100, message = "Tên topping không được vượt quá 100 ký tự") String> toppings,
 
     String iceLevel,
 

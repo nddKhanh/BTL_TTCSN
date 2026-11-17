@@ -81,6 +81,18 @@ class GlobalExceptionHandlerTest {
         assertEquals("Tham số 'id' không đúng định dạng", response.getBody().message());
     }
 
+    @Test
+    void handleDomainException_preservesWorkflowConflictContract() {
+        var response = handler.handleDomainException(
+                new ApiDomainException(ApiErrorCode.WORKFLOW_CONFLICT, HttpStatus.CONFLICT, "Version cũ"),
+                request("POST", "/api/v1/orders/1/approval/actions/approve")
+        );
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertEquals(ApiErrorCode.WORKFLOW_CONFLICT.name(), response.getBody().errorCode());
+        assertEquals("Version cũ", response.getBody().message());
+    }
+
     private MockHttpServletRequest request(String method, String path) {
         return new MockHttpServletRequest(method, path);
     }

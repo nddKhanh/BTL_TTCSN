@@ -27,6 +27,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByUserEmailIgnoreCaseOrderByCreatedAtDesc(String email);
 
     @EntityGraph(attributePaths = {"items", "items.product"})
+    List<Order> findByUser_IdOrderByCreatedAtDesc(Long userId);
+
+    @EntityGraph(attributePaths = {"items", "items.product"})
     Optional<Order> findByIdAndUserEmailIgnoreCase(Long id, String email);
 
     @EntityGraph(attributePaths = {"items", "items.product"})
