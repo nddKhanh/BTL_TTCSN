@@ -39,4 +39,19 @@ class OrderWorkflowMigrationTest {
         assertTrue(migration.contains("approval_ref VARCHAR(100)"));
         assertTrue(migration.contains("action VARCHAR(64)"));
     }
+
+    @Test
+    void providerMigrationTracksSourceMappingAndCompletion() throws IOException {
+        String migration;
+        try (var stream = getClass().getResourceAsStream(
+                "/db/migration/V11__track_approval_provider.sql")) {
+            assertNotNull(stream);
+            migration = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+
+        assertTrue(migration.contains("provider VARCHAR(16) NOT NULL DEFAULT 'LOCAL'"));
+        assertTrue(migration.contains("local_approval_ref VARCHAR(100)"));
+        assertTrue(migration.contains("migration_completed_at DATETIME(6)"));
+        assertTrue(migration.contains("idx_order_approvals_provider"));
+    }
 }
