@@ -134,13 +134,9 @@ public class DxosApiClient {
                 case APPROVER -> properties.approver();
             };
             MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-            form.add("grant_type", "password");
-            form.add("client_id", properties.clientId());
-            if (!properties.clientSecret().isBlank()) {
-                form.add("client_secret", properties.clientSecret());
-            }
-            form.add("username", credentials.username());
-            form.add("password", credentials.password());
+            form.add("grant_type", "client_credentials");
+            form.add("client_id", credentials.clientId());
+            form.add("client_secret", credentials.clientSecret());
             Map<String, Object> response = tokenCall(() -> http.post()
                     .uri("/realms/{realm}/protocol/openid-connect/token", properties.realm())
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
