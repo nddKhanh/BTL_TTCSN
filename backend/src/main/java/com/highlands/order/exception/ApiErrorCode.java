@@ -2,6 +2,7 @@ package com.highlands.order.exception;
 
 public enum ApiErrorCode {
     ACCESS_DENIED,
+    APPROVAL_MIGRATION_REQUIRED,
     APPROVAL_PROVIDER_UNAVAILABLE,
     AUTHENTICATION_FAILED,
     COUPON_INVALID,
