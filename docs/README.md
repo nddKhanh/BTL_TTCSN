@@ -18,7 +18,7 @@
 - [Ranh giới workflow đơn hàng](order-workflow.md).
 - [Lộ trình xác thực, phân quyền, JWT và email](security-auth-roadmap.md).
 - [Vận hành database](database-operations.md).
-- [Runtime và runbook demo DX-OS](dxos-demo-runtime.md): kết luận đã kiểm chứng, cấu hình cách ly và các bước UI cần QA.
+- [Cấu hình tích hợp DX-OS v2.0.1](dxos-configuration/README.md): contract model, service client, migrate dữ liệu và cutover provider.
 - [Kế hoạch RAG tương lai](future-rag-plan.md).
 - [Lịch sử dự án](project-history.md).
 

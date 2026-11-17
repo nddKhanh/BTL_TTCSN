@@ -231,6 +231,19 @@ Các địa chỉ mặc định:
 `docker compose down` dừng stack nhưng giữ volume MySQL.
 Chỉ dùng `docker compose down -v` khi chủ động muốn xóa database local của stack này.
 
+### Chạy với DX-OS
+
+DX-OS `v2.0.1` chạy thành stack riêng và model `ttcsn_order_approval` có thể được áp dụng từ Console hoặc CLI.
+Tạo hai service client cho vai `REQUESTER` và `APPROVER`, rồi điền URL gateway, model, entity và credential được cấp một lần vào `.env`.
+Không commit client secret.
+
+```powershell
+docker compose up -d --build --wait
+```
+
+Backend trong Docker truy cập gateway cài trên máy qua `http://host.docker.internal:9080`.
+Xem [hướng dẫn tích hợp DX-OS](docs/dxos-configuration/README.md) để biết contract model, cấu hình và cách xử lý dữ liệu Local đã tồn tại.
+
 ### Cách thủ công
 
 #### Yêu cầu
@@ -382,7 +395,10 @@ Migration vẫn phải được chạy thử trên bản sao MySQL theo [hướn
 | `DB_URL` | MySQL local `coffee_order_db` | JDBC URL |
 | `DB_USERNAME` | `root` | Tài khoản database |
 | `DB_PASSWORD` | rỗng | Mật khẩu database |
-| `APPROVAL_PROVIDER` | `local` | Chọn implementation `ApprovalPort`; phase này chỉ hỗ trợ local |
+| `APPROVAL_PROVIDER` | `local` trong `.env.example` | Chọn `local` hoặc `dxos` |
+| `DXOS_BASE_URL` | `http://host.docker.internal:9080` | Gateway DX-OS mà container backend truy cập |
+| `DXOS_MODEL` / `DXOS_ENTITY` | `ttcsn_order_approval` / `approval` | Model và entity đã áp dụng trong DX-OS |
+| `DXOS_*_CLIENT_ID`, `DXOS_*_CLIENT_SECRET` | rỗng | Hai service client `REQUESTER` và `APPROVER` do DX-OS cấp |
 | `JWT_SECRET` | không có | Base64 secret bắt buộc cho JWT |
 | `MFA_ENCRYPTION_KEY` | dùng `JWT_SECRET` trong Compose | Khóa mã hóa secret MFA |
 | `JWT_EXPIRATION_MINUTES` | `120` | Thời hạn token |
@@ -412,7 +428,7 @@ ngoài phạm vi hiện tại:
 - Hợp đồng lỗi, `errorCode` và metadata response vẫn đang được chuẩn hóa trong P0.
 - CORS hiện phục vụ phát triển local và cần giới hạn origin trước khi deploy production.
 - Đã có image và Compose stack đồng bộ cho local; production hardening, registry và deployment pipeline chưa thuộc phạm vi hiện tại.
-- PoF DX-OS đã xác nhận dynamic schema/topology nhưng action API còn thiếu contract retry/concurrency cần cho cutover; xem [kết quả PoF](docs/dxos-pof/RESULTS.md).
+- Adapter DX-OS hiện là MVP; các giới hạn retry, concurrency và reconciliation được ghi trong [handoff tích hợp](docs/DXOS_INTEGRATION_MVP_HANDOFF.md).
 
 Toàn bộ kế hoạch, phương án chia việc và Git workflow được tập trung tại
 [trung tâm tài liệu](docs/README.md).
