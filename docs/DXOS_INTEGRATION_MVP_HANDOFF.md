@@ -53,8 +53,6 @@ Luồng E2E đã xác nhận:
 6. Sau khi restart backend TTCSN, mapping và trạng thái vẫn đọc được.
 7. Gửi lại cùng `requestId` không tạo thêm event và trả lại snapshot hiện có.
 
-PoF về thay đổi model V1, V2 và V3 được ghi riêng tại [Kết quả PoF](dxos-pof/RESULTS.md).
-
 ## Các vấn đề chưa làm và cần tự kiểm tra
 
 | Vấn đề | Trạng thái hiện tại | Việc cần kiểm tra hoặc bổ sung |
