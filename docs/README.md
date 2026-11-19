@@ -3,7 +3,6 @@
 ## Kế hoạch và cộng tác
 
 - [Lộ trình phát triển](roadmap.md): nguồn kế hoạch và thứ tự ưu tiên chính.
-- [Kế hoạch refactor sẵn sàng tích hợp DX-OS](KE_HOACH_REFACTOR_BTL_TTCSN_SAN_SANG_TICH_HOP_DXOS.md).
 - [Phase 1 — 15 PR / 30 commit](work-packages.md): ổn định, storefront, vận hành và bàn giao.
 - [Phase 2 — 15 PR / 30 commit security](security-auth-work-packages.md): email, JWT session, RBAC, MFA và audit.
 - [Phương án 3 thành viên](team-plan-3-members.md): tổng 20 commit và 10 PR/người sau hai phase.
@@ -19,7 +18,6 @@
 - [Lộ trình xác thực, phân quyền, JWT và email](security-auth-roadmap.md).
 - [Vận hành database](database-operations.md).
 - [Cấu hình tích hợp DX-OS v2.0.1](dxos-configuration/README.md): contract model, service client, migrate dữ liệu và cutover provider.
-- [Kế hoạch RAG tương lai](future-rag-plan.md).
 - [Lịch sử dự án](project-history.md).
 
 ## Cách dùng
