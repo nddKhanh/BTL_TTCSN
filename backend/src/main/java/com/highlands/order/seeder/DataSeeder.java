@@ -1,0 +1,269 @@
+package com.highlands.order.seeder;
+
+import com.highlands.order.model.*;
+import com.highlands.order.repository.*;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Component
+@Profile({"dev", "demo"})
+public class DataSeeder implements CommandLineRunner {
+
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+    private final ToppingRepository toppingRepository;
+    private final CouponRepository couponRepository;
+    private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public DataSeeder(CategoryRepository categoryRepository,
+                      ProductRepository productRepository,
+                      ToppingRepository toppingRepository,
+                      CouponRepository couponRepository,
+                      UserRepository userRepository,
+                      OrderRepository orderRepository,
+                      PasswordEncoder passwordEncoder) {
+        this.categoryRepository = categoryRepository;
+        this.productRepository = productRepository;
+        this.toppingRepository = toppingRepository;
+        this.couponRepository = couponRepository;
+        this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @Override
+    @Transactional
+    public void run(String... args) {
+        // Tài khoản và coupon được seed độc lập để database demo thiếu một phần
+        // vẫn được bổ sung mà không tạo trùng dữ liệu đã có.
+        seedDemoUser("Quản Trị Viên Mộc Nhiên", "admin@mocnhien.vn", "0901234567", "admin123", Role.ADMIN);
+
+        AppUser userA = seedDemoUser("Nguyễn Văn A", "nguyen.van.a@gmail.com", "0912345678", "123456", Role.CUSTOMER);
+        AppUser userB = seedDemoUser("Trần Thị B", "tran.thi.b@gmail.com", "0987654321", "123456", Role.CUSTOMER);
+        AppUser userC = seedDemoUser("Lê Văn C", "le.van.c@gmail.com", "0933445566", "123456", Role.CUSTOMER);
+
+        seedDemoCoupons();
+
+        // 1. Tạo 6 Danh Mục Sản Phẩm
+        Category coffee = seedCategory("COFFEE", "Cà Phê Mộc Nhiên", "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/A_small_cup_of_coffee.JPG/960px-A_small_cup_of_coffee.JPG");
+        Category tea = seedCategory("TEA", "Trà Trái Cây & Trà Sữa", "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Tea%2C_turkish_tea%2C_drink%2C_cafe%2C_istanbul.jpg/960px-Tea%2C_turkish_tea%2C_drink%2C_cafe%2C_istanbul.jpg");
+        Category freeze = seedCategory("FREEZE", "Đá Xay Special", "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Doctor_Oz_Berries_and_Greens_Smoothie_-_Dr._Oz_Blueberry_Smoothie.webm/960px--Doctor_Oz_Berries_and_Greens_Smoothie_-_Dr._Oz_Blueberry_Smoothie.webm.jpg");
+        Category juice = seedCategory("JUICE", "Nước Ép & Sinh Tố", "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a7/Green_Juice_Smoothie_Detox_Recipe._A_Gwyneth_Paltrow_blender_recipe..webm/960px--Green_Juice_Smoothie_Detox_Recipe._A_Gwyneth_Paltrow_blender_recipe..webm.jpg");
+        Category cake = seedCategory("CAKE", "Bánh & Snack", "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/36/Cake_and_pastry_display%2C_Tokyo%2C_Japan.jpg/960px-Cake_and_pastry_display%2C_Tokyo%2C_Japan.jpg");
+        Category combo = seedCategory("COMBO", "Combo Tiết Kiệm", "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/A_beautifully_arranged_dessert_table_showcases_a_variety_of_sweets_and_pastries_surrounded_by_cheerful_blooms.jpg/960px-A_beautifully_arranged_dessert_table_showcases_a_variety_of_sweets_and_pastries_surrounded_by_cheerful_blooms.jpg");
+
+        // 2. Tạo 5 Topping
+        seedTopping("Thạch Đào", 10000);
+        seedTopping("Thạch Cà Phê", 10000);
+        seedTopping("Kem Cheese", 10000);
+        seedTopping("Trân Châu Đen", 10000);
+        seedTopping("Hạt Sen Extra", 15000);
+
+        // Helper để thêm Sản Phẩm với các Size chuẩn
+        List<Product> seededProducts = new ArrayList<>();
+
+        // Danh mục 1: Cà Phê (5 món)
+        // Images: Wikimedia Commons thumbnails, fetched for the demo catalog.
+        seededProducts.add(createProduct(coffee, "Phin Sữa Đá", "Cà phê rang đậm kết hợp sữa đặc ngọt béo, chuẩn gu đậm đà.", 29000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/Instant_coffee_with_milk_powder%2C_3-in-1_coffee_drink%2C_Ai_Petri%2C_Crimea.jpg/960px-Instant_coffee_with_milk_powder%2C_3-in-1_coffee_drink%2C_Ai_Petri%2C_Crimea.jpg"));
+        seededProducts.add(createProduct(coffee, "Phin Đen Đá", "Cà phê Phin nguyên chất đậm đà, đắng thanh giải nhiệt.", 29000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Food-beans-coffee-drink_%2824300616956%29.jpg/960px-Food-beans-coffee-drink_%2824300616956%29.jpg"));
+        seededProducts.add(createProduct(coffee, "Bạc Xỉu Mộc Nhiên", "Nhiều sữa ít cà phê, béo ngậy thanh ngọt dễ uống.", 35000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Kopi_O.jpg/960px-Kopi_O.jpg"));
+        seededProducts.add(createProduct(coffee, "Cà Phê Muối Nắp Kem", "Lớp màng kem muối mặn béo kết hợp cà phê phin đắng nhẹ.", 39000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/66/Memorable_Coffee.jpg/960px-Memorable_Coffee.jpg"));
+        seededProducts.add(createProduct(coffee, "Americano Đá", "Cà phê Espresso pha loãng với nước đá mát lạnh sảng khoái.", 35000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/The_way_coffee_is_served_in_Sudan.jpg/960px-The_way_coffee_is_served_in_Sudan.jpg"));
+
+        // Danh mục 2: Trà (5 món)
+        seededProducts.add(createProduct(tea, "Trà Sen Vàng", "Hương trà thanh mát kết hợp hạt sen bùi ngậy và củ năng giòn ngọt.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6e/Tea_15.jpg/960px-Tea_15.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Đào Cam Sả", "Trà đen vị đào mộng nước thơm lừng hương sả tươi và cam tươi.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Tea_Break.jpg/960px-Tea_Break.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Vải Lài", "Trà lài thơm ngát quyện cùng những trái vải mọng nước ngọt ngào.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Tea_16.jpg/960px-Tea_16.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Ổi Hồng Kem Cheese", "Trà ổi hồng thanh nhẹ phủ lớp kem cheese béo mặn cuốn hút.", 49000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3a/Tea_17.jpg/960px-Tea_17.jpg"));
+        seededProducts.add(createProduct(tea, "Trà Sữa Ô Long Mộc Nhiên", "Trà Ô Long đậm đà kết hợp sữa tươi thanh trùng ngọt dịu.", 42000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Fresh_Milk_Tea_2.jpg/960px-Fresh_Milk_Tea_2.jpg"));
+
+        // Danh mục 3: Đá Xay (4 món)
+        seededProducts.add(createProduct(freeze, "Freeze Trà Xanh", "Đá xay matcha Nhật lừng danh kết hợp thạch trà xanh giòn sần sật.", 55000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Fresh-mango-smoothie_02.jpg/960px-Fresh-mango-smoothie_02.jpg"));
+        seededProducts.add(createProduct(freeze, "Freeze Cà Phê Cốt Dừa", "Cà phê đắng nhẹ xay cùng cốt dừa béo thơm ngậy.", 55000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/Straberries%2C_blueberres%2C_raspberries%2C_goji_berries%2C_apple_juice%2C_agave_nectar_Smoothie_%283013386183%29.jpg/960px-Straberries%2C_blueberres%2C_raspberries%2C_goji_berries%2C_apple_juice%2C_agave_nectar_Smoothie_%283013386183%29.jpg"));
+        seededProducts.add(createProduct(freeze, "Freeze Socola Cookie", "Socola đậm đà kết hợp bánh cookie giòn tan và kem tươi phủ trên.", 59000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/Doctor_Oz_Chocolate_Covered_Blueberry_Green_Smoothie_Recipe_-_A_Dr._Oz_Green_Smoothie_Recipe.webm/960px--Doctor_Oz_Chocolate_Covered_Blueberry_Green_Smoothie_Recipe_-_A_Dr._Oz_Green_Smoothie_Recipe.webm.jpg"));
+        seededProducts.add(createProduct(freeze, "Freeze Chanh Dây Thạch Đào", "Vị chanh dây chua thanh giải nhiệt cực đã kèm thạch đào ngọt mát.", 55000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Preparing_healthy_drinks_and_snacks_with_fresh_fruits_in_a_cozy_kitchen.jpg/960px-Preparing_healthy_drinks_and_snacks_with_fresh_fruits_in_a_cozy_kitchen.jpg"));
+
+        // Danh mục 4: Sinh Tố & Nước Ép (3 món)
+        seededProducts.add(createProduct(juice, "Sinh Tố Bơ Béo", "Bơ sáp chín cây xay sánh mịn béo ngậy thơm ngon.", 49000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Batido_de_papaya.jpg/960px-Batido_de_papaya.jpg"));
+        seededProducts.add(createProduct(juice, "Sinh Tố Xoài Dừa", "Xoài chín ngọt mát quyện cốt dừa thơm lừng.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Fresh-mango-smoothie_01.jpg/960px-Fresh-mango-smoothie_01.jpg"));
+        seededProducts.add(createProduct(juice, "Nước Ép Cam Tươi", "100% cam sành vắt tươi bổ sung Vitamin C tự nhiên.", 39000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3b/Batido_de_pi%C3%B1a.jpg/960px-Batido_de_pi%C3%B1a.jpg"));
+
+        // Danh mục 5: Bánh (3 món)
+        seededProducts.add(createSingleSizeProduct(cake, "Bánh Mì Que Pate", "Bánh mì que giòn rụm với nhân pate béo ngậy chuẩn vị.", 19000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Pastry_%2829497%29.jpg/960px-Pastry_%2829497%29.jpg"));
+        seededProducts.add(createSingleSizeProduct(cake, "Bánh Croissant Bơ Tỏi", "Bánh sừng bò ngàn lớp thơm nức mùi bơ Pháp và tỏi nướng.", 29000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/96/Slovenian_pastry_%2811330047425%29.jpg/960px-Slovenian_pastry_%2811330047425%29.jpg"));
+        seededProducts.add(createSingleSizeProduct(cake, "Bánh Tiramisu Truyền Thống", "Bánh bông lan thấm đượm cà phê rum kết hợp lớp kem mascarpone.", 35000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Piece_of_chocolate_cake_on_a_white_plate_decorated_with_chocolate_sauce.jpg/960px-Piece_of_chocolate_cake_on_a_white_plate_decorated_with_chocolate_sauce.jpg"));
+
+        // Danh mục 6: Combo (2 món)
+        seededProducts.add(createSingleSizeProduct(combo, "Combo Bữa Sáng Năng Lượng", "1 Phin Sữa Đá + 1 Bánh Mì Que Pate tiết kiệm 10.000đ.", 45000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1b/A_charming_dessert_setup_showcases_an_assortment_of_cakes_and_pastries_adorned_with_floral_designs.jpg/960px-A_charming_dessert_setup_showcases_an_assortment_of_cakes_and_pastries_adorned_with_floral_designs.jpg"));
+        seededProducts.add(createSingleSizeProduct(combo, "Combo Xế Chiều Thư Giãn", "1 Trà Sen Vàng + 1 Bánh Croissant bơ tỏi.", 69000, "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/68/A_beautifully_arranged_dessert_table_showcases_a_white_swirled_cake_alongside_various_colorful_pastries.jpg/960px-A_beautifully_arranged_dessert_table_showcases_a_white_swirled_cake_alongside_various_colorful_pastries.jpg"));
+
+        // 3. Tạo 9 Đơn Hàng Mẫu Đa Dạng Trạng Thái
+        if (orderRepository.count() > 0) {
+            return; // Catalog có thể được bổ sung, nhưng không tạo lại đơn mẫu.
+        }
+
+        createSampleOrder(userA, seededProducts.get(0), "M", "100% Đá", "100% Đường", "Thạch Cà Phê", 2, OrderStatus.COMPLETED, "WELCOME10", BigDecimal.valueOf(6800));
+        createSampleOrder(userB, seededProducts.get(5), "L", "70% Đá", "50% Đường", "Hạt Sen Extra", 1, OrderStatus.COMPLETED, "MOCNHIEN20K", BigDecimal.valueOf(20000));
+        createSampleOrder(userC, seededProducts.get(10), "M", "100% Đá", "100% Đường", "Kem Cheese", 2, OrderStatus.DELIVERING, null, BigDecimal.ZERO);
+        createSampleOrder(userA, seededProducts.get(2), "S", "50% Đá", "70% Đường", null, 3, OrderStatus.DELIVERING, null, BigDecimal.ZERO);
+        createSampleOrder(userB, seededProducts.get(8), "L", "100% Đá", "100% Đường", "Thạch Đào", 1, OrderStatus.CONFIRMED, null, BigDecimal.ZERO);
+        createSampleOrder(userC, seededProducts.get(15), "Tiêu chuẩn", null, null, null, 2, OrderStatus.CONFIRMED, null, BigDecimal.ZERO);
+        createSampleOrder(userA, seededProducts.get(18), "Tiêu chuẩn", null, null, null, 1, OrderStatus.PENDING, null, BigDecimal.ZERO);
+        createSampleOrder(userB, seededProducts.get(3), "M", "100% Đá", "100% Đường", "Kem Cheese", 2, OrderStatus.PENDING, null, BigDecimal.ZERO);
+        createSampleOrder(userC, seededProducts.get(1), "S", "Không Đá", "Không Đường", null, 1, OrderStatus.CANCELLED, null, BigDecimal.ZERO);
+    }
+
+    private AppUser seedDemoUser(String fullName, String email, String phone, String password, Role role) {
+        return userRepository.findByEmailIgnoreCase(email)
+                .orElseGet(() -> userRepository.save(AppUser.builder()
+                        .fullName(fullName)
+                        .email(email)
+                        .phone(phone)
+                        .passwordHash(passwordEncoder.encode(password))
+                        .role(role)
+                        .build()));
+    }
+
+    private Category seedCategory(String code, String name, String imageUrl) {
+        return categoryRepository.findByCode(code)
+                .orElseGet(() -> categoryRepository.save(Category.builder()
+                        .code(code).name(name).imageUrl(imageUrl).build()));
+    }
+
+    private void seedTopping(String name, double price) {
+        boolean exists = toppingRepository.findAll().stream()
+                .anyMatch(topping -> topping.getName().equalsIgnoreCase(name));
+        if (!exists) {
+            toppingRepository.save(Topping.builder()
+                    .name(name).price(BigDecimal.valueOf(price)).build());
+        }
+    }
+
+    private void seedDemoCoupons() {
+        seedDemoCoupon("WELCOME10", CouponType.PERCENT, BigDecimal.valueOf(10),
+                BigDecimal.ZERO, BigDecimal.valueOf(50000));
+        seedDemoCoupon("MOCNHIEN20K", CouponType.FIXED, BigDecimal.valueOf(20000),
+                BigDecimal.valueOf(50000), null);
+        seedDemoCoupon("FREESHIP15K", CouponType.FIXED, BigDecimal.valueOf(15000),
+                BigDecimal.valueOf(100000), null);
+    }
+
+    private void seedDemoCoupon(String code, CouponType discountType, BigDecimal discountValue,
+                                BigDecimal minOrderAmount, BigDecimal maxDiscountAmount) {
+        if (couponRepository.existsByCodeIgnoreCase(code)) {
+            return;
+        }
+
+        couponRepository.save(Coupon.builder()
+                .code(code)
+                .discountType(discountType)
+                .discountValue(discountValue)
+                .minOrderAmount(minOrderAmount)
+                .maxDiscountAmount(maxDiscountAmount)
+                .active(true)
+                .build());
+    }
+
+    private Product createProduct(Category cat, String name, String desc, double basePrice, String imgUrl) {
+        Product existing = productRepository.findAll().stream()
+                .filter(product -> product.getCategory().getId().equals(cat.getId())
+                        && product.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+        if (existing != null) {
+            return existing;
+        }
+
+        Product p = Product.builder()
+                .category(cat)
+                .name(name)
+                .description(desc)
+                .basePrice(BigDecimal.valueOf(basePrice))
+                .imageUrl(imgUrl)
+                .isActive(true)
+                .build();
+
+        p.getSizes().add(ProductSize.builder().product(p).sizeName("S").extraPrice(BigDecimal.ZERO).build());
+        p.getSizes().add(ProductSize.builder().product(p).sizeName("M").extraPrice(BigDecimal.valueOf(10000)).build());
+        p.getSizes().add(ProductSize.builder().product(p).sizeName("L").extraPrice(BigDecimal.valueOf(16000)).build());
+
+        return productRepository.save(p);
+    }
+
+    private Product createSingleSizeProduct(Category cat, String name, String desc, double basePrice, String imgUrl) {
+        Product existing = productRepository.findAll().stream()
+                .filter(product -> product.getCategory().getId().equals(cat.getId())
+                        && product.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
+        if (existing != null) {
+            return existing;
+        }
+
+        Product p = Product.builder()
+                .category(cat)
+                .name(name)
+                .description(desc)
+                .basePrice(BigDecimal.valueOf(basePrice))
+                .imageUrl(imgUrl)
+                .isActive(true)
+                .build();
+
+        p.getSizes().add(ProductSize.builder().product(p).sizeName("Tiêu chuẩn").extraPrice(BigDecimal.ZERO).build());
+
+        return productRepository.save(p);
+    }
+
+    private void createSampleOrder(AppUser user, Product product, String size, String ice, String sugar, String topping, int qty, OrderStatus status, String couponCode, BigDecimal discount) {
+        String code = "COF-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        BigDecimal sizeExtra = size.equals("M") ? BigDecimal.valueOf(10000) : (size.equals("L") ? BigDecimal.valueOf(16000) : BigDecimal.ZERO);
+        BigDecimal toppingPrice = topping != null ? BigDecimal.valueOf(10000) : BigDecimal.ZERO;
+        BigDecimal unitPrice = product.getBasePrice().add(sizeExtra).add(toppingPrice);
+        BigDecimal itemSubtotal = unitPrice.multiply(BigDecimal.valueOf(qty));
+        BigDecimal shippingFee = itemSubtotal.compareTo(BigDecimal.valueOf(200000)) >= 0 ? BigDecimal.ZERO : BigDecimal.valueOf(15000);
+        BigDecimal totalAmount = itemSubtotal.subtract(discount).add(shippingFee);
+        if (totalAmount.compareTo(BigDecimal.ZERO) < 0) totalAmount = BigDecimal.ZERO;
+
+        Order order = Order.builder()
+                .orderCode(code)
+                .customerName(user.getFullName())
+                .customerPhone(user.getPhone())
+                .deliveryAddress("123 Đường 3/2, Quận 10, TP. Hồ Chí Minh")
+                .note("Giao giờ hành chính giúp em ạ.")
+                .status(status)
+                .subtotal(itemSubtotal)
+                .discountAmount(discount)
+                .couponCode(couponCode)
+                .shippingFee(shippingFee)
+                .totalAmount(totalAmount)
+                .user(user)
+                .items(new ArrayList<>())
+                .build();
+
+        OrderItem item = OrderItem.builder()
+                .order(order)
+                .product(product)
+                .productName(product.getName())
+                .sizeName(size)
+                .iceLevel(ice)
+                .sugarLevel(sugar)
+                .toppings(topping)
+                .quantity(qty)
+                .unitPrice(unitPrice)
+                .subtotal(itemSubtotal)
+                .build();
+
+        order.getItems().add(item);
+        orderRepository.save(order);
+    }
+}

@@ -1,0 +1,67 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  config:
+    import: optional:file:../.env[.properties]
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:default}
+
+  application:
+    name: highlands-order-api
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/coffee_order_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  mfa:
+    encryption-key: ${MFA_ENCRYPTION_KEY:${JWT_SECRET}}
+
+  account-security:
+    max-failures: ${AUTH_MAX_FAILURES:5}
+    lock-minutes: ${AUTH_LOCK_MINUTES:15}
+
+  auth-rate-limit:
+    requests: ${AUTH_RATE_LIMIT_REQUESTS:10}
+    window-seconds: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:60}
+
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:no-reply@mocnhien.local}
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+
+  order-pricing:
+    shipping-fee: ${SHIPPING_FEE:15000}
+    free-shipping-threshold: ${FREE_SHIPPING_THRESHOLD:200000}
+
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:15}
+    issuer: ${JWT_ISSUER:moc-nhien-order-api}
+    audience: ${JWT_AUDIENCE:moc-nhien-web}

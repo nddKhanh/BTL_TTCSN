@@ -1,0 +1,11 @@
+# Exact historical false positives only; keep all other secret detection enabled.
+# JwtServiceTest uses the deterministic base64 encoding of a repeated 0123456789abcdef fixture.
+137cbacac2e75ac375756d3faae20a28a3f139fe:backend/src/test/java/com/highlands/order/security/JwtServiceTest.java:generic-api-key:19
+1658eaadd4c3a27377c6bbf89087437c4d890d1a:backend/src/test/java/com/highlands/order/security/JwtServiceTest.java:generic-api-key:19
+822f828a2da028541756fc98055551f9c671f3cf:backend/src/test/java/com/highlands/order/security/JwtServiceTest.java:generic-api-key:19
+0009b9dd45c2787df910380385230580b8f7d2ce:backend/src/test/java/com/highlands/order/security/JwtServiceTest.java:generic-api-key:19
+# Original README documentation examples: sample jwt.secret and a truncated JWT response.
+17b5124f50e579fd7f6c7717b1ddfc1c2c00ade4:README.md:generic-api-key:239
+17b5124f50e579fd7f6c7717b1ddfc1c2c00ade4:README.md:generic-api-key:256
+# Empty JWT_SECRET example matched across the following JWT_EXPIRATION_MINUTES setting.
+87c1514a8abe087e6e702a1afa812133461b165a:.env.example:generic-api-key:15
