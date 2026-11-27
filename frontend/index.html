@@ -62,7 +62,24 @@
       </div>
 
       <div class="modal-body">
-        <p id="modalProductDesc" style="color:var(--text-muted); font-size:14px; margin-bottom:16px;"></p>
+        <div class="modal-hero">
+          <img id="modalProductImage" class="modal-hero-img" src="" alt="">
+        </div>
+
+        <div class="modal-summary">
+          <span class="product-category" id="modalProductCategory"></span>
+          <div class="modal-price" id="modalProductPrice"></div>
+        </div>
+
+        <div class="option-group">
+          <div class="option-title">Thông tin món</div>
+          <div class="spec-list" id="modalSpecs"></div>
+        </div>
+
+        <div class="option-group" id="modalDescGroup">
+          <div class="option-title">Mô tả</div>
+          <p class="modal-desc" id="modalProductDesc"></p>
+        </div>
 
         <!-- Sizes Option -->
         <div class="option-group">

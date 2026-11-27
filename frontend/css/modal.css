@@ -62,6 +62,58 @@
   overflow-y: auto;
 }
 
+.modal-hero {
+  margin: -20px -20px 16px;
+  padding: 16px;
+  background-color: var(--bg-cream);
+  display: flex;
+  justify-content: center;
+}
+
+.modal-hero-img {
+  width: 100%;
+  max-width: 360px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+
+.modal-summary {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.modal-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary-red);
+}
+
+.spec-row {
+  display: flex;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 14px;
+}
+
+.spec-label {
+  flex: 0 0 90px;
+  color: var(--text-muted);
+}
+
+.spec-value {
+  flex: 1;
+  color: var(--text-dark);
+}
+
+.modal-desc {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-dark);
+}
+
 .option-group {
   margin-bottom: 20px;
 }

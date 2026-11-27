@@ -4,6 +4,18 @@ let allToppings = [];
 let selectedCategoryId = null;
 let searchTimer = null;
 let lastFocusedElement = null;
+const PRODUCT_PLACEHOLDER = 'https://placehold.co/400x300?text=Moc+Nhien+Coffee';
+
+// Giá thấp nhất; thêm "Từ" khi món có size phụ thu.
+function priceLabel(product) {
+  const hasExtra = (product.sizes || []).some(s => s.extraPrice > 0);
+  return `${hasExtra ? 'Từ ' : ''}${formatVND(product.basePrice)}`;
+}
+
+function sizeSummary(sizes) {
+  const names = (sizes || []).map(s => s.sizeName);
+  return names.length > 1 ? `Size ${names.join(' · ')}` : '';
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
@@ -91,15 +103,18 @@ async function loadProducts() {
 
     let html = '';
     products.forEach(p => {
+      const sizes = sizeSummary(p.sizes);
       html += `
-        <div class="product-card">
-          <img src="${p.imageUrl || 'https://placehold.co/260x200?text=Moc+Nhien+Coffee'}" class="product-img" alt="${p.name}">
+        <div class="product-card" onclick="openProductModal(${p.id})">
+          <img src="${p.imageUrl || PRODUCT_PLACEHOLDER}" class="product-img" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src=PRODUCT_PLACEHOLDER">
           <div class="product-info">
+            ${p.category ? `<span class="product-category">${p.category.name}</span>` : ''}
             <h3 class="product-name">${p.name}</h3>
             <p class="product-desc">${p.description || ''}</p>
+            ${sizes ? `<p class="product-sizes">${sizes}</p>` : ''}
             <div class="product-bottom">
-              <span class="product-price">${formatVND(p.basePrice)}</span>
-              <button class="btn-add" onclick="openProductModal(${p.id})">+ Thêm</button>
+              <span class="product-price">${priceLabel(p)}</span>
+              <button class="btn-add" type="button" onclick="event.stopPropagation(); openProductModal(${p.id})">+ Thêm</button>
             </div>
           </div>
         </div>
@@ -118,7 +133,17 @@ async function openProductModal(productId) {
     modalQuantity = 1;
 
     document.getElementById('modalProductName').textContent = currentProduct.name;
+    const modalImage = document.getElementById('modalProductImage');
+    modalImage.onerror = () => { modalImage.onerror = null; modalImage.src = PRODUCT_PLACEHOLDER; };
+    modalImage.src = currentProduct.imageUrl || PRODUCT_PLACEHOLDER;
+    modalImage.alt = currentProduct.name;
+    const modalCategory = document.getElementById('modalProductCategory');
+    modalCategory.textContent = currentProduct.category?.name || '';
+    modalCategory.hidden = !currentProduct.category;
+    document.getElementById('modalProductPrice').textContent = priceLabel(currentProduct);
+    renderProductSpecs(currentProduct);
     document.getElementById('modalProductDesc').textContent = currentProduct.description || '';
+    document.getElementById('modalDescGroup').hidden = !currentProduct.description;
     document.getElementById('modalQty').textContent = modalQuantity;
 
     // Render Sizes
@@ -169,6 +194,30 @@ async function openProductModal(productId) {
   } catch (err) {
     alert('Không thể tải chi tiết sản phẩm!');
   }
+}
+
+function renderProductSpecs(product) {
+  const sizes = (product.sizes || [])
+    .map(s => s.extraPrice > 0 ? `${s.sizeName} (+${formatVND(s.extraPrice)})` : s.sizeName)
+    .join(', ');
+  const rows = [
+    ['Danh mục', product.category?.name],
+    ['Kích cỡ', sizes]
+  ].filter(([, value]) => value);
+
+  const container = document.getElementById('modalSpecs');
+  container.replaceChildren(...rows.map(([label, value]) => {
+    const row = document.createElement('div');
+    row.className = 'spec-row';
+    const labelEl = document.createElement('span');
+    labelEl.className = 'spec-label';
+    labelEl.textContent = label;
+    const valueEl = document.createElement('span');
+    valueEl.className = 'spec-value';
+    valueEl.textContent = value;
+    row.append(labelEl, valueEl);
+    return row;
+  }));
 }
 
 function closeModal() {
